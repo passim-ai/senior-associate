@@ -2,7 +2,9 @@
 
 The person: an immigration attorney who has never used Claude. They installed the plugin because it promised one thing: client documents in, a filing packet out, and an honest list of whatever is still missing. They don't know what a slash command, a side panel, or a session is. Every screen has to answer three questions without them asking: where am I, what should I do now, and what will happen when I do it.
 
-The frame is the Claude desktop app's Code tab. The app draws with Claude's own elements, so it inherits Claude's font, light/dark theme, cursor, focus ring, keyboard and screen-reader behaviour. Passim's navy and orange fill the header band, the status pills and the step chips; the one main action is Claude's own primary button. Nothing is drawn as a terminal.
+The frame is the Claude desktop app's Code tab. The app draws with Claude's own elements, so it inherits Claude's font, cursor, focus ring, keyboard and screen-reader behaviour. It is drawn on **Passim paper**: the panel paints its own warm paper (#F7F5F1) edge to edge in every theme, light or dark, with cards on a lighter surface, thin rules between sections, and every text in a paper colour of its own (ink, a muted grey, navy for headings and links, a darker shade of Passim's orange for small accents, and green, amber and red for states). Headings are Claude's font, semibold, in navy. Buttons are Claude's own, painted: the main one navy with white text, its companion outlined in navy. Text fields and pickers keep Claude's own styling, each in a well of Claude's own background colour. Nothing is drawn as a terminal.
+
+Every screen has the same header: Passim's wordmark, a thin rule, "Senior Associate", and at the right **Matters**, **Your details**, **Setup** and **Help** (and **Open as side panel** in the conversation). In the side panel the header stacks: the lockup, then the four places in a row. Under it, where you are ("Matters › Garcia I-130 I-485"), the screen's title, and on a matter its tabs.
 
 ## Principles
 
@@ -22,7 +24,7 @@ The frame is the Claude desktop app's Code tab. The app draws with Claude's own 
 | **packet**; **draft packet** while anything is needed before filing | package, binder, output |
 | **your files** ("Files for this matter") | deliverables, outputs |
 | **steps** ("step 4 of 10: Cover letter") | stages, workflow, stage track |
-| **open items**; the screen is **What's left** | ledger, open-items.json |
+| **open items**; the tab is **Questions** ("Questions & missing evidence") | ledger, open-items.json |
 | **needed before filing** / **not needed before filing** | blocking, non-blocking |
 | **your decisions**, a **question for you** | attorney_decision |
 | **for you to do** | attorney_action, actions |
@@ -40,7 +42,7 @@ The frame is the Claude desktop app's Code tab. The app draws with Claude's own 
 
 ## Status names
 
-The server is the source of truth for each matter's status (its `status`, from the run lease and the steps). The app adds only what it alone knows: a start waiting in the chat box, and a run of this session's that stopped. The pill, the card title, the matters list, the band's line and the notification all read the same status, the same way.
+The server is the source of truth for each matter's status (its `status`, from the run lease and the steps). The app adds only what it alone knows: a start waiting in the chat box, and a run of this session's that stopped. The status chip, the next step's heading, the matters list, the line under the Matters title and the notification all read the same status, the same way. The chip's colour follows it: the accent's light shade where the attorney is needed, navy's while the work goes on, amber's where it waits, green once it can be filed, red when it stopped, and plain otherwise.
 
 | Status | When |
 | --- | --- |
@@ -87,17 +89,19 @@ Shown automatically the first time, and whenever a required check fails before a
 
 The first screen once setup is done:
 
-- Headline: *Client documents in. Filing-ready packet out.*
-- Four numbered steps: 1 "Add your details (2 minutes, once)"; 2 "Name the client and the case"; 3 "Add their documents"; 4 "Build the packet. A document review takes about 5–10 minutes; a full build about 1–1½ hours, in the background. Nothing is filed or sent: you get a draft to read."
-- Main button **Add your details**; second **Start the first matter**; **Open as side panel**.
-- Foot: "Type /matters any time to come back."
+- Title **Matters**, "Client documents in. Filing-ready packet out.", and at its right **New matter** ("Name the client and the case"); while Your details are empty, **Add your details** ("2 minutes, once") comes first and New matter beside it.
+- A rule, then the eyebrow **YOUR FIRST MATTER** and the headline *A clear path from documents to review.*, with a line that nothing is filed or sent.
+- Three numbered steps (01, 02, 03 in the accent) between rules, three across when the panel is wide and one under another when it is narrow: **Add the documents**, **Review what's needed** (a document review takes about 5–10 minutes), **Build and review** (a full build about 1–1½ hours, in the background).
+- While Your details are empty, a line on what they go on.
+- **See how it works**, "A fictional I-601A case to try first", with **Open the sample matter**, when the sample is on the list.
+- Foot: where the documents stay ("Documents stay in your Matters folder on this Mac…") and "Type /matters any time to come back." Open as side panel is in the header.
 
 ## The sample matter
 
 The first time the app opens on an empty Matters folder, the server adds *Sample - Barrientos-Eckhardt*: the fictional I-601A in `samples/barrientos-eckhardt-i601a/` (14 scanned documents marked SPECIMEN, with gaps planted on purpose), the case type and paper filing set. It is added once: a Matters folder that already has matters never gets it, and once archived or deleted it doesn't come back by itself (the Matters folder's `.senior-associate/sample.json` records that it was offered).
 
-- It doesn't take the welcome's place: the sample alone on the list still shows the welcome, which adds **Open the sample matter** ("A fictional I-601A case to try first"), and it never opens by itself.
-- Its page has a card under the main one, **This is a sample matter**: what it is, then "Press Review documents first…". Once the document review has passed, the card lists **What a good review catches** (the eight planted gaps) and says to compare them with What's left. Then a line on what a full build costs and that it can be archived.
+- It doesn't take the welcome's place: the sample alone on the list still shows the welcome, whose **See how it works** offers **Open the sample matter** ("A fictional I-601A case to try first"), and it never opens by itself.
+- Its Overview has a card under the next step, **This is a sample matter**: what it is, then "Press Review documents first…". Once the document review has passed, the card lists **What a good review catches** (the eight planted gaps) and says to compare them with Questions. Then a line on what a full build costs and that it can be archived.
 - **Help › How do I… › Try Senior Associate on a fictional case**, **Open the sample matter**: opens it, takes it out of the archive, or adds it again when its folder is gone.
 
 ## Your details
@@ -112,16 +116,18 @@ Name, firm, mailing address, phone, email, bar number, licensing authority, disc
 
 What `/matters` shows once a matter exists.
 
-- Band subtitle: "2 need your answer · 1 stopped · 1 in progress · 3 ready to file". Need your answer counts only matters with a question for the attorney; a stop and a start waiting in the chat box are said as such.
-- Groups: **Needs you**, **Claude is working**, **In preparation**, **Ready to file**, **Filed** (collapsed), and **Archived (n)** (collapsed) at the foot.
-- **Sort:** Updated (the default), Name, Case type, Status; the order holds within each group, for the session.
-- A row is the client's name, the status pill, then one line: "I-751 waiver · Answer 2 questions · updated Oct 27". The whole row is pressable, and its name says its status. A live run shows "step 4 of 10: Forms review and Cover letter".
+- Title **Matters**, with **New matter** at its right. The line under it: "2 need your answer · 1 stopped · 1 in progress · 3 ready to file". Need your answer counts only matters with a question for the attorney; a stop and a start waiting in the chat box are said as such.
+- Groups, each with its heading in navy: **Needs you**, **Claude is working**, **In preparation**, **Ready to file**, **Filed** (collapsed), and **Archived (n)** (collapsed) at the foot.
+- **Sort:** Updated (the default), Name, Case type, Status, as chips; the order holds within each group, for the session.
+- A row is a card on the surface: the client's name in navy, the status chip at its right, then one line: "I-751 waiver · Answer 2 questions · updated Oct 27". The name is the press, and says its status. A live run shows "step 4 of 10: Forms review and Cover letter".
 - The list refreshes by itself every 15 seconds and whenever `/matters` is typed again, so a build that finishes elsewhere shows at once.
-- **Pick up where you left off** appears only with more than three matters. Past six, a search field filters as they type.
-- **New matter** and **Your details** are always reachable.
+- **Pick up where you left off** appears only with more than three matters, with **Open <matter>**. Past six, a search field filters as they type.
+- **New matter** is at the title's right; **Your details** is in the header, and while they're empty the list says "Add your details so the G-28 and the letter carry your name and bar number".
 - Keys, in the side panel: n New matter, f find, 1–9 open the matter in that place.
 
 ## New matter
+
+Matters › New matter; the title and a line; then a card per question:
 
 - **Who is the client?** Placeholder "e.g. Maria Garcia". The preview shows what the matter will be called ("Garcia I-130 I-485"), capitalized as it will be created; the small words of a family name stay as typed ("Maria de la Cruz").
 - **What is being filed?** The six most common case types, one line each, then "More case types (6) ›" and **Something else** to describe it in words. A VAWA case is named by its form numbers only ("Ramos I-360"), because a folder name shows in Finder and on screen.
@@ -133,24 +139,32 @@ What `/matters` shows once a matter exists.
 
 ## Matter
 
-The screen for one case. Header: the client's name, the case line (as the list shows it: a protected matter by its form numbers only, here and on Change what is being filed), and the status pill. Then one card that says what to do now, with the main action as Claude's primary button (b presses it, in the side panel) and at most one secondary action, each with a line under it on what it does. Between a press that starts Claude and the agent starting, the start buttons wait, and a second press says Claude is starting. Under it, **Ask Claude about this matter** (below), then **Additional attorney instructions** (below), then **More you can do** (below).
+The screen for one case. At the top: "Matters › Garcia I-130 I-485", the client's name as the title, the case line under it (as the list shows it: a protected matter by its form numbers only, here and on Change what is being filed), and the status chip at the right. Then the matter's **tabs**: **Overview**, **Documents**, **Questions** (with how many are open, in a small accent chip), **Packet**, **Memo & request**, **Timeline**. The tab open is navy over an accent underline; the tabs wrap onto a second line in the side panel. The tabs replace the summary rows that used to lead to those screens.
+
+The **Overview**, from the top:
+
+1. **The next step**: a card with the accent bar down its left edge, the eyebrow **NEXT STEP**, a heading saying where the matter stands in words ("Ready to build", "Your judgment is needed", "Claude is working", "Add the client's documents", "Draft packet ready", "Ready to file"…), what it means in a line or two, then the main action(s), each with a line under it on what it does: the main one navy (b presses it, in the side panel, and the focus starts there), its companion outlined. Then links (Open draft packet, Watch Claude work, Stop…) and, in small type, what to keep in mind ("Keep Claude open until it finishes…", "macOS may ask…"). Between a press that starts Claude and the agent starting, the start buttons wait, and a second press says Claude is starting. While Claude works it holds the step track; when a run finished, **What Claude did** sits right under it.
+2. The sample matter's guide, on the sample.
+3. **The numbers**, between rules: **Documents** (how many), **Steps complete** ("3 of 10") and **Needed before filing** (how many); each number opens its tab (Documents, Packet, Questions).
+4. **Needs attention** beside **Ask Claude about this matter**, two columns when the panel is wide, one under the other when it is narrow. Needs attention lists up to four open items and questions, needed before filing first, each with its kind ("Your decision · Needed before filing") and **View ›**, which opens Questions at it; then "All 9 on Questions ›".
+5. Folded, each under a rule with ▸, opening to ▾ in place: **Attorney instructions** ("Saved; Claude follows them" or "None yet"), **More you can do** ("9 actions") and **Matter details** (the case, Documents "4 files · last added just now", Packet "Draft built · 2 needed before filing", Open items, Attorney memo, Client request, Timeline, and Open the matter folder in Finder, Show files in Finder, Show the earlier work in Finder).
 
 ### Ask Claude about this matter
 
-A card on every matter page: "A question, some research, or a change you want made. Claude reads this matter's documents and work, looks up the law in BIA Edge, and makes the changes you ask for. It answers in the chat." While Claude works: "Ask anything while Claude works. Changes you ask for wait until it finishes, or go into your instructions for the steps it hasn't reached." Without BIA Edge connected: "Connect BIA Edge in Claude's Connectors so Claude can cite case law."
+A column on every Overview: "A question, some research, or a change you want made. Claude reads this matter's documents and work, looks up the law in BIA Edge, and makes the changes you ask for. It answers in the chat." While Claude works: "Ask anything while Claude works. Changes you ask for wait until it finishes, or go into your instructions for the steps it hasn't reached." Without BIA Edge connected: "Connect BIA Edge in Claude's Connectors so Claude can cite case law."
 
 - One box, two lines, with **ask** (placeholder "e.g. Does the 2019 arrest affect eligibility?" before a build, "e.g. How strong is our bona fide marriage evidence?" after). The question goes to the chat as the attorney's own words, "Ask Senior Associate about Garcia I-130 I-485: …", which the plugin's matter-chat skill answers. The page says "✓ Claude is answering in the chat." and the box comes back empty. When the chat won't take it, the question waits in the chat box: "Your question is in the chat box. Press Enter to send it to Claude." Pressed with nothing typed: "Type your question first, then press ask." Asked while an error shows, the question carries the error as the app got it.
 - **Or ask:** up to three questions from where the matter stands, each a press that sends it: what to file (before the case type is chosen); the officer's strongest objection ("How do we answer this: "Joint records begin two months before filing.""); a decision waiting ("Help me decide: Include an I-765…?"); before a build, "Does the client qualify, on the documents we have?", "What could stand in for the documents still missing?" and "What would an officer question first in this case?"; after one, "What would an officer question first in this packet?" and "What's the weakest point in the cover letter, and how do we shore it up?".
 - Claude can change the work in chat: the letter, a form, the open items, the memo, the client request, and the standing instructions (a standing instruction appears in the box below). It records each change, and research it verified carries into the next build. After a build, a change made in chat is a change since the build, on the main card like new files: "Since the packet was built, you made a change in chat (Cover letter: leads with the joint lease). Update the packet to have the reviews check it.", with **Update the packet: re-checks what you changed in chat**. With more than one, the ask card lists them under "Changed in chat since Claude last checked the packet:".
 - What goes into research is the attorney's call: Claude words queries as legal propositions unless the attorney asks it to include the client's facts, and asks for no further confirmation. Claude's own agents, at work on a matter, never send its client's names or identifiers to BIA Edge or a web search: such a call is refused, and the agent rephrases it as a legal question. A precedent that shares the client's surname ("Matter of Garcia") is a citation and goes through. When the app can't check a request against the client's details, the request waits ("Try again in a moment") rather than going out unchecked.
 
-### Additional attorney instructions
+### Attorney instructions
 
-A card on every matter page except Filed: "Anything Claude should follow on this matter: what to lead with, what to leave out, how to argue it. Claude reads these before every step, in the build and every update after it." One box, four lines, with **save**. Saved, they live in the matter folder (output › working › workflow › attorney-instructions.md), every run's brief names the file, and each step reads it, so they hold for the build and every run after it until the attorney changes them. The save says when they take effect: before a build, "Claude follows them in every step of the build"; while Claude works, "The steps Claude hasn't reached yet follow them"; after a build, "Claude follows them from its next run. To redo the packet with them now, use Tell Claude what to change." Saving an empty box clears them. Text typed but not saved goes with the next run anyway: pressing Build packet, or any button that starts Claude, saves it first. Changing what is being filed keeps them. An instruction Claude can't follow without contradicting the documents or the law becomes a question on What's left instead. Then summary rows, each a button into its own screen: **What's left**, **Attorney memo**, **Client request**, **Documents**, **Timeline**, **Packet**. Then plain links: Open the matter folder in Finder, Show files in Finder.
+Folded on every Overview except Filed, and the box keeps its label "Additional attorney instructions": "Anything Claude should follow on this matter: what to lead with, what to leave out, how to argue it. Claude reads these before every step, in the build and every update after it." One box, four lines, with **save**. Saved, they live in the matter folder (output › working › workflow › attorney-instructions.md), every run's brief names the file, and each step reads it, so they hold for the build and every run after it until the attorney changes them. The save says when they take effect: before a build, "Claude follows them in every step of the build"; while Claude works, "The steps Claude hasn't reached yet follow them"; after a build, "Claude follows them from its next run. To redo the packet with them now, use Tell Claude what to change." Saving an empty box clears them. Text typed but not saved goes with the next run anyway: pressing Build packet, or any button that starts Claude, saves it first. Changing what is being filed keeps them. An instruction Claude can't follow without contradicting the documents or the law becomes a question on Questions instead. **Save instructions** under the box does what Enter does.
 
 ### More you can do
 
-Every other thing that makes sense for the matter right now, so nothing depends on finding a hidden link. Each is its name as a press, then one dim line on what it does. What the main card already offers isn't repeated.
+Every other thing that makes sense for the matter right now, folded under its heading with how many there are, so nothing depends on finding a hidden link. Each is its name as a press, then one dim line on what it does. What the next step already offers isn't repeated.
 
 | Entry | When | Its line |
 | --- | --- | --- |
@@ -158,8 +172,8 @@ Every other thing that makes sense for the matter right now, so nothing depends 
 | **Review the documents again** | only the document review has run | "About 5–10 minutes. Claude re-reads every document, new ones included… It doesn't build." |
 | **Update the packet** | a step after the review has finished, and it isn't on the card | "Works in what changed since the build: documents added or taken out, items marked done or reopened, and your answers." |
 | **Tell Claude what to change** | the same | "Claude redoes only the steps it affects, checks the packet again, and updates the memo." |
-| **Redo a step…** | the same | opens Packet, where each step has Redo from here |
-| **Re-check as a USCIS officer would** | a packet exists | "About 15 minutes. A fresh, full officer's review…, not only of what changed" |
+| **Redo a step…** | the same | opens the Packet tab, where each step has Redo from here |
+| **Re-check as a USCIS officer would** | a packet exists | "About 15 minutes. A fresh, full officer's review…, not only of what changed; it updates Questions and the memo" |
 | **Mark as filed** | a packet exists (Ready to file has it on the card) | "Undo puts it back." |
 | **Clean up working files** | every step done, Filed included | "Your documents and the finished files stay." It asks on the card first: "Delete Claude's working copies of the client's documents? …" **Yes, clean up** · **Keep them**. |
 | **Change what is being filed** | always, except while Claude works | "A different case type, filing posture, or how it is filed. The steps start over for a new case…" |
@@ -167,21 +181,21 @@ Every other thing that makes sense for the matter right now, so nothing depends 
 
 While Claude works, only Add documents… shows; the card has Watch and Stop.
 
-| Status | The card says | Main action | Second |
-| --- | --- | --- | --- |
-| Needs documents | Add the client's documents to get started. | Add files… | Add a folder… |
-| Ready to build | What Claude will do, and that missing documents become a list rather than a stop. | Build packet: "About 1–1½ hours · runs in the background" | Review documents first: "About 5–10 minutes · see what's missing first" |
-| Documents reviewed | "Claude reviewed the 23 documents. 4 things are missing; they're on the client request. Send it now and build when they arrive, or build now and Claude leaves placeholders." Then "When the client sends more: Add documents…, just below, then Review the documents again." | Build packet | Copy the client request: "ready to paste into an email" |
-| Documents reviewed, new files since | "2 new files arrived since Claude reviewed the documents. Review the documents again to see what's still missing and refresh the client request. Or build the packet now: the build starts by reviewing them." | Review the documents again: "About 5–10 minutes · see what's still missing" | Build packet: "reviews them first" |
-| Claude is working | See "While Claude works" below. | Watch Claude work | |
-| Paused | "Claude stopped working on this yesterday, at step 4 of 10 (Cover letter). Everything finished so far is saved." Stopped during the document review, it offers Finish the document review. A step the server still calls running, with nothing changed for 20 minutes and no run of this session's, is Paused too, with "If Claude is still working on it in the chat, leave it." | Continue building: "picks up at Cover letter" | |
-| Needs your answer | See "Needs your answer" below. | Update the packet: "with your answers" | |
-| Waiting on the client | "Waiting on the client for 3 items." | Add files…: "what the client sent" | Copy the client request |
-| Draft packet | "The draft packet is built. 6 things are needed before filing: 3 from the client, 2 for you and 1 risk to weigh." The parts always add up to the total. | Copy the client request (when the client owes anything), else See what's left | See what's left: "6 needed before filing" |
-| Ready to file | The packet passed its final review, including the officer's review, and nothing needed before filing is open. A question for you that the packet can be filed without stays on the card with its answer box, headed "not needed before filing" (What's left marks it the same way), and Update the packet works an answer in. Files added since the build are offered with Update the packet, and Mark as filed and Print the filing checklist stay: the attorney may file without them. | Open packet | Read the memo; Update the packet (with such a question); Mark as filed |
-| Filed | "Filed Oct 30." | | Undo |
+| Status | The next step's heading | It says | Main action | Second |
+| --- | --- | --- | --- | --- |
+| Needs documents | Add the client's documents | Add the client's documents to get started. | Add files… | Add a folder… |
+| Ready to build | Ready to build | What Claude will do, and that missing documents become a list rather than a stop. | Build packet: "About 1–1½ hours · runs in the background" | Review documents first: "About 5–10 minutes · see what's missing first" |
+| Documents reviewed | Documents reviewed | "Claude reviewed the 23 documents. 4 things are missing; they're on the client request. Send it now and build when they arrive, or build now and Claude leaves placeholders." With questions: "2 questions wait for you on Questions (0 answered). Your answers go with the build…" Then "When the client sends more: Add documents…, under More you can do, then Review the documents again." | Build packet | Copy the client request: "ready to paste into an email" |
+| Documents reviewed, new files since | Documents changed since the review | "2 new files arrived since Claude reviewed the documents. Review the documents again to see what's still missing and refresh the client request. Or build the packet now: the build starts by reviewing them." | Review the documents again: "About 5–10 minutes · see what's still missing" | Build packet: "reviews them first" |
+| Claude is working | Claude is working | See "While Claude works" below. | Watch Claude work | |
+| Paused | Paused | "Claude stopped working on this yesterday, at step 4 of 10 (Cover letter). Everything finished so far is saved." Stopped during the document review, it offers Finish the document review. A step the server still calls running, with nothing changed for 20 minutes and no run of this session's, is Paused too, with "If Claude is still working on it in the chat, leave it." | Continue building: "picks up at Cover letter" | |
+| Needs your answer | Your judgment is needed | See "Needs your answer" below. | Review questions: "2 questions · 0 answered" | Update the packet: "with your answers" |
+| Waiting on the client | Waiting on the client | "Waiting on the client for 3 items." | Add files…: "what the client sent" | Copy the client request |
+| Draft packet | Draft packet ready | "The draft packet is built. 6 things are needed before filing: 3 from the client, 2 for you and 1 risk to weigh." The parts always add up to the total. | Copy the client request (when the client owes anything), else Review questions | Review questions: "6 needed before filing" |
+| Ready to file | Ready to file | The packet passed its final review, including the officer's review, and nothing needed before filing is open. A question for you that the packet can be filed without waits on Questions, marked "Not needed before filing", and Update the packet works an answer in. Files added since the build are offered with Update the packet, and Mark as filed and Print the filing checklist stay: the attorney may file without them. | Open packet | Read the memo; Update the packet (with such a question); Mark as filed |
+| Filed | Filed | "Filed Oct 30." | | Undo |
 
-A draft also offers **Open draft packet** and **Re-check as a USCIS officer would**. Draft packet and Waiting on the client show a question not needed before filing the same way Ready to file does, with its answer box, so What's left's **Answer** always finds it. Ready to file and Draft packet offer **Print the filing checklist** once Claude has written it (fees and payment forms, signatures, photos, where to mail or how to file online).
+With new files, files taken out or changes in chat since the build, the heading is "Changes to work in". A draft also offers **Open draft packet** and **Re-check as a USCIS officer would**. In Draft packet, Waiting on the client and Ready to file, a question not needed before filing waits on Questions with its answer box, and Needs attention's **View** finds it. Ready to file and Draft packet offer **Print the filing checklist** once Claude has written it (fees and payment forms, signatures, photos, where to mail or how to file online).
 
 **Your details gate.** On Build packet in Ready to build or Documents reviewed with Your details empty (it goes once they're filled in, however they were saved): "⚠ Your details aren't filled in, so the G-28 and the letter's signature will be left blank." **Add your details first (2 minutes)** · **Build anyway**.
 
@@ -195,7 +209,7 @@ When the attorney's permission settings don't let the app start Claude itself (A
 
 ### While Claude works
 
-- Card title **Claude is working**. Bold: "Building the packet · step 4 of 10: Cover letter". Then "Started 2:14 PM · running 22 min · about 50 min left".
+- Heading **Claude is working**. Bold: "Building the packet · step 4 of 10: Cover letter", the step track (one segment per step: navy done, the accent running, a line for what's to come) and "Then: Research, Letter revision". Then "Started 2:14 PM · running 22 min · about 50 min left".
 - Dim: "Keep Claude open until it finishes. You can use Claude for other things meanwhile; you'll get a notification when it's done."
 - The sentence fits the run: a document review, a build or update, or an officer's review.
 - **Watch Claude work** opens the agent's transcript. **Stop** asks first, on the card: "Stop Claude now? Everything finished so far is kept. Continue building picks up where it stopped." **Yes, stop** · **Keep working**. A stop the attorney chose shows as Paused, not Stopped, with a green line that everything Claude finished is saved; Continue building (or Finish the document review, for a review) carries the same answers and instructions. A stop before Claude changed anything stays Stopped, with Try again, which carries them too.
@@ -209,20 +223,18 @@ When the attorney's permission settings don't let the app start Claude itself (A
 
 A notification (a toast if notifications aren't available) names the matter, and the next `/matters` opens that matter: "Garcia I-130 I-485 is ready to file." / "Garcia I-130 I-485: draft packet ready. 4 items are needed before filing." / "Garcia I-130 I-485: Claude needs your answer on 2 questions." / "Garcia I-130 I-485: the build stopped at Forms review. Open it to try again."
 
-The agent's short report appears as **What Claude did**, "finished 3:29 PM, took 1 h 15 min", above the open items.
+The agent's short report appears as **What Claude did**, "finished 3:29 PM, took 1 h 15 min", right under the next step, drawn on the paper like the memo.
 
 ### When it stops
 
-"The build stopped at step 3 of 10 (Forms review): Claude hit a temporary problem, such as a busy service or a dropped connection. Everything finished before that is saved." Other reasons: "It was stopped", "Claude declined to continue", "It ran into an error". Main action **Try again: picks up at Forms review**; links **See what Claude was doing** and **Not now: show where the matter stands**, which sets the stop aside so the card shows the matter's own state and every way forward (a redo from an earlier step, say). Pill **Stopped**, in red. The raw report of a failed run is never shown.
+"The build stopped at step 3 of 10 (Forms review): Claude hit a temporary problem, such as a busy service or a dropped connection. Everything finished before that is saved." Other reasons: "It was stopped", "Claude declined to continue", "It ran into an error". Main action **Try again: picks up at Forms review**; links **See what Claude was doing** and **Not now: show where the matter stands**, which sets the stop aside so the card shows the matter's own state and every way forward (a redo from an earlier step, say). Chip **Stopped**, in red. The raw report of a failed run is never shown.
 
 ### Needs your answer
 
-- Title **Claude needs your answer**. First line: "Answer what you can, then press Update the packet. Anything you leave blank stays on the list for later."
-- **Questions for you · 3 of 12 answered**: numbered, those needed before filing first (marked so); each shows its question, a dim line of detail, and its own answer box, labelled and keyed by its question, so two questions never share a box. When Claude has a recommendation, it shows dim ("Recommended: Yes. No extra fee with a pending I-485, and he can work while it's pending.") with **Use the recommendation**, which fills the box with "Go with your recommendation: …".
-- An answer box's **save** (or Enter) keeps the answer in the matter, so quitting Claude doesn't lose it, and shows "✓ Saved" under the box and "✓ Answer saved. Claude gets it when you press Update the packet." at the top (**Build packet** after a document review). Typed answers go with Update even unsaved; save is how the attorney sees that one landed.
-- **Waiting on the client**: bullets, no boxes, and "Client sent it? Add files…".
-- Setup problems show their fix with **Ask Claude to do it** and **Done — check again**, which says what it found ("Everything Claude needs is on this Mac now. Press Update the packet…", or what's still missing). With only setup problems, the lead line says so instead of asking for answers.
-- Main action **Update the packet: with your answers**.
+- Heading **Your judgment is needed**. First line: "Answer what you can on Questions, then press Update the packet. Anything you leave blank stays on the list for later."
+- Main action **Review questions** ("2 questions · 0 answered"), which opens the Questions tab, where the answer boxes are (below); beside it **Update the packet: with your answers**.
+- Setup problems show their fix on the Overview, with **Ask Claude to do it** and **Done — check again**, which says what it found ("Everything Claude needs is on this Mac now. Press Update the packet…", or what's still missing). With only setup problems, the heading is "Something on this Mac needs setting up", the lead line says so instead of asking for answers, and Update the packet is the main action.
+- What the client owes, from Claude's questions, is on Questions under **Waiting on the client**: bullets, no boxes, and "Client sent it? Add files…".
 
 ## Redo, Review the documents again, Tell Claude what to change
 
@@ -231,7 +243,7 @@ One screen for doing work again, reached from Redo from here on Packet, Review t
 - **Redo Forms**: "Claude redoes Forms and every step after it: Forms review, Cover letter, … Document review stays as it is. About 1 h 14 min, in the background. The current files stay in the folder until Claude replaces them."
 - **Redo** a review step (Forms review, Letter review, Final review) adds: "Forms review is done fresh and in full: Claude checks everything again, not only what changed since the last review, and reads the earlier findings only as a reference."
 - **Review the documents again** (only the review has run): "Claude re-reads every document in the matter, including any you've added since, and rewrites what's missing, the memo and the client request. It stops before the forms." After a build, Document review's Redo from here is a redo of every step.
-- **Tell Claude what to change**: "Claude works in what you write below: it redoes the steps your change affects, checks the packet again, and updates What's left, the memo and the client request."
+- **Tell Claude what to change**: "Claude works in what you write below: it redoes the steps your change affects, checks the packet again, and updates Questions, the memo and the client request."
 - "It also works in the 2 new files and your 3 answers." when there are any.
 - A box: "Anything Claude should know? (optional)" for a redo, "What should Claude change?" for a change, which needs words (or new files or answers) before it starts.
 - **Redo from Forms** / **Review the documents again** / **Update the packet**, with the time; **Cancel**: "Nothing changes", back to where the attorney came from. Starting it opens the matter page, Claude at work.
@@ -240,33 +252,36 @@ One screen for doing work again, reached from Redo from here on Packet, Review t
 
 From More you can do. "Now: I-130 / I-485 immediate relative · New filing", then what happens: before anything has run, "this only changes what Claude will build"; after, "The steps start over for the new case, and your documents stay. The current packet, memo and open items are kept in the matter folder (output › earlier), not deleted." The matter keeps its name. The case list, posture and How it is filed as on New matter, starting on the current choices. **Change and start over** (or **Save**) "As N-400 naturalization" · **Cancel**. Changing only how it is filed, or protection, saves at once and starts nothing over. With nothing changed, the press says so and does nothing. Afterwards the matter page has **Show the earlier work in Finder**, and the earlier case's report and answers are gone from it. A folder made outside the app chooses its posture on its first card too.
 
-## What's left
+## Questions
 
-The open items, grouped by who acts: **Your decisions**, **From the client**, **For you to do**, **Risks to weigh**. Each item has its title, one or two lines on why it matters, and "Needed before filing" when it is. Each item has a way to act on it:
+The tab **Questions & missing evidence**, with a chip "2 needed before filing", the count ("3 open items, 2 needed before filing"), and "Save your decisions here, then update the packet to apply them." (before a build: "they go with the build").
 
-- from the client, a document: **Received — Add files…**, which then shows the matter page, where the press that works them in is
+**Attorney decisions · 3 of 12 answered**: every question only the attorney can answer, Claude's and the open items' alike, each once, numbered 01, 02… in the accent, those needed before filing first (marked so, the rest "Not needed before filing"). Each shows its question, a dim line of detail, and when Claude has a recommendation, a **Suggested approach** box (on the surface, a rule at its left: "Recommended: Yes. No extra fee with a pending I-485…") with **Use the recommendation**, which saves "Go with your recommendation: …". Then its own answer box, labelled "Your answer to question 1" and keyed by its question, so two questions never share a box, with **Save answer** under it. A save (or Enter) keeps the answer in the matter, so quitting Claude doesn't lose it, and shows "✓ Saved" beside the button and "✓ Answer saved. Claude gets it when you press Update the packet." at the top (**Build packet** after a document review). Typed answers go with Update even unsaved; save is how the attorney sees that one landed. While Claude works, the questions show without boxes: "You can answer it here once Claude has finished." Questions Claude asked only in its report get one box each (or one box for them all when they can't be told apart). Each decision has **Ask Claude about this**.
+
+Then the other open items, grouped by who acts: **From the client**, **For you to do**, **Risks to weigh**, then **Waiting on the client** for what Claude asked of the client outside the list. Each item has its title, one or two lines on why it matters, and "Needed before filing" when it is. Each item has a way to act on it:
+
+- from the client, a document: **Received — Add files…**, which then shows the Overview, where the press that works them in is
 - from the client, a question: **The client answered — tell Claude**, which opens Tell Claude what to change with the question already written
 - for you to do: **Mark done**
-- decisions: **Answer**, which opens the matter page with its box in view and the cursor in it ("Answer it on the matter page once Claude has finished" while Claude works)
 - risks: **Accept this risk**, which resolves it
 - items about Your details link there.
 - an item Claude listed without an id can't be marked here: the press says so, and to ask Claude to do it.
 - every item: **Ask Claude about this**, which puts the matter, the item and a first question in the chat box for the attorney to change or send ("Ask Senior Associate about Garcia I-130 I-485, about "Include an I-765…?": Help me decide. What are the options, and the risk of each?"), with "Your question is in the chat box below. Change it if you like, then press Enter." Nothing is sent.
 
-Each press is named for its item ("Mark done: Sign the G-28"), so a screen reader tells them apart. A list Claude wrote that can't be read says so ("Claude's list of open items can't be read"), here and in the band, with **Ask Claude to do it** to rewrite it, never as no list yet. At the foot: **Copy the client request** (plain text: no Markdown symbols, numbering and bullets kept), **Copy it in Spanish** for each other language it was written in, **Show the client request**, and **Resolved (3) ›**, which lists what's settled, each with how it was resolved and **Reopen** ("Back on the list. Claude takes it up again on the next update."). Mark done confirms on the page and says where Reopen is.
+Each press is named for its item ("Mark done: Sign the G-28", "Save answer: Include an I-765…?"), so a screen reader tells them apart. A list Claude wrote that can't be read says so ("Claude's list of open items can't be read"), here and on the Overview, with **Ask Claude to do it** to rewrite it, never as no list yet. Then **Copy the client request** (plain text: no Markdown symbols, numbering and bullets kept), **Copy it in Spanish** for each other language it was written in, **Show the client request**, and **Resolved (3) ›**, which lists what's settled, each with how it was resolved and **Reopen** ("Back on the list. Claude takes it up again on the next update."). Mark done confirms on the page and says where Reopen is. At the foot, under a rule, **Ready to use your answers?** "Saved answers are worked in the next time you update the packet." with **Update the packet with saved answers** (before a build, **Build packet**: "Your saved answers go with the build").
 
-## Client request
+## Memo & request
 
-**Show the client request** reads it right here, the way the attorney memo is read: no other app opens. It's reachable from the matter page's Client request row, What's left, and the memo. Band subtitle "Client request"; the request as formatted text; main action **Copy the client request** ("Plain text, ready to paste into an email"), and **Copy it in Spanish** for each other language it was written in; "Claude rewrites it after every document review and update." Then **Also write it in**: English only, Spanish, Portuguese, French, Haitian Creole, Vietnamese, Chinese, Other… (a box for any other language). Claude writes it in that language too from the next document review or update, and always in English for the attorney. The way back is to the screen it was opened from.
+One tab for the two documents Claude writes for the attorney, read right here, never in another app. At its top, a switch of two: **Attorney memo** · **Client request** (the one shown filled in navy). Each document is drawn on a card on the surface, by the app's own reader: headings in navy, the text in ink, bulleted and numbered lists, bold and italic, tables as aligned rows, notes with an accent rule, links as their words with the address after them. It never uses the host's Markdown, which takes no colour.
 
-## Attorney memo
+**Attorney memo**: eyebrow ATTORNEY WORK PRODUCT, then the memo. Its status line reads "**Draft packet — 6 things are needed before filing**" or "**Ready to file**". Then the bottom line (verdict first), what's needed before filing (from the client, your decisions, for you to do, with counts that add up), what's not needed before filing, the case assessment and the officer's strongest objection, the judgment calls made, filing logistics, sources checked, and how this was checked. Beside the switch: **Copy memo** (plain text) and **Open the memo file**, which opens the memo's PDF (the Markdown when the PDF is missing or older). Below it: **Copy the client request**.
 
-The memo, rendered in the app. Its status line reads "**Draft packet — 6 things are needed before filing**" or "**Ready to file**". Then the bottom line (verdict first), what's needed before filing (from the client, your decisions, for you to do, with counts that add up), what's not needed before filing, the case assessment and the officer's strongest objection, the judgment calls made, filing logistics, sources checked, and how this was checked. Below it: **Open the memo file**, which opens the memo's PDF (the Markdown when the PDF is missing or older), and **Copy the client request**. The client request has a PDF beside it too.
+**Client request**: eyebrow FOR THE CLIENT, then the request; main action **Copy the client request** ("Plain text, ready to paste into an email"), and **Copy it in Spanish** for each other language it was written in; "Claude rewrites it after every document review and update." Then **Also write it in**: English only, Spanish, Portuguese, French, Haitian Creole, Vietnamese, Chinese, Other… (a box for any other language). Claude writes it in that language too from the next document review or update, and always in English for the attorney. Show the client request, on Questions, opens it here.
 
 ## Documents
 
-- Header: "450 files · showing the 300 most recent" when the list is capped.
-- Grouped by folder, each heading with its count, newest first. The first 8 files per folder, then "Show all 64".
+- **Source documents**, then "4 files in the matter folder" ("450 files · showing the 300 most recent" when the list is capped).
+- Grouped by folder, each heading with its count and a rule, each file a row between rules, newest first. The first 8 files per folder, then "Show all 64". A file new or replaced since Claude last looked carries a chip, "new" or "changed".
 - At the top: Add files…, Add a folder…. Foot: "Open the matter folder in Finder to see every file."
 - When files arrived since Claude last looked, the press that works them in is here too: "2 new files since Claude reviewed the documents." **Review the documents again** (or **Update the packet** after a build) · **Add more files…**.
 - A file's name opens it. **Remove** (named "Remove Passport.pdf") asks on its row ("Take Passport.pdf out of the matter? It's kept, and Put back returns it.") and moves it to the matter's output/removed documents, where Claude doesn't read it. **Removed · 2** lists them, each with **Put back**. Neither Remove nor Put back is offered while Claude works.
@@ -275,11 +290,11 @@ The memo, rendered in the app. Its status line reads "**Draft packet — 6 thing
 
 ## Packet
 
-Every step with its state (done, in progress, skipped, not started) and one line on what it does ("Fills the current USCIS forms from the documents, leaving blank anything the record doesn't support."). Every step that has run has **Redo from here ›** (**Review again ›** for the document review when nothing else has run), except while Claude works. Then the reviewer notes in plain words only (important, worth fixing, minor, check by hand, note; to fix: you, the client or Claude) and, for a risk the officer's review found, the likely outcome ("RFE likely"); no review code ever shows, and a note the officer found approvable isn't an open note. Past 40, "…and 5 more. The memo lists every one."; each with **Ask Claude about this** ("Is this right, and how should we fix it?"), as on What's left. Then **Files for this matter**: the packet, the letter, each form (each opens on its own), **Print the filing checklist** once it exists, **Show the files to upload in Finder** for a matter filed online (with `Upload map.md` among them, saying where each file goes in the USCIS account), **Open the paper part** when a split filing has one, and **Show files in Finder**. The packet row reads "Draft built · 6 needed before filing" when an open-items list exists. Clean up working files is on the matter page (More you can do), once every step is done.
+First **Files for this matter**, once there are any (below). Then **Steps**: "3 of 10 steps done", the step track, and every step with its numbered marker (navy when done, the accent when running, outlined when not started), its state (done, in progress, skipped, not started) and one line on what it does ("Fills the current USCIS forms from the documents, leaving blank anything the record doesn't support."). Every step that has run has **Redo from here ›** (**Review again ›** for the document review when nothing else has run), except while Claude works. Then the reviewer notes in plain words only (important, worth fixing, minor, check by hand, note; to fix: you, the client or Claude) and, for a risk the officer's review found, the likely outcome ("RFE likely"); no review code ever shows, and a note the officer found approvable isn't an open note. Past 40, "…and 5 more. The memo lists every one."; each with **Ask Claude about this** ("Is this right, and how should we fix it?"), as on Questions. **Files for this matter**: the packet, the letter, each form (each opens on its own), **Print the filing checklist** once it exists, **Show the files to upload in Finder** for a matter filed online (with `Upload map.md` among them, saying where each file goes in the USCIS account), **Open the paper part** when a split filing has one, and **Show files in Finder**. Matter details, on the Overview, reads "Draft built · 6 needed before filing" when an open-items list exists. Clean up working files is on the Overview (More you can do), once every step is done.
 
 ## Help
 
-A foot link on every screen: "Help · Senior Associate 1.0.0".
+**Help** in the header of every screen; the page's line says the version ("Senior Associate 1.0.0").
 
 - How it works, in four steps.
 - **How do I…**: ask about a case, research a point, or have one thing changed; add documents after a review or a build; have Claude look at the documents again; fix something in the draft; redo one part; change the case type or posture; take out a document; undo Mark done; stop Claude; undo Mark as filed. Each is the question in bold and the presses, in one line.
@@ -290,7 +305,7 @@ A foot link on every screen: "Help · Senior Associate 1.0.0".
 
 ## Status messages
 
-A note appears right under the top navigation, bordered, in the default text color, with a "⚠" or "⏳" prefix and **Dismiss**. It clears on every navigation and after any successful action. Errors are friendly sentences, whether the server phrased them or the app's fallback did; anything of a program's (an error's name, a file path, a code) is never shown. While a Finder picker is open the note says so with **Close the picker**, which closes it and gives the page back at once. When the quiet refresh fails twice in a row, the note says why ("…isn't in your Matters folder anymore", with **Go back to Matters**) instead of the page going silent.
+A note appears at the top of the page, under the title (and a matter's tabs), on the surface with a bar at its left edge (green when it confirms, amber when it warns, navy while something waits), with a "⚠" or "⏳" prefix and **Dismiss**. It clears on every navigation and after any successful action. Errors are friendly sentences, whether the server phrased them or the app's fallback did; anything of a program's (an error's name, a file path, a code) is never shown. While a Finder picker is open the note says so with **Close the picker**, which closes it and gives the page back at once. When the quiet refresh fails twice in a row, the note says why ("…isn't in your Matters folder anymore", with **Go back to Matters**) instead of the page going silent.
 
 - "Senior Associate can't save in <folder>. Choose another matters folder."
 - "Allow Claude to open the file picker: System Settings › Privacy & Security › Automation › Claude › turn on System Events, then try again."
@@ -299,7 +314,7 @@ A note appears right under the top navigation, bordered, in the default text col
 
 ## Timeline
 
-From the matter page's **Timeline** row: what happened on the matter, newest first, grouped by day (Today, Yesterday, the date), each line a time and plain words ("You: Answer saved.", "Claude: Forms review passed."). A document is never named there ("You took out a document."): a file name often carries the client's name. The Documents screen names it, under Removed. Nothing is recorded before the first run of this version.
+The matter's **Timeline** tab: what happened on the matter, newest first, grouped by day (Today, Yesterday, the date), each line a time and plain words ("You: Answer saved.", "Claude: Forms review passed."). A document is never named there ("You took out a document."): a file name often carries the client's name. The Documents screen names it, under Removed. Nothing is recorded before the first run of this version.
 
 ## Inline /matters and the side panel
 
@@ -307,13 +322,13 @@ Both placements (the row under `/matters`, and the side panel from **Open as sid
 
 ## Rules that hold everywhere
 
-- One main action per screen, Claude's own primary button, with at most one secondary beside it; a line under each says what it does. Navigation is text with a chevron. Whole rows are pressable.
-- The way back is at the top left and at the foot of every screen.
+- One main action per screen, Claude's own button painted navy with white text, with at most one secondary beside it, outlined; a line under each says what it does. Links are navy text, quieter presses a muted grey. A row's name is its press.
+- The way back is at the top left of every screen ("Matters › …"), and the header reaches Matters, Your details, Setup and Help from anywhere.
 - Plain words, per the glossary. Agents' replies and the files they write follow it too.
 - Nothing greys out except the main buttons while a Mac picker is open (a second press would open a second picker) or a start is on its way (a second press would start a second Claude).
 - A press that can't be undone with one more press (Stop, Remove) asks on the spot, in a line with **Yes** and a way out; nothing else asks.
 - What the attorney did is confirmed on the page in green (added, removed, put back, marked done, reopened, stopped, saved), never only in a toast.
 - The app never submits a prompt the attorney didn't ask for. A question typed into Ask Claude about this matter, a suggested question pressed, and Ask Claude to do it go to the chat as the attorney's own words; Ask Claude about this only fills the chat box. Work runs as the app's own background agent; when that can't start, the request waits in the chat box for the attorney to send.
-- Contrast holds in light and dark: text is never drawn in a brand colour; it is the theme's own (success, warning, error, a quieter grey) or plain text in a weight. Brand colours are fills only, each with text on it that reads at 4.5:1 (navy on amber and the track, white on the rest).
+- Contrast holds in light and dark because the page is its own paper: every text has a paper colour of its own, never the host's, and every pair reads at 4.5:1 or more (hooks/theme.ts measures each: ink 8.5:1 on the paper, the muted grey 6.1:1, navy 13.6:1, the accent's darker shade 5.5:1, green 5.9:1, amber 5.4:1, red 6.4:1, white on navy 14.8:1). Passim's orange itself (4.1:1) draws only bars, underlines and the track, never text. Text fields and pickers are the host's, in a well of the host's own background colour, so their labels and text read in either theme.
 - Everything can be reached with the keyboard and read by a screen reader: every box has a label, every press has a name, repeated presses are named for their item, and a choice says it is selected.
 - **Ask Claude about this matter** sends the attorney's question to the chat as their own words; **Ask Claude about this**, beside an item or a review note, fills the chat box and sends nothing.
