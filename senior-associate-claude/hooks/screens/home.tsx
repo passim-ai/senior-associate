@@ -8,6 +8,7 @@ import { PANE, updateFilter } from '../state'
 import { GROUP_TITLE, matterStatus } from '../status'
 import type { Group, MatterStatus } from '../status'
 import { nowMs, plural, when } from '../words'
+import { AMBER, MUTED, NAVY } from '../theme'
 
 // The list's orders, by the words its chooser shows. Rows stay in their status groups; the order is within each.
 export const SORTS: { id: string; label: string }[] = [
@@ -29,7 +30,7 @@ export function sortRows(rows: { m: MatterRow; s: MatterStatus }[], sort: string
 }
 
 export async function homeScreen($: EngineInterface, x: Ctx): Promise<JSX.Element> {
-  const { Box, Text, Button, Input, site, p, allRuns, pr, q, st, open, actions, band, topNav, card, row, page, body, folder, noProfile, tip, chips, sort } = x
+  const { Box, Text, Input, site, p, allRuns, pr, q, st, open, actions, button, lone, title, card, row, page, body, field, folder, noProfile, tip, chips, sort } = x
   const now = nowMs()
   const everything = p.matters.map(m => ({ m, s: matterStatus(m, allRuns[m.path], now) }))
   const live = everything.filter(r => !r.m.archived)
@@ -66,37 +67,34 @@ export async function homeScreen($: EngineInterface, x: Ctx): Promise<JSX.Elemen
     )
   }
 
-  // Your details, with a gentle nudge until they're filled in.
-  const detailsLink = (
-    <Box key="details" flexDirection="row" gap="sm" flexWrap="wrap">
-      <Button key="profile" plain dimColor={!noProfile} onPress={() => perform($, 'profile')}>
-        <Text weight={noProfile ? 'medium' : 'regular'}>{noProfile ? 'Add your details' : 'Your details'}</Text>
-      </Button>
-      {noProfile ? <Text dimColor>so the G-28 and the letter carry your name and bar number</Text> : null}
-    </Box>
-  )
+  // Your details (in the header), with a gentle nudge here until they're filled in.
+  const detailsLink = noProfile
+    ? <Box key="details" flexDirection="row" columnGap="sm" rowGap="xs" flexWrap="wrap" alignItems="center">
+        {button('details-nudge', 'Add your details', () => { void perform($, 'profile') }, 'link')}
+        <Text color={MUTED} size="footnote">so the G-28 and the letter carry your name and bar number</Text>
+      </Box>
+    : null
   const setupWarning = requiredMissing(st).length
-    ? <Box key="setup-warn" flexDirection="row" gap="sm" flexWrap="wrap">
-        <Text>{`⚠ Senior Associate still needs ${requiredMissing(st).map(m => m.label).join(', ')} on this Mac.`}</Text>
-        <Button key="setup-link" plain onPress={() => perform($, 'setup')}><Text weight="medium">Check my setup</Text></Button>
+    ? <Box key="setup-warn" flexDirection="row" columnGap="sm" rowGap="xs" flexWrap="wrap" alignItems="center">
+        <Text color={AMBER}>{`⚠ Senior Associate still needs ${requiredMissing(st).map(m => m.label).join(', ')} on this Mac.`}</Text>
+        {button('setup-link', 'Check my setup', () => { void perform($, 'setup') }, 'link')}
       </Box>
     : null
 
   const newMatter = { id: 'new', label: 'New matter', kind: 'primary' as const, detail: 'Start with the client’s name', hotkey: 'n' }
   if (everything.length === 0) {
     return page(
-      [band('Matters', 'No matters yet.'), site === 'inline' ? topNav(null, '') : null],
+      [title('Matters', 'No matters yet.', actions([newMatter]))],
       tip,
       body(
-        actions([newMatter]),
         setupWarning,
         detailsLink,
-        folder ? <Text key="where" dimColor>Matters are kept in {folder}.</Text> : null,
+        folder ? <Text key="where" dimColor size="footnote">Matters are kept in {folder}.</Text> : null,
       ),
     )
   }
 
-  // The band says what needs the attorney: questions only they can answer, a stop, a start waiting on their Enter.
+  // The line under the title says what needs the attorney: questions only they can answer, a stop, a start waiting on their Enter.
   const count = (phase: string) => live.filter(r => r.s.phase === phase).length
   const summary = [
     count('needs_you') ? `${count('needs_you')} need${count('needs_you') === 1 ? 's' : ''} your answer` : '',
@@ -115,59 +113,56 @@ export async function homeScreen($: EngineInterface, x: Ctx): Promise<JSX.Elemen
     if (g === 'filed') {
       return (
         <Box key={`grp-${g}`} flexDirection="column" gap="sm">
-          <Box flexDirection="row"><Button key="filed-group" plain label={`Filed, ${rows.length}, ${filedOpen || needle ? 'shown' : 'folded'}`} onPress={() => perform($, 'filed-group')}><Text weight="semibold">{`${GROUP_TITLE[g]} (${rows.length}) ${filedOpen ? '⌄' : '›'}`}</Text></Button></Box>
+          {lone('filed-group', button('filed-group', `${GROUP_TITLE[g]} (${rows.length}) ${filedOpen ? '⌄' : '›'}`, () => { void perform($, 'filed-group') }, 'link', { name: `Filed, ${rows.length}, ${filedOpen || needle ? 'shown' : 'folded'}` }))}
           {filedOpen || needle ? rows.map(rowFor) : null}
         </Box>
       )
     }
     return (
       <Box key={`grp-${g}`} flexDirection="column" gap="sm">
-        <Text size="heading" weight="semibold">{GROUP_TITLE[g]}</Text>
+        <Text size="heading" weight="semibold" color={NAVY}>{GROUP_TITLE[g]}</Text>
         {rows.map(rowFor)}
       </Box>
     )
   }
 
   return page(
-    [band('Matters', summary), site === 'inline' ? topNav(null, '') : null],
+    [title('Matters', summary, actions([newMatter]))],
     tip,
     body(
       lastRow
         ? card('Pick up where you left off', [
             <Box key="last" flexDirection="column" gap="xs">
-              <Text size="heading" weight="semibold">{lastRow.m.name}</Text>
-              <Text dimColor>{[lastRow.s.label, nextStep(lastRow.m, lastRow.s), lastRow.m.updated_at ? `updated ${when(lastRow.m.updated_at)}` : ''].filter(Boolean).join(' · ')}</Text>
+              <Text size="heading" weight="semibold" color={NAVY}>{lastRow.m.name}</Text>
+              <Text color={MUTED} size="footnote">{[lastRow.s.label, nextStep(lastRow.m, lastRow.s), lastRow.m.updated_at ? `updated ${when(lastRow.m.updated_at)}` : ''].filter(Boolean).join(' · ')}</Text>
             </Box>,
-            actions([
-              { id: `open:${lastRow.m.path}`, label: `Open ${lastRow.m.name}`, kind: 'primary', detail: nextStep(lastRow.m, lastRow.s) },
-              { ...newMatter, kind: 'secondary' },
-            ]),
+            lone('last-open', button(`main:open:${lastRow.m.path}`, `Open ${lastRow.m.name}`, () => { void perform($, `open:${lastRow.m.path}`) }, 'primary')),
           ], undefined, 'card-last')
-        : actions([newMatter]),
+        : null,
       setupWarning,
+      detailsLink,
       live.length > MANY
         ? <Box key="find" flexDirection="column" gap="xs">
-            <Input key="search" label="Find a matter" placeholder="A client’s name or a case type" submitLabel="find" value={q || undefined} onInput={value => { void updateFilter($, () => value) }} onSubmit={value => { void updateFilter($, () => value) }} />
-            {site === 'pane' ? <Button key="find-key" plain dimColor hotkey="f" label="Find a matter (f)" onPress={() => { void $.ui.focus({ requestId: PANE, key: 'search' }).catch(() => undefined) }}>Press f to find a matter</Button> : null}
+            {field(<Input key="search" label="Find a matter" placeholder="A client’s name or a case type" submitLabel="find" value={q || undefined} onInput={value => { void updateFilter($, () => value) }} onSubmit={value => { void updateFilter($, () => value) }} />)}
+            {site === 'pane' ? lone('find-key', button('find-key', 'Press f to find a matter', () => { void $.ui.focus({ requestId: PANE, key: 'search' }).catch(() => undefined) }, 'quiet', { name: 'Find a matter (f)', hotkey: 'f', small: true })) : null}
           </Box>
         : null,
       live.length > 1
-        ? <Box key="sort" flexDirection="row" flexWrap="wrap" gap="md" alignItems="center">
-            <Text dimColor>Sort:</Text>
+        ? <Box key="sort" flexDirection="row" flexWrap="wrap" columnGap="md" rowGap="xs" alignItems="center">
+            <Text color={MUTED} size="footnote">Sort:</Text>
             {chips('sort-chips', SORTS.map(s => ({ id: `sort:${s.id}`, label: s.label, chosen: sort === s.id })))}
           </Box>
         : null,
-      <Box key="list" flexDirection="column" gap="sm">
+      <Box key="list" flexDirection="column" gap="lg">
         {needle && shown.length === 0 && shownArchived.length === 0 ? <Text dimColor>No matter matches “{q}”.</Text> : null}
         {GROUP_ORDER.map(group)}
         {shownArchived.length
           ? <Box key="grp-archived" flexDirection="column" gap="sm">
-              <Box flexDirection="row"><Button key="archived-group" plain label={`Archived, ${shownArchived.length}, ${archivedOpen || needle ? 'shown' : 'folded'}`} onPress={() => perform($, 'archived-group')}><Text weight="semibold">{`Archived (${shownArchived.length}) ${archivedOpen ? '⌄' : '›'}`}</Text></Button></Box>
+              {lone('archived-group', button('archived-group', `Archived (${shownArchived.length}) ${archivedOpen ? '⌄' : '›'}`, () => { void perform($, 'archived-group') }, 'link', { name: `Archived, ${shownArchived.length}, ${archivedOpen || needle ? 'shown' : 'folded'}` }))}
               {archivedOpen || needle ? shownArchived.map(rowFor) : null}
             </Box>
           : null}
       </Box>,
-      detailsLink,
     ),
   )
 }

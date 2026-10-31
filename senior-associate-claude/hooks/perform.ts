@@ -130,6 +130,23 @@ export async function copyRequest($: EngineInterface, surface?: string, language
   }
 }
 
+// The attorney memo as plain text, for an email or a note to the file.
+export async function copyMemo($: EngineInterface, surface?: string) {
+  const text = (await readPayload($))?.matter?.memo_text ?? ''
+  if (!text.trim()) {
+    await setNote($, 'There’s no memo yet. Claude writes it at the end of every build or document review.')
+    return
+  }
+  try {
+    const res = await $.ui.copy(surface ? { text: plainText(text), surface: surface as never } : { text: plainText(text) })
+    if (res.isCopied) await setNote($, 'Attorney memo copied.', 'ok')
+    else await setNote($, COPY_FAILED)
+  } catch (err) {
+    session.lastRaw = err instanceof Error ? err.message : String(err)
+    await setNote($, COPY_FAILED)
+  }
+}
+
 // A setup task goes to Claude in the chat, as if the attorney had typed it. Claude's setup skill does it there, asking
 // before each command, so nobody opens Terminal. If the chat won't take it, the request waits in the chat box.
 export async function askClaude($: EngineInterface, ask: string) {
@@ -359,6 +376,9 @@ async function press($: EngineInterface, id: string): Promise<void> {
     case 'close-picker':
       return closePicker($)
     case 'lang-other':
+    case 'sec-instructions':
+    case 'sec-more':
+    case 'sec-details':
     case 'more-types':
     case 'filed-group':
     case 'archived-group':
@@ -421,8 +441,11 @@ async function press($: EngineInterface, id: string): Promise<void> {
   if (id.startsWith('rec:')) {
     // By the question's key, not its place: a refresh may have reordered the questions since the page was drawn.
     const need = needsOf(c).find(n => n.qkey === id.slice(4))
-    if (!need?.recommendation) return
-    return saveAnswer($, c, need.qkey, need.question, `Go with your recommendation: ${need.recommendation}`, 'Update the packet')
+    if (need?.recommendation) return saveAnswer($, c, need.qkey, need.question, `Go with your recommendation: ${need.recommendation}`, 'Update the packet')
+    // A decision on the open items list that Claude didn't also ask: its own recommendation.
+    const item = c.open_items?.open.find(it => it.id === id.slice(4) && it.type === 'attorney_decision')
+    if (!item?.recommendation) return
+    return saveAnswer($, c, item.id, item.question || item.title, `Go with your recommendation: ${brief(item.recommendation, 160)}`, 'Update the packet')
   }
   if (id.startsWith('done:')) {
     const itemId = id.slice(5)
@@ -464,17 +487,19 @@ async function press($: EngineInterface, id: string): Promise<void> {
     await updateRedoAt($, () => ({ matter: c.path, stage: id.slice(5), from: MATTER_VIEWS.includes(from) && from !== 'redo' ? from : 'matter' }))
     return go($, 'redo')
   }
-  if (id.startsWith('answer:')) {
-    // The decision's own box on the matter page, brought into view with the cursor in it. Its key is the item's id
-    // (CONTRACTS §5). Where the app isn't the side panel there is nothing of its own to scroll: the page opens at the top.
-    const box = `answer-${id.slice(7)}`
-    await go($, 'matter')
-    await $.ui.scroll({ to: { key: box }, in: PANE, block: 'center' }).catch(() => undefined)
-    await $.ui.focus({ requestId: PANE, key: box }).catch(() => undefined)
+  if (id.startsWith('answer:') || id.startsWith('view:')) {
+    // A question's own box on the Questions tab (its key is the item's id, CONTRACTS §5), or an open item there,
+    // brought into view; a box gets the cursor too. Where the app isn't the side panel there is nothing of its own to
+    // scroll: the tab opens at the top.
+    const answer = id.startsWith('answer:')
+    const target = answer ? `answer-${id.slice(7)}` : `item-${id.slice(5)}`
+    await go($, 'items')
+    await $.ui.scroll({ to: { key: target }, in: PANE, block: 'center' }).catch(() => undefined)
+    if (answer) await $.ui.focus({ requestId: PANE, key: target }).catch(() => undefined)
     return
   }
   if (id.startsWith('recv:')) {
-    // Added from What's left: the matter page is where the press that works them in is.
+    // Added from Questions: the Overview is where the press that works them in is.
     await perform($, 'add-files')
     const n = await readNote($)
     if (n.tone === 'ok') {

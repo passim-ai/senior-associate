@@ -1,7 +1,7 @@
 // Reading a matter's card: where the build stands, what Claude needs, and the words for each state.
 import type { Card, Draft, MatterFile, MatterRow, Payload, Profile, ReviewNote, Run, Setup } from '../types'
 import { typed } from './state'
-import { ERROR_TEXT, QUIET_TEXT, STAGE_FILL, TRACK, WARN_TEXT } from './theme'
+import { ERROR_TEXT, LINE, QUIET_TEXT, STAGE_FILL, WARN_TEXT } from './theme'
 import { andList, brief, capitalizeWords, duration, plural } from './words'
 
 export const MANY = 6 // matters before a search field appears
@@ -150,7 +150,7 @@ export function noteLine(n: ReviewNote): string {
   return [first, n.outcome_word, n.stage_label ? `found in ${n.stage_label}` : '', n.owner_word ? `to fix: ${n.owner_word}` : ''].filter(Boolean).join(' · ')
 }
 
-// What's left, grouped by who acts. The open items' types, in the order an attorney works through them.
+// The Questions tab's groups, by who acts. The open items' types, in the order an attorney works through them.
 export const ITEM_GROUPS: { title: string; types: string[] }[] = [
   { title: 'Your decisions', types: ['attorney_decision'] },
   { title: 'From the client', types: ['client_document', 'client_question'] },
@@ -288,7 +288,7 @@ export function neededParts(n: Needed): string {
   ].filter(Boolean))
 }
 
-// "3 from the client · 1 decision · 2 for you to do", for the What's left row.
+// "3 from the client · 1 decision · 2 for you to do", for the matter's details.
 export function itemsLine(counts: Record<string, number>): string {
   const n = (types: string[]) => types.reduce((sum, t) => sum + (counts[t] ?? 0), 0)
   return [
@@ -306,7 +306,7 @@ export function trackSvg(stages: { status: string }[]): string {
   const gap = 10
   const seg = (width - gap * (n - 1)) / n
   const rects = stages
-    .map((s, i) => `<rect x="${(i * (seg + gap)).toFixed(1)}" y="0" width="${seg.toFixed(1)}" height="14" rx="7" fill="${STAGE_FILL[s.status] ?? TRACK}"/>`)
+    .map((s, i) => `<rect x="${(i * (seg + gap)).toFixed(1)}" y="0" width="${seg.toFixed(1)}" height="14" rx="7" fill="${STAGE_FILL[s.status] ?? LINE}"/>`)
     .join('')
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="14" viewBox="0 0 ${width} 14" role="img" aria-label="build progress">${rects}</svg>`
 }

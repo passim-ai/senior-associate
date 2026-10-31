@@ -509,7 +509,7 @@ export const ANA = { attorney_name: 'Ana Ruiz', bar_number: '24012345' }
 export const DOCS = ['Passport.pdf', 'Marriage certificate.pdf']
 export const OPTS = (extra: Record<string, unknown> = {}) => ({ timeoutMs: 20000, options: { matters_root: ROOT, exemplars_dir: `${ROOT}/Exemplar`, ...extra } })
 
-// The screen's main actions are the host's own buttons, keyed `main:<id>`, each with a line under it on what it does.
+// The screen's main actions are buttons keyed `main:<id>`, each with a line under it on what it does.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function act(ui: any, id: string) {
   return ui.press({ plugin: PLUGIN, key: `main:${id}` })
@@ -550,11 +550,25 @@ export async function mount($: unknown, clock: Clock) {
   const ui: any = await ($ as { ui: { mount: (a: never) => Promise<unknown> } }).ui.mount({ ...PANE, props: PANE.props } as never)
   await clock.advance(10)
   await clock.settle()
+  // The Overview folds More you can do, the attorney instructions and the matter's details: a press inside one opens
+  // it first, as the attorney would.
   const tap = async (key: string) => {
+    const section = /^do-/.test(key) ? 'sec-more' : /^(open-folder|open-deliverables|open-earlier)$/.test(key) ? 'sec-details' : ''
+    if (section && !(await ui.find({ type: 'Button', key })) && (await ui.find({ type: 'Button', key: section }))) {
+      await ui.press({ plugin: PLUGIN, key: section })
+      await clock.settle()
+    }
     await ui.press({ plugin: PLUGIN, key })
     await clock.settle()
   }
   return { ui, tap }
+}
+
+// Opens a folded section of the Overview (sec-more, sec-instructions, sec-details) unless it is open already.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function unfold(ui: any, tap: (key: string) => Promise<void>, section: string) {
+  const button = await ui.find({ type: 'Button', key: section })
+  if (button && /folded$/.test(String(button.props?.label ?? ''))) await tap(section)
 }
 
 // The app as most tests meet it: the stand-in world with these matters and the attorney's details, the welcome and

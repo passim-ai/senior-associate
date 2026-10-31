@@ -1,11 +1,11 @@
 // The app against what the real server sends (finding 54): every golden payload from server/tools/golden_payloads.py
 // (tests/golden.ts, written by tests/make-golden.sh), drawn the way the attorney meets it. Each matter shows the
-// server's status in its words, nothing of a program's, no text in a brand colour, and a way forward; the list puts
+// server's status in its words, nothing of a program's, every text in a paper colour of its own, and a way forward; the list puts
 // each row in its group; a start uses the brief start_run sends back.
 import type { On } from 'claude-code'
 import { expect, test } from 'claude-code/testing'
 import { GOLDEN } from './golden'
-import { GOOD_CHECKS, OPTS, PLUGIN, SEEN, act, answer, inActions, mount, open } from './world'
+import { GOOD_CHECKS, OPTS, PLUGIN, SEEN, answer, inActions, mount, open } from './world'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Ui = any
@@ -39,21 +39,24 @@ function golden(on: On, opened: string, spawned: { prompt?: string }[] = [], mov
   return { requests, spawned }
 }
 
+// Every text on the page, and those the host would colour itself: a Text with no colour of its own, a Button whose
+// label the host draws, or a Markdown. On the panel's paper the host's text colour turns light in a dark theme.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function walk(el: any, filled = false, out: { texts: string[]; hex: string[] } = { texts: [], hex: [] }) {
+function walk(el: any, out: { texts: string[]; hex: string[] } = { texts: [], hex: [] }) {
   if (!el || typeof el !== 'object') return out
-  const fill = filled || Boolean(el.props?.backgroundColor)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const own = (el.children ?? []).map((c: any) => (typeof c === 'string' ? c : '')).join('')
   if (el.type === 'Text') {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const text = (el.children ?? []).map((c: any) => (typeof c === 'string' ? c : '')).join('')
-    out.texts.push(text)
-    if (typeof el.props?.color === 'string' && el.props.color.startsWith('#') && !fill) out.hex.push(text)
+    out.texts.push(own)
+    if (!(typeof el.props?.color === 'string' && el.props.color.startsWith('#'))) out.hex.push(own)
   }
-  for (const child of el.children ?? []) walk(child, fill, out)
+  if (el.type === 'Button' && (!(el.children ?? []).length || own.trim())) out.hex.push(`button ${el.props?.key}`)
+  if (el.type === 'Markdown') out.hex.push('markdown')
+  for (const child of el.children ?? []) walk(child, out)
   return out
 }
 
-test('every matter the real server sends: its status in its words, nothing raw, no brand-coloured text, a way forward', OPTS(), async ($, on) => {
+test('every matter the real server sends: its status in its words, nothing raw, no text in the host’s colour, a way forward', OPTS(), async ($, on) => {
   const { clock } = await open($, on)
   golden(on, '')
   const { ui, tap } = await mount($, clock)
@@ -68,11 +71,14 @@ test('every matter the real server sends: its status in its words, nothing raw, 
       await clock.settle()
     }
     await tap(`open:${c.path}`)
-    const { texts, hex } = walk(await ui.find({ type: 'Box' }))
+    const page = await ui.drawn()
+    expect([name, page.props?.backgroundColor]).toEqual([name, '#F7F5F1'])
+    const { texts, hex } = walk(page)
     expect([name, texts.includes(c.status.label)]).toEqual([name, true])
     expect([name, hex]).toEqual([name, []])
     expect([name, texts.filter(t => /_|That didn’t work|Traceback|\{|\/Users\//.test(t))]).toEqual([name, []])
-    const forward = (await ui.findAll({ type: 'Button' })).some((b: { key?: string }) => /^(main:|do-|watch|stop|unmark-filed|ask-fix)/.test(b.key ?? ''))
+    // A way forward: a main action, Claude's work to watch or stop, or More you can do (folded until asked for).
+    const forward = (await ui.findAll({ type: 'Button' })).some((b: { key?: string }) => /^(main:|do-|sec-more$|watch|stop|unmark-filed|ask-fix|not-working)/.test(b.key ?? ''))
     expect([name, forward]).toEqual([name, true])
   }
   await ui.unmount()
@@ -102,8 +108,8 @@ test('the real server’s matters, state by state: running steps, a stale lease,
   // The client request in Spanish too: it can be copied in either language.
   await visit('draft')
   expect(await inActions(ui, /^2 needed before filing$/)).toBeDefined()
-  await ui.press({ plugin: PLUGIN, key: 'request' }).catch(() => act(ui, 'request'))
-  await clock.settle()
+  await tap('memo')
+  await tap('request')
   expect(await ui.find({ type: 'Button', key: 'main:copy-request-lang:Spanish' })).toBeDefined()
   await ui.unmount()
 })

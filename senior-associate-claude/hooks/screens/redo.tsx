@@ -8,7 +8,7 @@ import { duration, nowMs, plural } from '../words'
 import { matterStatus, isBusy } from '../status'
 
 export async function redoScreen($: EngineInterface, x: Ctx, c: Card): Promise<JSX.Element> {
-  const { Text, Input, allRuns, savedAnswers, redoing, actions, card, savedMark, subpage } = x
+  const { Text, Input, allRuns, savedAnswers, redoing, actions, card, field, savedMark, subpage } = x
   const r = redoing && redoing.matter === c.path ? redoing : { matter: c.path, stage: '', from: 'matter' as View }
   const stages = c.progress.stages
   const at = stages.findIndex(s => s.id === r.stage)
@@ -28,7 +28,7 @@ export async function redoScreen($: EngineInterface, x: Ctx, c: Card): Promise<J
   const startLabel = !target ? 'Update the packet' : review ? 'Review the documents again' : `Redo from ${target.label}`
   const what: Kids = !target
     ? [
-        <Text key="w1">Claude works in what you write below: it redoes the steps your change affects, checks the packet again, and updates What’s left, the memo and the client request.</Text>,
+        <Text key="w1">Claude works in what you write below: it redoes the steps your change affects, checks the packet again, and updates Questions, the memo and the client request.</Text>,
         <Text key="w2" dimColor>A change to the letter takes about 20–30 minutes; a change to the forms can take an hour. It runs in the background, and nothing is filed or sent.</Text>,
       ]
     : review
@@ -44,13 +44,13 @@ export async function redoScreen($: EngineInterface, x: Ctx, c: Card): Promise<J
         ]
   const alsoIn = [worksIn(docs), answered ? `your ${plural(answered, 'answer', 'answers')}` : ''].filter(Boolean)
   if (alsoIn.length) what.push(<Text key="w4">{`It also works in ${alsoIn.join(' and ')}.`}</Text>)
-  const backLabel = r.from === 'packet' ? 'Packet' : r.from === 'documents' ? 'Documents' : r.from === 'items' ? 'What’s left' : c.name
+  const backLabel = r.from === 'packet' ? 'Packet' : r.from === 'documents' ? 'Documents' : r.from === 'items' ? 'Questions' : c.name
   const busyHere = isBusy(matterStatus(c, allRuns[c.path], nowMs()))
   return subpage(
     { title: c.name, subtitle: title, back: { id: 'redo-cancel', label: backLabel }, here: title },
     card('What happens', what),
     card(target ? 'Anything Claude should know? (optional)' : 'What should Claude change?', [
-      <Input
+      field(<Input
         key="redo-note"
         label={target ? 'Anything Claude should know' : 'What Claude should change'}
         placeholder={target ? 'e.g. Use the 2024 tax return, not the 2023 one' : 'e.g. Lead the letter with the joint lease, and use the newer bank statements'}
@@ -60,7 +60,7 @@ export async function redoScreen($: EngineInterface, x: Ctx, c: Card): Promise<J
         value={typed.redo || undefined}
         onInput={val => { typed.redo = val }}
         onSubmit={val => { typed.redo = val; typed.savedRedo = val; session.savedField = 'redo-note'; void setNote($, `Saved. Claude gets it when you press ${startLabel}.`, 'ok') }}
-      />,
+      />, 'field-redo'),
       savedMark('redo-note', typed.redo === typed.savedRedo),
     ]),
     busyHere

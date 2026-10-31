@@ -23,6 +23,7 @@ import { ensurePoll } from './runs'
 import { load, refresh } from './server'
 import { PANE, readAnswers, readBusy, readCaseMissing, readConfirm, readDocked, readDraft, readExpanded, readFilter, readGate, readNote, readPayload, readPrefs, readRedoAt, readRuns, readLaunching, readSetup, readSort, readView, session } from './state'
 import { clockNow } from './words'
+import { INK, LINE, NAVY, PAPER } from './theme'
 
 export async function draw($: EngineInterface, els: Els, site: 'pane' | 'inline'): Promise<JSX.Element> {
   const { Box, Text, Button } = els
@@ -53,7 +54,7 @@ export async function draw($: EngineInterface, els: Els, site: 'pane' | 'inline'
   const b = busy || (Boolean(p?.matter) && launching.includes(p!.matter!.path))
 
   const kit = makeKit($, els, site, v, p, n, b, allRuns, st)
-  const { band, status, body, actions } = kit
+  const { page, title, actions } = kit
   // ----- opening -----
 
   if (!p) {
@@ -65,12 +66,9 @@ export async function draw($: EngineInterface, els: Els, site: 'pane' | 'inline'
         if (first?.archived_count) await refresh($)
       })
     }
-    return (
-      <Box flexDirection="column" gap="xl" paddingBottom="lg">
-        {band('Senior Associate', n.text ? 'It couldn’t open this time.' : 'One moment…')}
-        {status}
-        {n.text !== '' ? body(actions([{ id: 'retry', label: 'Try again', kind: 'primary' }])) : null}
-      </Box>
+    return page(
+      [title('Senior Associate', n.text ? 'It couldn’t open this time.' : 'One moment…')],
+      n.text !== '' ? actions([{ id: 'retry', label: 'Try again', kind: 'primary' }]) : null,
     )
   }
 
@@ -87,15 +85,15 @@ export async function draw($: EngineInterface, els: Els, site: 'pane' | 'inline'
     }
     if (paneUp) {
       return (
-        <Box flexDirection="row" gap="lg" alignItems="center">
-          <Text>Senior Associate is open beside the chat.</Text>
-          <Button key="show-pane" plain onPress={() => perform($, 'dock')}><Text weight="medium">Show it</Text></Button>
+        <Box flexDirection="row" flexWrap="wrap" columnGap="lg" alignItems="center" backgroundColor={PAPER} borderStyle="round" borderColor={LINE} paddingX="lg" paddingY="sm">
+          <Text color={INK}>Senior Associate is open beside the chat.</Text>
+          <Button key="show-pane" plain onPress={() => perform($, 'dock')}><Text weight="medium" color={NAVY}>Show it</Text></Button>
         </Box>
       )
     }
   }
   const tip = site === 'inline' && pr.inlineUses <= 2
-    ? <Box key="tip" paddingX="xl"><Text dimColor>Tip: Open as side panel keeps this beside your chat while Claude works.</Text></Box>
+    ? <Text key="tip" dimColor size="footnote">Tip: Open as side panel keeps this beside your chat while Claude works.</Text>
     : null
 
   const x: Ctx = { ...els, ...kit, site, v, p, n, b, allRuns, pr, q, d, savedAnswers, st, g, open, missingCase, redoing, asked, folder, noProfile, tip, sort }

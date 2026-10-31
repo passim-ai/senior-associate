@@ -9,8 +9,9 @@ test('a new attorney: the sample is added once, the welcome comes first, and the
   expect(requests.filter(r => r.ensure_sample)).toHaveLength(1)
   // The only matter is the sample, but it doesn't take the place of the welcome.
   expect(await ui.find({ type: 'Text', text: /Client documents in/ })).toBeDefined()
-  expect(await inActions(ui, /^Start the first matter$/)).toBeDefined()
-  expect(await inActions(ui, /^Open the sample matter$/)).toBeDefined()
+  expect(await inActions(ui, /^New matter$/)).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^See how it works$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Button', key: 'main:sample' })).toMatchObject({ text: 'Open the sample matter' })
   expect(await ui.find({ type: 'Text', text: /^A fictional I-601A case to try first$/ })).toBeDefined()
   await tap('main:sample')
   expect(await ui.find({ type: 'Text', text: /^This is a sample matter$/ })).toBeDefined()
@@ -36,7 +37,7 @@ test('after the sample’s review, its page lists what a good review catches; He
   await tap('open:/matters/Sample - Barrientos-Eckhardt')
   expect(await ui.find({ type: 'Text', text: /^What a good review catches$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^2\. His intake gives the wedding date as March 12, 2016/ })).toBeDefined()
-  expect(await ui.find({ type: 'Text', text: /^Compare them with What’s left, below\.$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^Compare them with Questions, above\.$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^Press Review documents first/ })).toBeUndefined()
   // From Help: the sample on the list is opened, not added again.
   await tap('help')

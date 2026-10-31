@@ -4,7 +4,7 @@
 // keyboard or a screen reader couldn't reach, and research that could carry a client's name.
 import type { On } from 'claude-code'
 import { expect, test } from 'claude-code/testing'
-import { ANA, DOCS, OPTS, PLUGIN, ROOT, SEEN, act, agents, boot, card, inActions, metaOf, mount, open, world } from './world'
+import { ANA, DOCS, OPTS, PLUGIN, ROOT, SEEN, act, agents, boot, card, inActions, metaOf, mount, open, unfold, world } from './world'
 import type { Matter } from './world'
 
 
@@ -19,6 +19,7 @@ test('answers to questions with empty ids stay in their own boxes, go to the mat
   ]
   const run = agents(on, 'Updating the packet: Garcia I-130 I-485')
   const { clock, ui, tap, requests } = await boot($, on, [garcia])
+  await tap('items')
   const boxes = (await ui.findAll({ type: 'Input' })).filter((i: { key?: string }) => i.key?.startsWith('answer-'))
   expect(boxes).toHaveLength(2)
   expect(boxes[0].key).not.toBe(boxes[1].key)
@@ -27,7 +28,7 @@ test('answers to questions with empty ids stay in their own boxes, go to the mat
   expect((await ui.find({ type: 'Input', key: boxes[1].key }))?.text).toBe('')
   // Kept in the matter, by the question's key, so quitting Claude doesn't lose it.
   expect(requests.find(r => r.op === 'save_answer')).toMatchObject({ key: boxes[0].key.slice('answer-'.length), question: 'Q one?', answer: 'Only answering the first.' })
-  expect(await ui.find({ type: 'Text', text: /^Questions for you · 1 of 2 answered$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^Attorney decisions · 1 of 2 answered$/ })).toBeDefined()
   await tap('main:update')
   const prompt = String(run.spawned[0]!.prompt)
   expect(prompt).toContain('1. Q one?\n   Answer: Only answering the first.')
@@ -39,26 +40,28 @@ test('an answer the matter kept is in its box when the matter opens, with nothin
   const garcia = card('Garcia I-130 I-485', 'needs_you', DOCS)
   garcia.needs_you = [{ text: 'Include an I-765?', question: 'Include an I-765?', kind: 'decision', who: 'attorney', id: 'decide-i765', key: 'decide-i765' } as never]
   ;(garcia as Matter & { answers?: unknown }).answers = { 'decide-i765': { question: 'Include an I-765?', answer: 'Yes, include it.', saved_at: '2026-10-28T10:00:00Z' } }
-  const { ui } = await boot($, on, [garcia])
+  const { ui, tap } = await boot($, on, [garcia])
+  await tap('items')
   expect((await ui.find({ type: 'Input', key: 'answer-decide-i765' }))?.text).toBe('Yes, include it.')
   await ui.unmount()
 })
 
-test('twelve and more questions: counted, those needed before filing first, and What’s left’s Answer brings its box into view', OPTS(), async ($, on) => {
+test('twelve and more questions: counted, those needed before filing first, each with its box on Questions', OPTS(), async ($, on) => {
   const garcia = card('Garcia I-130 I-485', 'needs_you', DOCS)
   garcia.needs_you = Array.from({ length: 13 }, (_, i) => ({ text: `Decision ${i + 1}?`, question: `Decision ${i + 1}?`, kind: 'decision', who: 'attorney', id: `d-${i + 1}`, blocks_filing: i === 12 }))
   garcia.open_items!.open = garcia.needs_you.map(n => ({ id: n.id!, type: 'attorney_decision', title: n.text, question: n.question, detail: '', blocks_filing: n.blocks_filing, status: 'open' as const, resolution: '' })) as never
-  const { clock, ui, tap } = await boot($, on, [garcia])
-  expect(await ui.find({ type: 'Text', text: /^Questions for you · 0 of 13 answered$/ })).toBeDefined()
+  const { ui, tap } = await boot($, on, [garcia])
+  expect(await inActions(ui, /^13 questions · 0 answered$/)).toBeDefined()
+  await tap('items')
+  expect(await ui.find({ type: 'Text', text: /^Attorney decisions · 0 of 13 answered$/ })).toBeDefined()
   const texts = (await ui.findAll({ type: 'Text' })).map((t: { text: string }) => t.text)
   expect(texts.indexOf('Decision 13?')).toBeLessThan(texts.indexOf('Decision 1?'))
   expect(texts[texts.indexOf('Decision 13?') + 1]).toBe('Needed before filing')
-  await ui.press({ plugin: PLUGIN, key: 'items' }).catch(() => ui.press({ plugin: PLUGIN, key: 'main:items' }))
-  await clock.settle()
-  await tap('answer:d-7')
-  // The matter page, with the box Answer scrolls to and puts the cursor in (the test kit draws no pane to scroll).
   expect(await ui.find({ type: 'Input', key: 'answer-d-7' })).toBeDefined()
-  expect(await ui.find({ type: 'Text', text: /^Claude needs your answer$/ })).toBeDefined()
+  // The Overview's Needs attention lists the one needed before filing first; its View brings Questions back.
+  await tap('nav-matter')
+  await tap('view:d-13')
+  expect(await ui.find({ type: 'Input', key: 'answer-d-13' })).toBeDefined()
   await ui.unmount()
 })
 
@@ -275,24 +278,34 @@ test('research by Claude’s agents is refused when it holds the client’s deta
   await ui.unmount()
 })
 
-test('no text is drawn in a hard-coded colour except on a filled background, on every screen of a matter and the list', OPTS(), async ($, on) => {
+test('the page paints its own paper, and every text on it has a colour of its own, on every screen of a matter and the list', OPTS(), async ($, on) => {
   const draft = card('Garcia I-130 I-485', 'draft', DOCS, { fresh: ['Passport.pdf'] })
   draft.needs_you = [{ text: 'Include an I-765?', question: 'Include an I-765?', kind: 'decision', who: 'attorney', id: 'decide-i765' }]
   const { clock, ui, tap } = await boot($, on, [draft, card('Lopez N-400', 'complete', DOCS)], { checks: undefined })
+  // What the host would colour itself, and so turn light on the paper in a dark theme: a Text with no colour of its
+  // own, a Button whose label the host draws, and Markdown.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const offenders = (el: any, filled = false, out: string[] = []): string[] => {
+  const offenders = (el: any, out: string[] = []): string[] => {
     if (!el || typeof el !== 'object') return out
-    const fill = filled || Boolean(el.props?.backgroundColor)
-    if (el.type === 'Text' && typeof el.props?.color === 'string' && el.props.color.startsWith('#') && !fill) out.push(String(el.text ?? JSON.stringify(el.children)))
-    for (const child of el.children ?? []) offenders(child, fill, out)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const own = (el.children ?? []).filter((c: any) => typeof c === 'string').join('')
+    if (el.type === 'Text' && !(typeof el.props?.color === 'string' && el.props.color.startsWith('#'))) out.push(String(el.text ?? JSON.stringify(el.children)))
+    if (el.type === 'Button' && (!(el.children ?? []).length || own.trim())) out.push(`button ${el.props?.key}`)
+    if (el.type === 'Markdown') out.push('markdown')
+    for (const child of el.children ?? []) offenders(child, out)
     return out
   }
   const check = async (where: string) => {
-    const root = await ui.find({ type: 'Box' })
+    const root = await ui.drawn()
+    expect([where, root.props?.backgroundColor]).toEqual([where, '#F7F5F1'])
     expect([where, ...offenders(root)]).toEqual([where])
   }
   await check('matter')
-  for (const key of ['packet', 'items', 'docs', 'memo']) {
+  for (const section of ['sec-instructions', 'sec-more', 'sec-details']) await tap(section)
+  await check('matter, unfolded')
+  for (const key of ['packet', 'items', 'docs', 'memo', 'request', 'timeline']) {
+    // The client request is the second half of the Memo & request tab.
+    if (key === 'request') await tap('memo')
     await ui.press({ plugin: PLUGIN, key }).catch(() => act(ui, key))
     await clock.settle()
     await check(key)
@@ -306,6 +319,11 @@ test('no text is drawn in a hard-coded colour except on a filled background, on 
   await tap('nav-back-help')
   await tap('nav-all')
   await check('list')
+  await tap('profile')
+  await check('your details')
+  await tap('nav-all')
+  await tap('main:new')
+  await check('new matter')
   await ui.unmount()
 })
 
@@ -318,8 +336,10 @@ test('every box has a label, and presses repeated down a list are named for thei
   expect(await inputs()).toEqual([])
   await ui.press({ plugin: PLUGIN, key: 'items' }).catch(() => act(ui, 'items'))
   await clock.settle()
+  expect(await inputs()).toEqual([])
   expect((await ui.find({ type: 'Button', key: 'done:act-sign' }))?.props?.label).toBe('Mark done: Sign the G-28')
-  expect((await ui.find({ type: 'Button', key: 'answer:decide-i765' }))?.props?.label).toBe('Answer: Include an I-765 work permit application with the I-485?')
+  expect((await ui.find({ type: 'Button', key: 'save-answer:decide-i765' }))?.props?.label).toBe('Save answer: Include an I-765?')
+  expect((await ui.find({ type: 'Button', key: 'ask-item:decide-i765' }))?.props?.label).toBe('Ask Claude about: Include an I-765?')
   await tap('nav-matter')
   await tap('docs')
   expect((await ui.find({ type: 'Button', key: 'remove:Passport.pdf' }))?.props?.label).toBe('Remove Passport.pdf')
@@ -462,6 +482,7 @@ test('the client request: another language is the matter’s setting, and each l
   garcia.translations.Spanish = '# Documentos que aún necesitamos\n\n1. **Su I-94.**'
   metaOf(garcia).client_language = 'Spanish'
   const { ui, tap, requests, copied } = await boot($, on, [garcia])
+  await tap('memo')
   await tap('request')
   expect((await ui.find({ type: 'Button', key: 'lang:Spanish' }))?.props?.label).toBe('Spanish, selected')
   await tap('main:copy-request-lang:Spanish')
@@ -514,10 +535,12 @@ test('a packet ready to file with a question not needed before filing: Ready to 
   const run = agents(on, 'Updating the packet: Garcia I-130 I-485')
   const { ui, tap } = await boot($, on, [garcia])
   expect(await ui.find({ type: 'Text', text: /^Ready to file$/ })).toBeDefined()
-  expect(await ui.find({ type: 'Text', text: /^A question for you · not needed before filing$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^Your decision · Not needed before filing$/ })).toBeDefined()
+  await tap('items')
+  expect(await ui.find({ type: 'Text', text: /^Not needed before filing$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^Needed before filing$/ })).toBeUndefined()
   await ui.input({ plugin: PLUGIN, key: 'answer-decide-i765', text: 'Yes, include it.', kind: 'change' })
-  await tap('update')
+  await tap('main:update')
   expect(String(run.spawned[0]?.prompt)).toContain('Answer: Yes, include it.')
   await ui.unmount()
 })
@@ -637,6 +660,7 @@ test('answers typed and never saved go with the update: a report’s questions a
   await complete($, { agentId: 'agent-1', answer: 'I reviewed the 2 documents.\n\nTwo things need you:\n\n1. Should we include an I-765?\n2. Which entry date is right?', reason: 'answer' })
   run.finish('completed')
   await clock.settle()
+  await tap('main:items')
   await ui.input({ plugin: PLUGIN, key: 'rq-1', text: '2019, per the I-94.', kind: 'change' })
   await clock.settle()
   await tap('main:update')
@@ -649,6 +673,7 @@ test('an open item’s answer typed and never saved is kept in the matter and go
   garcia.needs_you = [{ text: 'Include an I-765?', question: 'Include an I-765?', kind: 'decision', who: 'attorney', id: 'decide-i765' }]
   const run = agents(on, 'Updating the packet: Garcia I-130 I-485')
   const { ui, tap, requests } = await boot($, on, [garcia])
+  await tap('items')
   await ui.input({ plugin: PLUGIN, key: 'answer-decide-i765', text: 'Yes, include it.', kind: 'change' })
   await tap('main:update')
   expect(requests.find(r => r.op === 'save_answer')).toMatchObject({ key: 'decide-i765', answer: 'Yes, include it.' })
@@ -754,6 +779,7 @@ test('a file replaced since the build: the card says which and offers Update the
   const { ui, tap } = await boot($, on, [one, two, both])
   expect(await ui.find({ type: 'Text', text: /^Passport\.pdf changed since the packet was built\. Update the packet to work in the new version\.$/ })).toBeDefined()
   expect(await inActions(ui, /^Works in the new version of Passport\.pdf$/)).toBeDefined()
+  await unfold(ui, tap, 'sec-details')
   expect(await ui.find({ type: 'Text', text: /1 changed since the build/ })).toBeDefined()
   for (const [m, line] of [[two, /^2 files changed since the packet was built\. Update the packet to work in the new versions\.$/], [both, /^Since the packet was built, 1 new file arrived and Passport\.pdf changed\. Update the packet to bring it up to date and re-check it\.$/]] as const) {
     await tap('nav-all')

@@ -3,6 +3,7 @@ import type { EngineInterface } from 'claude-code'
 import type { Card, TimelineEvent } from '../../types'
 import type { Ctx } from '../kit'
 import { clock, dateOnly, nowMs } from '../words'
+import { ACCENT_TEXT } from '../theme'
 
 const WHO: Record<string, string> = { attorney: 'You', claude: 'Claude', app: '' }
 
@@ -29,20 +30,23 @@ export function timelineDays(events: TimelineEvent[], now: number): { day: strin
 }
 
 export async function timelineScreen($: EngineInterface, x: Ctx, c: Card): Promise<JSX.Element> {
-  const { Box, Text, pillOf, card, subpage } = x
+  const { Box, Text, card, section, rule, matterPage } = x
   const days = timelineDays(c.timeline, nowMs())
-  return subpage(
-    { title: c.name, subtitle: 'Timeline', status: pillOf(c), back: { id: 'matter', label: c.name }, here: 'Timeline' },
+  return matterPage(c, 'timeline',
     days.length === 0
       ? card(null, [<Text key="none" dimColor>Nothing is recorded yet. From now on, what you and Claude do on this matter is listed here: documents added or taken out, runs started and finished, answers, and settings.</Text>])
       : null,
-    ...days.map(d => card(d.day, d.events.map((e, i) => (
-      <Box key={`ev-${d.day}-${i}`} flexDirection="row" gap="md" alignItems="flex-start">
-        <Text dimColor tabular>{clock(e.at)}</Text>
-        <Box flexDirection="column" flexShrink={1}>
-          <Text>{WHO[e.actor] ? `${WHO[e.actor]}: ${e.text}` : e.text}</Text>
+    ...days.map(d => section(d.day, [
+      rule(`day-rule-${d.day}`),
+      ...d.events.map((e, i) => (
+        <Box key={`ev-${d.day}-${i}`} flexDirection="row" gap="md" alignItems="flex-start">
+          <Text color={ACCENT_TEXT} weight="bold">•</Text>
+          <Box flexDirection="column" flexShrink={1} gap="xs">
+            <Text>{WHO[e.actor] ? `${WHO[e.actor]}: ${e.text}` : e.text}</Text>
+            <Text dimColor size="caption" tabular>{clock(e.at)}</Text>
+          </Box>
         </Box>
-      </Box>
-    )), undefined, `card-day-${d.day}`)),
+      )),
+    ], `card-day-${d.day}`)),
   )
 }

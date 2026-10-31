@@ -7,12 +7,12 @@
 // pane`) docks the same app beside the transcript. Both draw from one state,
 // so a press in either updates both. The screens, in the order an attorney
 // meets them, are laid out in docs/EXPERIENCE.md: Getting set up and Welcome
-// (the first time), Matters, Your details, New matter, Matter, Documents,
-// Packet, What's left, Attorney memo, Help.
+// (the first time), Matters, Your details, New matter, and a matter's tabs
+// (Overview, Documents, Questions, Packet, Memo & request, Timeline), Help.
 //
 // Everything is the host's own elements (its font, cursor, hover and press
-// behaviour); the one or two main actions of a screen are its primary and
-// secondary buttons (kit.tsx).
+// behaviour), drawn on Passim paper: the panel paints its own warm paper and
+// every text on it is in a paper colour of its own (theme.ts, kit.tsx).
 //
 // The work itself (build, update, review, the officer's review, clean up)
 // runs as the plugin's own background agent, spawned from a button press and
@@ -150,7 +150,11 @@ export const register: Register = (on, options) => {
 }
 
 async function render($: EngineInterface, e: ResolveInput, site: 'inline' | 'pane'): Promise<JSX.Element> {
-  const els = tableFor($, e)
+  // How wide the site is, in cells: the side panel says so in its props, the row in the conversation in the viewport.
+  const drawn = e as ResolveInput & { props?: { bodyColumns?: unknown }; viewport?: { columns?: number } }
+  const bodyColumns = drawn.props?.bodyColumns
+  const columns = site === 'pane' && typeof bodyColumns === 'number' ? bodyColumns : drawn.viewport?.columns
+  const els = tableFor($, e, columns)
   if (!els) {
     const { Text } = $.ui.resolve(e)
     return <Text>Senior Associate opens in the Claude desktop app. Open it there and type /matters.</Text>

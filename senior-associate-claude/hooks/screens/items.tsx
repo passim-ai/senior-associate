@@ -1,45 +1,147 @@
-// What's left: the open items, grouped by who acts.
+// Questions: the decisions only the attorney can make, each with Claude's suggested approach and a box for the answer;
+// then what the client owes, what the attorney has to do and the risks to weigh, each with what to do about it; then
+// what is settled; and at the foot, the press that takes the saved answers to Claude.
 import type { EngineInterface } from 'claude-code'
 import type { Card, OpenItem } from '../../types'
-import type { Ctx } from '../kit'
-import { ASK_ITEM, CLIENT_TYPES, ITEM_GROUPS, neededBeforeFiling, requestTranslations } from '../matter'
+import type { ActionButton, Ctx } from '../kit'
+import { ASK_ITEM, CLIENT_TYPES, ITEM_GROUPS, builtPast, docChanges, needsOf, neededBeforeFiling, replyKey, reportQuestions, requestTranslations } from '../matter'
+import type { Need } from '../matter'
 import { askAboutThis, askClaude, copyRequest, perform } from '../perform'
-import { AMBER, ERROR_TEXT, OK_TEXT, WARN_TEXT } from '../theme'
+import { answerFor, saveAnswer, savedAnswerFor } from '../runs'
+import { typed } from '../state'
+import { ACCENT_LIGHT, ACCENT_TEXT, AMBER, DANGER, GREEN, LINE, MUTED, NAVY } from '../theme'
 import { ASK_LABEL, brief, nowMs, plural } from '../words'
 import { matterStatus, isBusy } from '../status'
 
 export async function itemsScreen($: EngineInterface, x: Ctx, c: Card): Promise<JSX.Element> {
-  const { Box, Text, Button, allRuns, open, pillOf, card, link, links, noProfile, subpage } = x
+  const { Box, Text, Input, allRuns, open, savedAnswers, noProfile, card, section, barCard, rule, pill, button, lone, link, links, field, savedMark, actions, matterPage } = x
   const ledger = c.open_items
   const openItems = ledger?.open ?? []
-  // The matter page shows the answer boxes when Claude isn't at work on the matter.
+  // Answers are taken while Claude isn't at work on the matter.
   const shown = matterStatus(c, allRuns[c.path], nowMs())
   const answerable = !isBusy(shown) && shown.phase !== 'stopped'
+  const needs = needsOf(c)
+  const docs = docChanges(c)
+  const arrived = docs.added.length + docs.changed.length
+  const built = builtPast(c) || shown.phase === 'needs_you'
+  // The button that takes the saved answers to Claude, as the saved line names it.
+  const sendWith = built ? 'Update the packet' : arrived ? 'Review the documents again or Build packet' : 'Build packet'
+
+  // ----- the attorney's decisions: Claude's questions and the open items that are decisions, each once -----
+  const decisions: (Need & { item?: OpenItem })[] = []
+  const seen = new Set<string>()
+  for (const n of needs.filter(n => n.who === 'attorney')) {
+    seen.add(n.qkey)
+    decisions.push({ ...n, item: openItems.find(it => it.id === n.qkey) })
+  }
+  for (const it of openItems.filter(it => it.type === 'attorney_decision' && !seen.has(it.id))) {
+    decisions.push({
+      i: -1, key: `${c.path}#${it.id}`, qkey: it.id, blocks: it.blocks_filing, id: it.id, who: 'attorney', question: it.question || it.title,
+      detail: it.detail ? brief(it.detail) : '', recommendation: it.recommendation ? brief(it.recommendation, 160) : '', stage: '', fix: '', ask: '', item: it,
+    })
+  }
+  decisions.sort((a, b) => Number(b.blocks) - Number(a.blocks))
+  // Before the matter keeps open items, a report that ends in questions is how Claude asks.
+  const run = allRuns[c.path]
+  const reportAsks = shown.phase === 'needs_you' && run?.status === 'done' && Boolean(run.answer)
+  const asked = reportAsks && !decisions.length ? reportQuestions(run!.answer) : []
+  const answeredCount = decisions.filter(d => answerFor(c, d.qkey, savedAnswers).trim()).length
+
+  const answerBox = (inputKey: string, qkey: string, akey: string, question: string, number: number) => {
+    const value = answerFor(c, qkey, savedAnswers)
+    return [
+      field(<Input
+        key={inputKey}
+        label={`Your answer to question ${number}`}
+        placeholder="Record your decision and any conditions…"
+        rows={3}
+        submitLabel="save"
+        value={value || undefined}
+        onInput={val => { typed.answers[akey] = val }}
+        onSubmit={val => { void saveAnswer($, c, qkey, question, val, sendWith) }}
+      />),
+      <Box key={`save-row-${inputKey}`} flexDirection="row" flexWrap="wrap" columnGap="md" rowGap="xs" alignItems="center">
+        {button(`save-answer:${qkey}`, 'Save answer', () => { void saveAnswer($, c, qkey, question, typed.answers[akey] ?? value, sendWith) }, 'primary', { name: `Save answer: ${brief(question, 80)}`, small: true })}
+        {savedMark(akey, value === savedAnswerFor(c, qkey, savedAnswers))}
+      </Box>,
+    ]
+  }
+
+  const decisionRow = (dn: Need & { item?: OpenItem }, k: number) => (
+    <Box key={`item-${dn.qkey}`} flexDirection="column" gap="sm">
+      {k ? rule(`dec-rule-${dn.qkey}`) : null}
+      <Box flexDirection="row" gap="md" alignItems="flex-start">
+        <Box flexDirection="row" flexShrink={0}><Text size="heading" weight="semibold" color={ACCENT_TEXT} tabular>{String(k + 1).padStart(2, '0')}</Text></Box>
+        <Box flexDirection="column" flexGrow={1} flexShrink={1} gap="xs">
+          <Text weight="semibold" color={NAVY}>{dn.question}</Text>
+          {dn.blocks ? <Text color={DANGER} size="caption" weight="medium">Needed before filing</Text> : <Text size="caption" dimColor>Not needed before filing</Text>}
+          {dn.detail && dn.detail !== dn.question ? <Text dimColor size="footnote">{dn.detail}</Text> : null}
+        </Box>
+      </Box>
+      {dn.recommendation
+        ? barCard(`rec-${dn.qkey}`, LINE, [
+            <Text key="rec-head" size="footnote" weight="semibold" color={NAVY}>Suggested approach</Text>,
+            <Text key="rec-text" size="footnote">{`Recommended: ${dn.recommendation}`}</Text>,
+            answerable ? lone(`rec:${dn.qkey}`, button(`rec:${dn.qkey}`, 'Use the recommendation', () => { void perform($, `rec:${dn.qkey}`) }, 'secondary', { name: `Use the recommendation: ${brief(dn.question, 80)}`, small: true })) : null,
+          ])
+        : null}
+      {answerable
+        ? answerBox(`answer-${dn.qkey}`, dn.qkey, dn.key, dn.question, k + 1)
+        : <Text key={`answer-later:${dn.qkey}`} dimColor size="footnote">You can answer it here once Claude has finished.</Text>}
+      {links(`dec-acts-${dn.qkey}`, [
+        link(`ask-item:${dn.qkey}`, 'Ask Claude about this', () => {
+          void askAboutThis($, c, dn.question, ASK_ITEM.attorney_decision ?? 'What should we do about this?')
+        }, false, `Ask Claude about: ${brief(dn.question, 80)}`),
+      ])}
+    </Box>
+  )
+
+  // Claude's questions from its report, when it had no list to put them on: one box each, or one for them all.
+  const reportRows = asked.map((q, k) => (
+    <Box key={`item-report-${k}`} flexDirection="column" gap="sm">
+      {k ? rule(`rq-rule-${k}`) : null}
+      <Box flexDirection="row" gap="md" alignItems="flex-start">
+        <Box flexDirection="row" flexShrink={0}><Text size="heading" weight="semibold" color={ACCENT_TEXT} tabular>{String(k + 1).padStart(2, '0')}</Text></Box>
+        <Box flexDirection="column" flexGrow={1} flexShrink={1}><Text weight="semibold" color={NAVY}>{q}</Text></Box>
+      </Box>
+      {answerable ? answerBox(`rq-${k}`, `report-${k}`, `${c.path}#report-${k}`, q, k + 1) : null}
+    </Box>
+  ))
+  const replyBox = reportAsks && !decisions.length && !asked.length && answerable
+    ? (() => {
+        const key = replyKey(c)
+        const value = answerFor(c, 'reply', savedAnswers)
+        return (
+          <Box key="reply-box" flexDirection="column" gap="sm">
+            <Text>Claude asked its questions in its report, on the Overview. Answer them here, in one box.</Text>
+            {field(<Input key="reply" label="Your answers" placeholder="Your answers to Claude’s questions" rows={3} submitLabel="save" value={value || undefined} onInput={val => { typed.answers[key] = val }} onSubmit={val => { void saveAnswer($, c, 'reply', 'Claude’s questions in its report', val, 'Update the packet') }} />)}
+            {savedMark(key, value === savedAnswerFor(c, 'reply', savedAnswers))}
+          </Box>
+        )
+      })()
+    : null
+
+  // ----- every other open item, by who acts -----
   const line = (it: OpenItem) => {
     const mentionsDetails = /your details|attorney profile/i.test(`${it.title} ${it.detail}`)
     const isClient = it.type === 'client_document'
     // Each item's presses are named for it, so a screen reader hears "Mark done: Sign the G-28", not five "Mark done"s.
-    const name = brief(it.type === 'attorney_decision' && it.question ? it.question : it.title, 80)
+    const name = brief(it.title, 80)
     return (
       <Box key={`item-${it.id}`} flexDirection="row" gap="sm" alignItems="flex-start">
-        <Text color={it.blocks_filing ? ERROR_TEXT : WARN_TEXT} weight="bold">{it.type === 'risk' ? '◆' : '▲'}</Text>
+        <Text color={it.blocks_filing ? DANGER : AMBER} weight="bold">{it.type === 'risk' ? '◆' : '▲'}</Text>
         <Box flexDirection="column" flexGrow={1} flexShrink={1} gap="xs">
-          <Text weight="semibold">{it.type === 'attorney_decision' && it.question ? it.question : it.title}</Text>
-          {it.detail ? <Text dimColor>{brief(it.detail)}</Text> : null}
-          {it.blocks_filing
-            ? <Text color={ERROR_TEXT} size="caption" weight="medium">Needed before filing</Text>
-            : it.type === 'attorney_decision' ? <Text size="caption" dimColor>Not needed before filing</Text> : null}
+          <Text weight="semibold" color={NAVY}>{it.title}</Text>
+          {it.detail ? <Text dimColor size="footnote">{brief(it.detail)}</Text> : null}
+          {it.blocks_filing ? <Text color={DANGER} size="caption" weight="medium">Needed before filing</Text> : null}
           {links(`acts-${it.id}`, [
             isClient ? link(`recv:${it.id}`, 'Received — Add files…', () => { void perform($, `recv:${it.id}`) }, true, `Received: ${name}. Add files…`) : null,
             it.type === 'attorney_action' && (!mentionsDetails || !noProfile) ? link(`done:${it.id}`, 'Mark done', () => { void perform($, `done:${it.id}`) }, true, `Mark done: ${name}`) : null,
-            it.type === 'attorney_decision'
-              ? answerable ? link(`answer:${it.id}`, 'Answer', () => { void perform($, `answer:${it.id}`) }, true, `Answer: ${name}`) : <Text key={`answer-later:${it.id}`} dimColor>Answer it on the matter page once Claude has finished.</Text>
-              : null,
             it.type === 'client_question' ? link(`client-said:${it.id}`, 'The client answered — tell Claude', () => { void perform($, `client-said:${it.id}`) }, true, `The client answered: ${name}. Tell Claude`) : null,
             it.type === 'risk' ? link(`accept:${it.id}`, 'Accept this risk', () => { void perform($, `accept:${it.id}`) }, true, `Accept this risk: ${name}`) : null,
             mentionsDetails ? link(`details:${it.id}`, noProfile ? 'Add your details' : 'Your details', () => { void perform($, 'profile') }, true) : null,
             link(`ask-item:${it.id}`, 'Ask Claude about this', () => {
-              void askAboutThis($, c, it.type === 'attorney_decision' && it.question ? it.question : it.title, ASK_ITEM[it.type] ?? 'What should we do about this?')
+              void askAboutThis($, c, it.title, ASK_ITEM[it.type] ?? 'What should we do about this?')
             }, false, `Ask Claude about: ${name}`),
           ])}
         </Box>
@@ -47,30 +149,56 @@ export async function itemsScreen($: EngineInterface, x: Ctx, c: Card): Promise<
     )
   }
   const hasClientItems = openItems.some(it => CLIENT_TYPES.includes(it.type))
+  // What the client owes that Claude asked in its questions rather than on the list.
+  const clientNeeds = needs.filter(n => n.who === 'client' && !openItems.some(it => it.id === n.qkey))
   // A list Claude wrote that can't be read is said as such, never as no list yet, with Claude to rewrite it.
   const damaged = !ledger && c.status.open_items_state === 'damaged'
-  const rewrite = c.needs_you.find(n => n.key === 'open-items-damaged')?.ask ?? `Rewrite the open items list for ${c.name} from the review findings and the memo.`
+  const rewrite = c.needs_you.find(nn => nn.key === 'open-items-damaged')?.ask ?? `Rewrite the open items list for ${c.name} from the review findings and the memo.`
   const resolvedItems = ledger?.resolved ?? []
   const showResolved = open.includes('resolved-group')
-  const subtitle = ledger
-    ? openItems.length ? `${plural(openItems.length, 'open item', 'open items')}, ${neededBeforeFiling(c).total} needed before filing` : 'Nothing open'
-    : damaged ? 'The list can’t be read' : 'Nothing listed yet'
-  return subpage(
-    { title: c.name, subtitle, status: pillOf(c), back: { id: 'matter', label: c.name }, here: 'What’s left' },
+  const needed = neededBeforeFiling(c).total
+  const anything = decisions.length || asked.length || replyBox || openItems.length || clientNeeds.length
+
+  const foot: ActionButton | null = answerable && (decisions.length || asked.length || replyBox)
+    ? built
+      ? { id: 'update', label: 'Update the packet with saved answers', kind: 'primary', detail: 'Claude works your saved answers in and checks the packet again' }
+      : { id: 'build', label: 'Build packet', kind: 'primary', detail: 'Your saved answers go with the build' }
+    : null
+
+  return matterPage(c, 'items',
+    section('Questions & missing evidence', [
+      <Text key="q-status" weight="medium" color={NAVY}>{ledger
+        ? openItems.length ? `${plural(openItems.length, 'open item', 'open items')}, ${needed} needed before filing` : 'Nothing open'
+        : damaged ? 'The list can’t be read' : decisions.length || asked.length ? plural(decisions.length || asked.length, 'question', 'questions') : 'Nothing listed yet'}</Text>,
+      <Text key="q-what" dimColor>{built ? 'Save your decisions here, then update the packet to apply them.' : 'Save your decisions here; they go with the build.'}</Text>,
+    ], 'sec-questions', needed ? pill(`${needed} needed before filing`, ACCENT_LIGHT, 'needed-pill') : null),
     damaged
       ? card('Claude’s list of open items can’t be read', [
           <Text key="damaged">The file Claude keeps the list in is damaged, so what’s left can’t be shown. Claude can rewrite it from the review notes and the memo; this page shows it again once it’s done.</Text>,
           links('damaged-acts', [link('ask-rewrite', ASK_LABEL, () => { void askClaude($, rewrite) }, true, `${ASK_LABEL}: rewrite the list of open items`)]),
         ], AMBER, 'card-damaged')
-      : !ledger
-      ? card(null, [<Text key="none" dimColor>Claude writes this list when it reviews the documents or builds the packet: what the client still needs to send, what needs your decision, and what you need to do before filing.</Text>])
-      : openItems.length === 0
-        ? card(null, [<Text key="clear">Nothing is open. {ledger.packet_status === 'ready_to_file' ? 'The packet is ready to file once you’ve read it through.' : ''}</Text>])
+      : !anything
+        ? ledger
+          ? card(null, [<Text key="clear">Nothing is open. {ledger.packet_status === 'ready_to_file' ? 'The packet is ready to file once you’ve read it through.' : ''}</Text>])
+          : card(null, [<Text key="none" dimColor>Claude writes this list when it reviews the documents or builds the packet: what the client still needs to send, what needs your decision, and what you need to do before filing.</Text>])
         : null,
-    ...ITEM_GROUPS.map(gr => {
+    decisions.length || asked.length || replyBox
+      ? section(decisions.length > 1 ? `Attorney decisions · ${answeredCount} of ${decisions.length} answered` : 'Attorney decisions', [
+          ...decisions.map(decisionRow),
+          ...reportRows,
+          replyBox,
+        ], 'sec-decisions')
+      : null,
+    ...ITEM_GROUPS.filter(gr => !gr.types.includes('attorney_decision')).map(gr => {
       const group = openItems.filter(it => gr.types.includes(it.type))
-      return group.length ? card(`${gr.title} · ${group.length}`, group.map(line)) : null
+      return group.length ? section(`${gr.title} · ${group.length}`, [rule(`grp-rule-${gr.title}`), ...group.map(line)], `grp-${gr.title}`) : null
     }),
+    clientNeeds.length
+      ? section('Waiting on the client', [
+          ...clientNeeds.map(nn => <Text key={`cl-${nn.i}`}>{`• ${nn.question}`}</Text>),
+          links('client-acts', [link('client-add', 'Client sent it? Add files…', () => { void perform($, 'add-files') }, true)]),
+        ], 'sec-client')
+      : null,
     hasClientItems && c.outputs.client_request
       ? links('request', [
           link('copy-request', 'Copy the client request', press => { void copyRequest($, press.surface) }, true),
@@ -80,21 +208,17 @@ export async function itemsScreen($: EngineInterface, x: Ctx, c: Card): Promise<
       : null,
     ledger && ledger.resolved_count
       ? <Box key="resolved" flexDirection="column" gap="sm">
-          <Box flexDirection="row">
-            <Button key="resolved-group" plain onPress={() => perform($, 'resolved-group')}>
-              <Text weight="semibold">{`Resolved (${ledger.resolved_count}) ${showResolved ? '⌄' : '›'}`}</Text>
-            </Button>
-          </Box>
+          {lone('resolved-group', button('resolved-group', `Resolved (${ledger.resolved_count}) ${showResolved ? '⌄' : '›'}`, () => { void perform($, 'resolved-group') }, 'link'))}
           {showResolved
             ? resolvedItems.length
               ? card(null, [
-                  <Text key="res-what" dimColor>Settled by you or by Claude. Reopen puts one back on the list; Claude takes it up again on the next update.</Text>,
+                  <Text key="res-what" dimColor size="footnote">Settled by you or by Claude. Reopen puts one back on the list; Claude takes it up again on the next update.</Text>,
                   ...resolvedItems.map(it => (
                     <Box key={`res-${it.id}`} flexDirection="row" gap="sm" alignItems="flex-start">
-                      <Text color={OK_TEXT} weight="bold">✓</Text>
+                      <Text color={GREEN} weight="bold">✓</Text>
                       <Box flexDirection="column" flexGrow={1} flexShrink={1} gap="xs">
                         <Text>{it.title}</Text>
-                        {it.resolution ? <Text dimColor>{brief(it.resolution, 200)}</Text> : null}
+                        {it.resolution ? <Text dimColor size="footnote">{brief(it.resolution, 200)}</Text> : null}
                         {links(`res-acts-${it.id}`, [link(`reopen:${it.id}`, 'Reopen', () => { void perform($, `reopen:${it.id}`) }, true, `Reopen: ${brief(it.title, 80)}`)])}
                       </Box>
                     </Box>
@@ -102,6 +226,18 @@ export async function itemsScreen($: EngineInterface, x: Ctx, c: Card): Promise<
                 ], undefined, 'card-resolved')
               : <Text key="res-none" dimColor>{`${plural(ledger.resolved_count, 'item is', 'items are')} resolved.`}</Text>
             : null}
+        </Box>
+      : null,
+    foot
+      ? <Box key="update-bar" flexDirection="column" gap="md">
+          {rule('update-rule')}
+          <Box flexDirection="row" flexWrap="wrap" justifyContent="space-between" alignItems="center" columnGap="lg" rowGap="sm">
+            <Box flexDirection="column" gap="xs" flexShrink={1}>
+              <Text weight="semibold" color={NAVY}>Ready to use your answers?</Text>
+              <Text size="footnote" color={MUTED}>{built ? 'Saved answers are worked in the next time you update the packet.' : 'Saved answers go with the build.'}</Text>
+            </Box>
+            {actions([foot])}
+          </Box>
         </Box>
       : null,
   )

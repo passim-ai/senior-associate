@@ -53,13 +53,14 @@ test('a start waiting in the chat box reads Waiting for you on the matters list 
 })
 
 for (const phase of ['draft', 'waiting_client'] as const) {
-  test(`${phase === 'draft' ? 'a draft packet' : 'waiting on the client'} with a decision not needed before filing: What’s left’s Answer finds its box`, OPTS(), async ($, on) => {
+  test(`${phase === 'draft' ? 'a draft packet' : 'waiting on the client'} with a decision not needed before filing: its View finds its box on Questions`, OPTS(), async ($, on) => {
     const garcia = withOptionalDecision(card('Garcia I-130 I-485', phase, DOCS))
     if (phase === 'waiting_client') garcia.needs_you = [{ text: 'The I-94', question: 'The I-94', kind: 'client', who: 'client', id: 'doc-i94' }, ...garcia.needs_you]
-    const { clock, ui, tap } = await boot($, on, [garcia])
-    expect(await ui.find({ type: 'Text', text: /^A question for you · not needed before filing$/ })).toBeDefined()
-    await tap('items')
-    await tap('answer:decide-i765')
+    const { ui, tap } = await boot($, on, [garcia])
+    expect(await ui.find({ type: 'Text', text: /^Your decision · Not needed before filing$/ })).toBeDefined()
+    await tap('view:decide-i765')
+    expect(await ui.find({ type: 'Text', text: /^Questions & missing evidence$/ })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: /^Not needed before filing$/ })).toBeDefined()
     expect(await ui.find({ type: 'Input', key: 'answer-decide-i765' })).toBeDefined()
     await ui.unmount()
   })
@@ -83,6 +84,7 @@ test('Use the recommendation answers the question it sits under, even after the 
     { text: 'Include an I-131?', question: 'Include an I-131?', recommendation: 'No, he has no travel plans.', kind: 'decision', who: 'attorney', id: 'd-131' },
   ]
   const { clock, ui, tap, matters, requests } = await boot($, on, [garcia])
+  await tap('items')
   expect(await ui.find({ type: 'Button', key: 'rec:d-131' })).toBeDefined()
   // The I-765 question was settled in the chat, and a new one came first: the refresh lands before the press.
   matters[0]!.needs_you = [{ text: 'Which address?', question: 'Which address?', recommendation: 'The safe address.', kind: 'decision', who: 'attorney', id: 'd-addr' }, garcia.needs_you[1]!]

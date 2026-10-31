@@ -4,7 +4,7 @@
 // aside, and Claude at work in the app's own agent before the server's next look. Nothing here reads a file's time.
 import type { Card, CardStatus, Lease, MatterRow, RowLease, Run } from '../types'
 import { REVIEW_KINDS, STALL_MS, asksAttorney, builtPast, partway, reviewOnly } from './matter'
-import { AMBER, GREEN, ORANGE, RED, SLATE } from './theme'
+import { ACCENT_LIGHT, AMBER_TINT, GREEN_TINT, NAVY_TINT, RED_TINT, SURFACE } from './theme'
 
 
 // One name per status, the same on the pill, the card title and the list (docs/EXPERIENCE.md, "Status names").
@@ -14,10 +14,12 @@ export const PHASE_LABEL: Record<string, string> = {
   starting: 'Waiting for you', stopped: 'Stopped', problem: 'Can’t open',
 }
 
-// The pill's fill. Text on it is drawn in a colour that reads on the fill in both themes (onFill).
+// The status chip's fill: the accent's light shade where the attorney is needed, navy's where the work goes on, amber's
+// where it waits, green once it can be filed, red when it stopped, and the plain chip otherwise. The text on each is
+// the one colour that reads on it (theme.ts, onFill).
 export const PHASE_FILL: Record<string, string> = {
-  new: SLATE, ready: ORANGE, reviewed: ORANGE, building: ORANGE, paused: AMBER, needs_you: AMBER, waiting_client: AMBER,
-  draft: AMBER, complete: GREEN, filed: SLATE, starting: AMBER, stopped: RED, problem: RED,
+  new: SURFACE, ready: NAVY_TINT, reviewed: NAVY_TINT, building: NAVY_TINT, paused: AMBER_TINT, needs_you: ACCENT_LIGHT, waiting_client: AMBER_TINT,
+  draft: AMBER_TINT, complete: GREEN_TINT, filed: SURFACE, starting: ACCENT_LIGHT, stopped: RED_TINT, problem: RED_TINT,
 }
 
 // Which group of the matters list a status sits in.
@@ -91,7 +93,7 @@ export function matterStatus(c: StatusSource, r: Run | null | undefined, now: nu
   return {
     phase,
     label: (phase === base && (server?.label || c.label)) || (PHASE_LABEL[phase] ?? phase),
-    fill: PHASE_FILL[phase] ?? SLATE,
+    fill: PHASE_FILL[phase] ?? SURFACE,
     group: GROUP[phase] ?? 'preparing',
     base,
     run,

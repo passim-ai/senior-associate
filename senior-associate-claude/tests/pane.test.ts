@@ -15,7 +15,7 @@
 // a post from the Client region. Everything else is the host's own Button.
 import type { AgentStatus } from 'claude-code'
 import { expect, test } from 'claude-code/testing'
-import { PLUGIN, ROOT, CATALOG, card, payload, answer, GOOD_CHECKS, NO_GS, world, agents, ROW, SEEN, ANA, DOCS, OPTS, act, inActions, open, boot, mount } from './world'
+import { PLUGIN, ROOT, CATALOG, card, payload, answer, GOOD_CHECKS, NO_GS, world, agents, ROW, SEEN, ANA, DOCS, OPTS, act, inActions, open, boot, mount, unfold } from './world'
 
 test('the first time: getting set up, the welcome, the first matter, files and a folder, every document, the steps', OPTS(), async ($, on) => {
   const { clock } = await open($, on)
@@ -43,14 +43,16 @@ test('the first time: getting set up, the welcome, the first matter, files and a
   await tap('main:setup-continue')
   expect(store.prefs).toMatchObject({ setupSeen: true })
 
-  // The welcome: four steps, the times, that nothing is filed or sent; Your details first while they're missing.
+  // The welcome: three steps, the times, that nothing is filed or sent; Your details first while they're missing.
   expect(await ui.find({ type: 'Text', text: /Client documents in/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^YOUR FIRST MATTER$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^Add your details$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^Name the client and the case$/ })).toBeDefined()
-  expect(await ui.find({ type: 'Text', text: /about 1–1½ hours, in the background\. Nothing is filed or sent/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /about 1–1½ hours, in the background/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /Nothing is filed or sent/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /Type \/matters any time to come back/ })).toBeDefined()
   expect(await inActions(ui, /Add your details/)).toBeDefined()
-  expect(await inActions(ui, /Start the first matter/)).toBeDefined()
+  expect(await inActions(ui, /^New matter$/)).toBeDefined()
   expect(await ui.find({ type: 'Button', key: 'help' })).toBeDefined()
   await tap('main:start')
 
@@ -73,8 +75,9 @@ test('the first time: getting set up, the welcome, the first matter, files and a
   expect(await ui.find({ type: 'Text', text: /^Needs documents$/ })).toBeDefined()
   expect(store.prefs).toMatchObject({ onboarded: true, lastMatter: `${ROOT}/Maria Garcia I-130 I-485` })
 
-  // What to do now with nothing in the matter: the two ways to add documents, and the System Events heads-up.
-  expect(await ui.find({ type: 'Text', text: /^What to do now$/ })).toBeDefined()
+  // The next step with nothing in the matter: the two ways to add documents, and the System Events heads-up.
+  expect(await ui.find({ type: 'Text', text: /^NEXT STEP$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^Add the client’s documents$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /macOS may ask whether Claude can control System Events/ })).toBeDefined()
   expect(await inActions(ui, /Add files/)).toBeDefined()
   expect(await inActions(ui, /Build packet/)).toBeUndefined()
@@ -88,6 +91,9 @@ test('the first time: getting set up, the welcome, the first matter, files and a
   expect(await ui.find({ type: 'Text', text: /^Ready to build$/ })).toBeDefined()
   expect(await inActions(ui, /About 1–1½ hours · runs in the background/)).toBeDefined()
   expect(await inActions(ui, /About 5–10 minutes · see what’s missing first/)).toBeDefined()
+  // The numbers, and the matter's details folded under them.
+  expect(await ui.find({ type: 'Button', key: 'metric-docs' })).toMatchObject({ props: { label: 'Documents: 2' } })
+  await unfold(ui, tap, 'sec-details')
   expect(await ui.find({ type: 'Text', text: /^2 files/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^Not started · 10 steps/ })).toBeDefined()
 
@@ -110,7 +116,7 @@ test('the first time: getting set up, the welcome, the first matter, files and a
   expect(await ui.find({ type: 'Text', text: /^Review notes · 2 open$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^Worth fixing · RFE likely · found in Final review · to fix: the client$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^Minor · found in Forms review · to fix: you$/ })).toBeDefined()
-  await tap('foot-matter')
+  await tap('nav-matter')
   expect(await inActions(ui, /Build packet/)).toBeDefined()
 
   // Ask Claude about this matter: a question typed in its box goes to the chat as the attorney's own words, in the
@@ -190,7 +196,7 @@ test('build: the Your details question first, then Claude at work, then the fini
   expect(toasts.at(-1)).toBe('Garcia I-130 I-485: draft packet ready. 2 items are needed before filing.')
   expect(await ui.find({ type: 'Text', text: /^What Claude did$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^Packet build · finished .*, took / })).toBeDefined()
-  expect(await ui.find({ type: 'Markdown', text: /I built the draft packet/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /I built the draft packet/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^Draft packet$/ })).toBeDefined()
   await ui.unmount()
 })
@@ -252,7 +258,7 @@ test('a stopped run: what happened in plain words, nothing raw, and Try again pi
   expect(await ui.find({ type: 'Text', text: /^Stopped$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^The build stopped at step 3 of 10 \(Forms review\): Claude hit a temporary problem, such as a busy service or a dropped connection\. Everything finished before that is saved\.$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /overloaded|529|API Error/ })).toBeUndefined()
-  expect(await ui.find({ type: 'Markdown' })).toBeUndefined()
+  expect(await ui.find({ type: 'Text', text: /^What Claude did$/ })).toBeUndefined()
   expect(await inActions(ui, /Picks up at Forms review/)).toBeDefined()
   expect(await ui.find({ type: 'Button', key: 'watch' })).toBeDefined()
 
@@ -313,7 +319,7 @@ test('the second time: pick up where you left off when there are many matters, g
 
   expect(await ui.find({ type: 'Text', text: /^1 needs your answer · 1 ready to file$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /Pick up where you left off/ })).toBeDefined()
-  expect(await inActions(ui, /Open Garcia I-130 I-485/)).toBeDefined()
+  expect(await ui.find({ type: 'Button', key: `main:open:${garcia.path}` })).toMatchObject({ text: 'Open Garcia I-130 I-485' })
   expect(await ui.find({ type: 'Text', text: /^Needs you$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /Answer 2 questions/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^In preparation$/ })).toBeDefined()
@@ -466,7 +472,7 @@ test('the main actions are the host’s own buttons: focusable, named, the prima
   // The Finder picker stays open until the test lets it go.
   let release: () => void = () => {}
   const picking = new Promise<void>(r => { release = r })
-  const { clock, ui, ops } = await boot($, on, [garcia], { picking }, { prefs: { ...SEEN, onboarded: false } })
+  const { clock, ui, ops, tap } = await boot($, on, [garcia], { picking }, { prefs: { ...SEEN, onboarded: false } })
   // Build packet is a native button with its name, the primary one, and the b key presses it; its companion is secondary.
   const build = await ui.find({ type: 'Button', key: 'main:build' })
   expect(build?.props).toMatchObject({ label: 'Build packet', variant: 'primary', hotkey: 'b' })
@@ -475,6 +481,7 @@ test('the main actions are the host’s own buttons: focusable, named, the prima
   // What each does is said under it, in words, not drawn into the button.
   expect(await inActions(ui, /^About 1–1½ hours · runs in the background$/)).toBeDefined()
   // While a Mac picker is open, the buttons dim; nothing else does.
+  await unfold(ui, tap, 'sec-more')
   const pressed = ui.press({ plugin: PLUGIN, key: 'do-add-files' })
   let dimmed = false
   for (let i = 0; i < 20 && !dimmed; i++) {
@@ -524,49 +531,53 @@ test('a draft packet: what is needed before filing, who owes it, what is left wi
   expect(await inActions(ui, /Copy the client request/)).toBeDefined()
   expect(await inActions(ui, /2 needed before filing/)).toBeDefined()
   expect(await ui.find({ type: 'Button', key: 'open-packet' })).toBeDefined()
-  // Everything else that can be done now, each with what it does.
-  expect(await ui.find({ type: 'Text', text: /^More you can do$/ })).toBeDefined()
+  // The numbers, and what needs attention, each with the way to it.
+  expect(await ui.find({ type: 'Button', key: 'metric-needed' })).toMatchObject({ props: { label: 'Needed before filing: 2' } })
+  expect(await ui.find({ type: 'Text', text: /^Needs attention$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Button', key: 'view:doc-i94' })).toBeDefined()
+  // Everything else that can be done now, each with what it does, folded until asked for.
+  expect(await ui.find({ type: 'Text', text: /^▸ More you can do$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Button', key: 'do-change' })).toBeUndefined()
+  await unfold(ui, tap, 'sec-more')
   for (const key of ['do-add-files', 'do-change', 'do-steps', 'do-stress', 'do-intake', 'do-mark-filed']) expect(await ui.find({ type: 'Button', key })).toBeDefined()
   expect(await ui.find({ type: 'Button', key: 'do-review-again' })).toBeUndefined() // a fresh review is for before a build
+  await unfold(ui, tap, 'sec-details')
   expect(await ui.find({ type: 'Text', text: /^Draft built · 2 needed before filing$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^1 from the client · 1 decision · 1 for you to do · 2 needed before filing$/ })).toBeDefined()
 
-  // What's left: grouped by who acts, each with what to do about it.
+  // Questions: the decisions first, then the rest grouped by who acts, each with what to do about it.
   await tap('main:items')
-  expect(await ui.find({ type: 'Text', text: /^Your decisions · 1$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^Attorney decisions$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^Include an I-765 work permit application with the I-485\?$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^From the client · 1$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^For you to do · 1$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^Needed before filing$/ })).toBeDefined()
   expect(await ui.find({ type: 'Button', key: 'recv:doc-i94' })).toBeDefined()
-  expect(await ui.find({ type: 'Button', key: 'answer:decide-i765' })).toBeDefined()
+  expect(await ui.find({ type: 'Input', key: 'answer-decide-i765' })).toBeDefined()
+  expect(await ui.find({ type: 'Button', key: 'rec:decide-i765' })).toBeDefined()
   await tap('done:act-sign')
   expect(requests.at(-1)).toMatchObject({ op: 'resolve_item', matter_path: garcia.path, id: 'act-sign' })
   expect(await ui.find({ type: 'Text', text: /^✓ Marked done\. Changed your mind\?/ })).toBeDefined()
-  expect(await ui.find({ type: 'Text', text: /^What’s left$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^Questions & missing evidence$/ })).toBeDefined()
   await tap('copy-request')
   expect(copied[0]).toBe('Documents and information we still need\n\nNeeded before we can file:\n1. Your most recent I-94. Download it from the CBP site (https://i94.cbp.dhs.gov).\n\nThank you,')
   // Show the client request reads it right here, the way the memo is read; no other app opens.
   const opens = requests.filter(r => r.op === 'open_output').length
   await tap('show-request')
-  expect(await ui.find({ type: 'Text', text: /^Client request$/ })).toBeDefined()
-  expect(await ui.find({ type: 'Markdown', text: /Your most recent I-94/ })).toBeDefined()
+  expect(await ui.find({ type: 'Button', key: 'request' })).toMatchObject({ props: { label: 'Client request, shown' } })
+  expect(await ui.find({ type: 'Text', text: /Your most recent I-94/ })).toBeDefined()
   expect(requests.filter(r => r.op === 'open_output').length).toBe(opens)
   await tap('main:copy-request')
   expect(copied).toHaveLength(2)
   expect(copied[1]).toBe(copied[0])
-  // Back goes to where it was opened from: here, What's left.
-  expect(await ui.find({ type: 'Text', text: /^← Back to What’s left$/ })).toBeDefined()
-  await tap('foot-back-request')
+  // It is the Memo & request tab, beside the memo; Questions is a tab away.
+  await tap('items')
   expect(await ui.find({ type: 'Button', key: 'show-request' })).toBeDefined()
-
-  // Decisions are answered on the matter page.
-  await tap('answer:decide-i765')
-  expect(await ui.find({ type: 'Text', text: /^Garcia I-130 I-485$/ })).toBeDefined()
 
   // The memo reads right here.
   await tap('memo')
-  expect(await ui.find({ type: 'Markdown', text: /The marriage is well documented/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /The marriage is well documented/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^ATTORNEY WORK PRODUCT$/ })).toBeDefined()
   await ui.unmount()
 })
 
@@ -576,6 +587,7 @@ test('new documents after a build: Update the packet works them in', OPTS(), asy
   const { ui, tap } = await boot($, on, [garcia])
   expect(await ui.find({ type: 'Text', text: /^2 new files arrived since the packet was built\. Update the packet to work them in and re-check it\.$/ })).toBeDefined()
   expect(await inActions(ui, /Works in the 2 new files/)).toBeDefined()
+  await unfold(ui, tap, 'sec-details')
   expect(await ui.find({ type: 'Text', text: /2 new since the build/ })).toBeDefined()
 
   // Adding more files to a built matter says what to do next.
@@ -624,7 +636,6 @@ test('ask Claude about an open item or a review note: the chat box gets the matt
   expect(await ui.find({ type: 'Text', text: /^⏳ Your question is in the chat box below\. Change it if you like, then press Enter\.$/ })).toBeDefined()
   await tap('ask-item:doc-i94')
   expect(filled.at(-1)).toBe('Ask Senior Associate about Garcia I-130 I-485, about “Most recent I-94 arrival record”: Why is this needed, and what could stand in for it if the client can’t get it?')
-  await tap('foot-matter')
   await tap('packet')
   await tap('ask-note:1')
   expect(filled.at(-1)).toBe('Ask Senior Associate about Garcia I-130 I-485, about “Joint records begin two months before filing.”: Is this right, and how should we fix it?')
@@ -662,9 +673,16 @@ test('needs your answer: one box per question, the recommendation fills one, the
   ]
   const run = agents(on, 'Updating the packet: Garcia I-130 I-485')
   const { clock, ui, tap, submitted } = await boot($, on, [garcia])
-  expect(await ui.find({ type: 'Text', text: /^Claude needs your answer$/ })).toBeDefined()
-  expect(await ui.find({ type: 'Text', text: /^Answer what you can, then press Update the packet\. Anything you leave blank stays on the list for later\.$/ })).toBeDefined()
-  expect(await ui.find({ type: 'Text', text: /^Questions for you · 0 of 2 answered$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^Your judgment is needed$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^Answer what you can on Questions, then press Update the packet\. Anything you leave blank stays on the list for later\.$/ })).toBeDefined()
+  expect(await inActions(ui, /^2 questions · 0 answered$/)).toBeDefined()
+  // What waits on the Mac is said on the Overview; the questions and what the client owes are on Questions.
+  expect(await ui.find({ type: 'Text', text: /^Claude can install Ghostscript for you\. Then build again\.$/ })).toBeDefined()
+  await tap('ask-fix:3')
+  expect(submitted[0]).toMatch(/^Install Ghostscript for Senior Associate\./)
+  expect(await ui.find({ type: 'Button', key: 'check-again:3' })).toBeDefined()
+  await tap('main:items')
+  expect(await ui.find({ type: 'Text', text: /^Attorney decisions · 0 of 2 answered$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^Recommended: Yes, if he wants to work while the I-485 is pending\.$/ })).toBeDefined()
   // One box per question for the attorney; none for what waits on the client or on the Mac.
   expect(await ui.find({ type: 'Input', key: 'answer-decide-i765' })).toBeDefined()
@@ -673,10 +691,6 @@ test('needs your answer: one box per question, the recommendation fills one, the
   expect(await ui.find({ type: 'Text', text: /^Waiting on the client$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^• I-94 arrival record$/ })).toBeDefined()
   expect(await ui.find({ type: 'Button', key: 'client-add' })).toBeDefined()
-  expect(await ui.find({ type: 'Text', text: /^Claude can install Ghostscript for you\. Then build again\.$/ })).toBeDefined()
-  await tap('ask-fix:3')
-  expect(submitted[0]).toMatch(/^Install Ghostscript for Senior Associate\./)
-  expect(await ui.find({ type: 'Button', key: 'check-again:3' })).toBeDefined()
   // Only the question with a recommendation offers one.
   expect(await ui.find({ type: 'Button', key: 'rec:decide-i765' })).toBeDefined()
   expect(await ui.find({ type: 'Button', key: 'rec:decide-item-22' })).toBeUndefined()
@@ -692,6 +706,8 @@ test('needs your answer: one box per question, the recommendation fills one, the
   expect(await ui.find({ type: 'Text', text: /^✓ Answer saved\. Claude gets it when you press Update the packet\.$/ })).toBeDefined()
   expect(await ui.find({ key: `saved:${garcia.path}#decide-item-22`, text: /^✓ Saved$/ })).toBeDefined()
   expect(await ui.find({ type: 'Input', key: 'answer-decide-item-22', text: 'Answer yes and explain in the letter.' })).toBeDefined()
+  // The foot of Questions takes the saved answers to Claude.
+  expect(await ui.find({ type: 'Text', text: /^Ready to use your answers\?$/ })).toBeDefined()
   await tap('main:update')
   expect(run.spawned.length).toBe(1)
   const prompt = String(run.spawned[0]!.prompt)
@@ -710,12 +726,16 @@ test('questions asked only in a report get one box each', OPTS(), async ($, on) 
   await ($ as never as { turn: { complete: (e: unknown) => Promise<unknown> } }).turn.complete({ agentId: 'agent-1', answer: 'I reviewed the 2 documents.\n\nTwo things need you:\n\n1. Should we include an I-765?\n2. The I-94 shows a 2019 entry but the client says 2018. Which is right?', reason: 'answer', durationMs: 1000, isAborted: false, turnId: 't1' })
   run.finish('completed')
   await clock.settle()
-  expect(await ui.find({ type: 'Text', text: /^Claude needs your answer$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^Your judgment is needed$/ })).toBeDefined()
+  await tap('main:items')
   expect(await ui.find({ type: 'Text', text: /^Should we include an I-765\?$/ })).toBeDefined()
   expect(await ui.find({ type: 'Input', key: 'rq-0' })).toBeDefined()
   expect(await ui.find({ type: 'Input', key: 'rq-1' })).toBeDefined()
   // The report doesn't repeat the questions under their boxes.
-  expect(await ui.find({ type: 'Markdown', text: /Should we include/ })).toBeUndefined()
+  await tap('nav-matter')
+  expect(await ui.find({ type: 'Text', text: /^I reviewed the 2 documents\.$/ })).toBeDefined()
+  expect((await ui.findAll({ type: 'Text', text: /Should we include/ })).filter((t: { text: string }) => !/^View/.test(t.text) && t.text !== 'Should we include an I-765?')).toEqual([])
+  await tap('main:items')
   await ui.input({ plugin: PLUGIN, key: 'rq-1', text: '2019, per the I-94.', kind: 'submit' })
   await clock.settle()
   expect(await ui.find({ type: 'Text', text: /^✓ Answer saved\. Claude gets it when you press Update the packet\.$/ })).toBeDefined()
@@ -735,6 +755,7 @@ test('documents reviewed: what is missing, the client request, and Build', OPTS(
   expect(await inActions(ui, /About 1–1½ hours · runs in the background/)).toBeDefined()
   await tap('main:copy-request')
   expect(copied[0]).toMatch(/^Documents and information we still need/)
+  await unfold(ui, tap, 'sec-details')
   expect(await ui.find({ type: 'Text', text: /^1 of 10 steps done · next: Forms$/ })).toBeDefined()
   await ui.unmount()
 })
@@ -745,8 +766,11 @@ test('documents reviewed with questions: the answers go with Build packet, and t
   const run = agents(on, 'Building the packet: Kim I-129F')
   const { ui, tap } = await boot($, on, [kim])
   expect(await ui.find({ type: 'Text', text: /^Documents reviewed$/ })).toBeDefined()
-  expect(await ui.find({ type: 'Text', text: /your answers go with the build/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /Your answers go with the build/ })).toBeDefined()
   expect(await inActions(ui, /Update the packet/)).toBeUndefined()
+  await tap('items')
+  expect(await inActions(ui, /Update the packet/)).toBeUndefined()
+  expect(await inActions(ui, /^Your saved answers go with the build$/)).toBeDefined()
   await ui.input({ plugin: PLUGIN, key: 'answer-decide-meeting', text: 'Yes, in Lisbon in May 2025.', kind: 'change' })
   await tap('main:build')
   expect(run.spawned.length).toBe(1)
@@ -758,7 +782,9 @@ test('additional attorney instructions: saved on the matter, cleared, and saved 
   const lee = card('Lee I-130 I-485', 'ready', DOCS)
   const run = agents(on, 'Building the packet: Lee I-130 I-485')
   const { clock, ui, tap, ops, requests } = await boot($, on, [lee])
-  expect(await ui.find({ type: 'Text', text: /^Additional attorney instructions$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^▸ Attorney instructions$/ })).toBeDefined()
+  await unfold(ui, tap, 'sec-instructions')
+  expect(await ui.find({ type: 'Text', text: /^▾ Attorney instructions$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /Claude reads these before every step, in the build and every update after it\.$/ })).toBeDefined()
 
   // Saved: into the matter, and the page says when Claude follows them.
@@ -787,7 +813,8 @@ test('additional attorney instructions after a build say how to apply them now, 
   ruiz.attorney_instructions = 'Lead the letter with the joint lease.'
   const haddad = card('Haddad I-612', 'filed', DOCS)
   const { clock, ui, tap } = await boot($, on, [ruiz, haddad])
-  expect(await ui.find({ type: 'Text', text: /^Additional attorney instructions$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^Saved; Claude follows them$/ })).toBeDefined()
+  await unfold(ui, tap, 'sec-instructions')
   await ui.input({ plugin: PLUGIN, key: 'instructions', text: 'Lead the letter with the joint lease. Don’t include an I-765.', kind: 'submit' })
   await clock.settle()
   expect(await ui.find({ type: 'Text', text: /^✓ Instructions saved\. Claude follows them from its next run\. To redo the packet with them now, use Tell Claude what to change\.$/ })).toBeDefined()
@@ -796,7 +823,8 @@ test('additional attorney instructions after a build say how to apply them now, 
   await tap('filed-group')
   await tap(`open:${haddad.path}`)
   expect(await ui.find({ type: 'Text', text: /^Filed/ })).toBeDefined()
-  expect(await ui.find({ type: 'Text', text: /^Additional attorney instructions$/ })).toBeUndefined()
+  expect(await ui.find({ type: 'Button', key: 'sec-instructions' })).toBeUndefined()
+  expect(await ui.find({ type: 'Input', key: 'instructions' })).toBeUndefined()
   await ui.unmount()
 })
 
@@ -804,12 +832,14 @@ test('documents reviewed, then the client sends more: add documents, review them
   const kim = card('Kim I-129F', 'reviewed', DOCS)
   const run = agents(on, 'Reviewing the documents again: Kim I-129F')
   const { ui, tap, matters } = await boot($, on, [kim])
-  // With nothing new, the build comes first, and adding more and looking again is right under it, each said plainly.
-  expect(await ui.find({ type: 'Text', text: /^More you can do$/ })).toBeDefined()
+  // With nothing new, the build comes first, and adding more and looking again is under More you can do, each said plainly.
+  await unfold(ui, tap, 'sec-more')
+  expect(await ui.find({ type: 'Text', text: /^▾ More you can do$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^Add documents…$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^What the client sent, or anything left out\. Then Review the documents again shows what’s still missing\.$/ })).toBeDefined()
   expect(await ui.find({ type: 'Button', key: 'do-review-again' })).toBeDefined()
   expect(await ui.find({ type: 'Button', key: 'do-change' })).toBeUndefined() // nothing is built yet
+  await unfold(ui, tap, 'sec-details')
   expect(await ui.find({ type: 'Text', text: /^Client request$/ })).toBeDefined()
 
   // The client sends more: the page says which button works them in.
@@ -892,6 +922,7 @@ test('stop while Claude works: Stop asks first, then the matter shows where it s
   await clock.advance(15000)
   await clock.settle()
   // While it works, adding documents is still possible, and says what happens to them.
+  await unfold(ui, tap, 'sec-more')
   expect(await ui.find({ type: 'Text', text: /^Claude won’t see them in this run\. When it finishes, Update the packet works them in\.$/ })).toBeDefined()
   await tap('stop')
   expect(await ui.find({ type: 'Text', text: /^Stop Claude now\? Everything finished so far is kept\. Continue building picks up where it stopped\.$/ })).toBeDefined()
@@ -926,6 +957,7 @@ test('stopping keeps what the attorney typed: Continue building sends the same a
   on('tool.call', { tool: 'TaskStop' }, async () => ({ result: 'stopped' }) as never)
   const { ui, tap } = await mount($, clock)
   await tap(`open:${garcia.path}`)
+  await tap('items')
   await ui.input({ plugin: PLUGIN, key: 'answer-decide-i765', text: 'Yes, include it.', kind: 'change' })
   await tap('main:update')
   expect(String(run.spawned[0]!.prompt)).toContain('Answer: Yes, include it.')
@@ -1251,8 +1283,9 @@ test('your details: the G-28 discipline answer, with an explanation only when th
 
 test('help: how it works, what each status means, and the way to the setup check', OPTS(), async ($, on) => {
   const { ui, tap, ops } = await boot($, on, [card('Garcia I-130 I-485', 'ready', DOCS)], { profile: {}, open: false }, { prefs: SEEN })
-  expect(await ui.find({ type: 'Button', key: 'help', text: 'Help · Senior Associate 0.9.1' })).toBeDefined()
+  expect(await ui.find({ type: 'Button', key: 'help', text: 'Help' })).toBeDefined()
   await tap('help')
+  expect(await ui.find({ type: 'Text', text: /^Senior Associate 0\.9\.1$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^What each status means$/ })).toBeDefined()
   // How to go back, redo and change things, in the attorney's own questions.
   expect(await ui.find({ type: 'Text', text: /^How do I…$/ })).toBeDefined()
