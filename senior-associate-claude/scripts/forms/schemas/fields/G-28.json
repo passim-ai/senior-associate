@@ -1,0 +1,773 @@
+{
+ "pdf": "G-28.pdf",
+ "pdf_sha256": "d73cd620d241b0f8dae1a1be51800568595527e945b00e89814cd8804466a6b1",
+ "fields": {
+  "CheckBox1": {
+   "type": "/Btn",
+   "states": [
+    "Y"
+   ]
+  },
+  "CheckBox2": {
+   "type": "/Btn",
+   "states": [
+    "Y"
+   ]
+  },
+  "CheckBox3": {
+   "type": "/Btn",
+   "states": [
+    "Y"
+   ]
+  },
+  "CheckBox4": {
+   "type": "/Btn",
+   "states": [
+    "Y"
+   ]
+  },
+  "Checkbox1dAm": {
+   "type": "/Btn",
+   "states": [
+    "N"
+   ]
+  },
+  "Checkbox1dAmNot": {
+   "type": "/Btn",
+   "states": [
+    "Y"
+   ]
+  },
+  "Line10_MobileTelephoneNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Line11_EMail": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Line12a_StreetNumberName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Line12b_AptSteFlrNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Line12b_Unit": {
+   "type": "/Btn",
+   "states": [
+    " STE ",
+    " FLR ",
+    " APT "
+   ]
+  },
+  "Line12c_CityOrTown": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Line12d_State": {
+   "type": "/Ch",
+   "states": [
+    " ",
+    "AA",
+    "AE",
+    "AK",
+    "AL",
+    "AP",
+    "AR",
+    "AS",
+    "AZ",
+    "CA",
+    "CO",
+    "CT",
+    "DC",
+    "DE",
+    "FL",
+    "FM",
+    "GA",
+    "GU",
+    "HI",
+    "IA",
+    "ID",
+    "IL",
+    "IN",
+    "KS",
+    "KY",
+    "LA",
+    "MA",
+    "MD",
+    "ME",
+    "MH",
+    "MI",
+    "MN",
+    "MO",
+    "MP",
+    "MS",
+    "MT",
+    "NC",
+    "ND",
+    "NE",
+    "NH",
+    "NJ",
+    "NM",
+    "NV",
+    "NY",
+    "OH",
+    "OK",
+    "OR",
+    "PA",
+    "PR",
+    "PW",
+    "RI",
+    "SC",
+    "SD",
+    "TN",
+    "TX",
+    "UT",
+    "VA",
+    "VI",
+    "VT",
+    "WA",
+    "WI",
+    "WV",
+    "WY"
+   ]
+  },
+  "Line12e_ZipCode": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Line12f_Province": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Line12g_PostalCode": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Line12h_Country": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Line1_Signature": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Line1a_USCIS": {
+   "type": "/Btn",
+   "states": [
+    "Y"
+   ]
+  },
+  "Line1b_ListFormNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Line2_SignatureStudent": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Line2a_ICE": {
+   "type": "/Btn",
+   "states": [
+    "Y"
+   ]
+  },
+  "Line2b_ListMatter": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Line2b_NameofOrganization": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Line2c_DateExpires": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Line3_Date": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Line3_NameofAttorneyOrRep": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Line3a_CBP": {
+   "type": "/Btn",
+   "states": [
+    "Y"
+   ]
+  },
+  "Line3a_StreetNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Line3b_AptSteFlrNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Line3b_ListSpecificMatter": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Line3b_Unit": {
+   "type": "/Btn",
+   "states": [
+    " STE ",
+    " FLR ",
+    " APT "
+   ]
+  },
+  "Line3c_CityOrTown": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Line3d_State": {
+   "type": "/Ch",
+   "states": [
+    " ",
+    "AA",
+    "AE",
+    "AK",
+    "AL",
+    "AP",
+    "AR",
+    "AS",
+    "AZ",
+    "CA",
+    "CO",
+    "CT",
+    "DC",
+    "DE",
+    "FL",
+    "FM",
+    "GA",
+    "GU",
+    "HI",
+    "IA",
+    "ID",
+    "IL",
+    "IN",
+    "KS",
+    "KY",
+    "LA",
+    "MA",
+    "MD",
+    "ME",
+    "MH",
+    "MI",
+    "MN",
+    "MO",
+    "MP",
+    "MS",
+    "MT",
+    "NC",
+    "ND",
+    "NE",
+    "NH",
+    "NJ",
+    "NM",
+    "NV",
+    "NY",
+    "OH",
+    "OK",
+    "OR",
+    "PA",
+    "PR",
+    "PW",
+    "RI",
+    "SC",
+    "SD",
+    "TN",
+    "TX",
+    "UT",
+    "VA",
+    "VI",
+    "VT",
+    "WA",
+    "WI",
+    "WV",
+    "WY"
+   ]
+  },
+  "Line3e_ZipCode": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Line3f_Province": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Line3g_PostalCode": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Line3h_Country": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Line4_Checkbox": {
+   "type": "/Btn",
+   "states": [
+    "R",
+    "A",
+    "B",
+    "P",
+    "BD"
+   ]
+  },
+  "Line4_DaytimeTelephoneNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Line4b_LawStudent": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Line6_EMail": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Line7_MobileTelephoneNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Line9_DaytimeTelephoneNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "P5_Line6a_SignatureofApplicant": {
+   "type": "/Tx",
+   "states": []
+  },
+  "PDF417BarCode1": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt1ItemNumber7_FaxNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt1Line1_USCISOnlineAcctNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt1Line2a_FamilyName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt1Line2b_GivenName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt1Line2c_MiddleName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt2Line1a_LicensingAuthority": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt2Line1b_BarNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt2Line1d_NameofFirmOrOrganization": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt3Line4_ReceiptNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt3Line5a_FamilyName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt3Line5b_GivenName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt3Line5c_MiddleName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt3Line7a_NameOfEntity": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt3Line7b_TitleofEntity": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt3Line8_USCISOnlineAcctNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt3Line9_ANumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt4Line2a_CheckBox2a": {
+   "type": "/Btn",
+   "states": [
+    "Y"
+   ]
+  },
+  "Pt4Line2b_CheckBox2b": {
+   "type": "/Btn",
+   "states": [
+    "Y"
+   ]
+  },
+  "Pt4Line2b_DateofSignature": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt4Line2c_CheckBox2c": {
+   "type": "/Btn",
+   "states": [
+    "Y"
+   ]
+  },
+  "Pt5Line2b_DateofSignature": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line3a_PageNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line3b_PartNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line3c_ItemNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line3d_AdditionalInfo": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line4a_PageNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line4b_PartNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line4c_ItemNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line4d_AdditionalInfo": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line5a_PageNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line5b_PartNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line5c_ItemNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line5d_AdditionalInfo": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line6a_PageNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line6b_PartNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line6c_ItemNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line6d_AdditionalInfo": {
+   "type": "/Tx",
+   "states": []
+  }
+ },
+ "widgets": {
+  "CheckBox1": [
+   "1 343.0 625.0 353.0 635.0"
+  ],
+  "CheckBox2": [
+   "1 343.0 361.0 353.0 371.0"
+  ],
+  "CheckBox3": [
+   "1 343.0 223.0 353.0 233.0"
+  ],
+  "CheckBox4": [
+   "1 343.0 139.0 353.0 149.0"
+  ],
+  "Checkbox1dAm": [
+   "1 490.1 475.0 500.1 485.0"
+  ],
+  "Checkbox1dAmNot": [
+   "1 439.0 475.0 449.0 485.0"
+  ],
+  "Line10_MobileTelephoneNumber": [
+   "2 342.0 648.0 576.0 666.0"
+  ],
+  "Line11_EMail": [
+   "2 342.0 612.0 576.0 630.0"
+  ],
+  "Line12a_StreetNumberName": [
+   "2 402.0 504.0 576.0 522.0"
+  ],
+  "Line12b_AptSteFlrNumber": [
+   "2 468.0 480.0 576.0 498.0"
+  ],
+  "Line12b_Unit": [
+   "2 384.0 484.0 394.0 494.0",
+   "2 426.0 484.0 436.0 494.0",
+   "2 342.0 484.0 352.0 494.0"
+  ],
+  "Line12c_CityOrTown": [
+   "2 402.0 456.0 576.0 474.0"
+  ],
+  "Line12d_State": [
+   "2 366.0 432.0 402.0 450.0"
+  ],
+  "Line12e_ZipCode": [
+   "2 474.0 432.0 576.0 450.0"
+  ],
+  "Line12f_Province": [
+   "2 402.0 408.0 576.2 426.0"
+  ],
+  "Line12g_PostalCode": [
+   "2 402.0 384.0 576.2 402.0"
+  ],
+  "Line12h_Country": [
+   "2 342.0 348.0 576.0 366.0"
+  ],
+  "Line1_Signature": [
+   "3 342.0 606.0 576.0 624.0"
+  ],
+  "Line1a_USCIS": [
+   "2 60.9 631.0 70.9 641.0"
+  ],
+  "Line1b_ListFormNumber": [
+   "2 59.9 582.0 293.9 600.0"
+  ],
+  "Line2_SignatureStudent": [
+   "3 342.0 546.0 576.0 564.0"
+  ],
+  "Line2a_ICE": [
+   "2 61.1 565.0 71.1 575.0"
+  ],
+  "Line2b_ListMatter": [
+   "2 60.1 528.0 294.0 546.0"
+  ],
+  "Line2b_NameofOrganization": [
+   "1 342.0 276.0 576.0 294.0"
+  ],
+  "Line2c_DateExpires": [
+   "1 480.0 240.0 576.2 258.0"
+  ],
+  "Line3_Date": [
+   "3 485.8 582.0 576.0 600.0"
+  ],
+  "Line3_NameofAttorneyOrRep": [
+   "1 360.0 204.0 570.0 222.0"
+  ],
+  "Line3a_CBP": [
+   "2 61.1 511.0 71.1 521.0"
+  ],
+  "Line3a_StreetNumber": [
+   "1 126.1 468.0 294.1 486.0"
+  ],
+  "Line3b_AptSteFlrNumber": [
+   "1 186.0 444.0 294.1 462.0"
+  ],
+  "Line3b_ListSpecificMatter": [
+   "2 60.1 474.0 294.0 492.0"
+  ],
+  "Line3b_Unit": [
+   "1 102.0 448.0 112.0 458.0",
+   "1 144.0 448.0 154.0 458.0",
+   "1 60.0 448.0 70.0 458.0"
+  ],
+  "Line3c_CityOrTown": [
+   "1 120.0 420.0 294.1 438.0"
+  ],
+  "Line3d_State": [
+   "1 84.1 396.0 120.1 414.0"
+  ],
+  "Line3e_ZipCode": [
+   "1 192.0 396.0 294.0 414.0"
+  ],
+  "Line3f_Province": [
+   "1 119.8 372.0 293.9 390.0"
+  ],
+  "Line3g_PostalCode": [
+   "1 119.8 348.0 293.9 366.0"
+  ],
+  "Line3h_Country": [
+   "1 60.0 312.0 293.9 330.0"
+  ],
+  "Line4_Checkbox": [
+   "2 205.0 394.0 215.0 404.0",
+   "2 61.0 394.0 71.0 404.0",
+   "2 181.0 379.0 191.0 389.0",
+   "2 133.0 394.0 143.0 404.0",
+   "2 61.0 379.0 71.0 389.0"
+  ],
+  "Line4_DaytimeTelephoneNumber": [
+   "1 60.1 234.0 294.1 252.0"
+  ],
+  "Line4b_LawStudent": [
+   "1 342.0 66.0 576.0 84.0"
+  ],
+  "Line6_EMail": [
+   "1 60.0 198.0 294.0 216.0"
+  ],
+  "Line7_MobileTelephoneNumber": [
+   "1 60.0 162.0 294.0 180.0"
+  ],
+  "Line9_DaytimeTelephoneNumber": [
+   "2 342.0 684.0 576.0 702.0"
+  ],
+  "P5_Line6a_SignatureofApplicant": [
+   "3 60.0 222.0 294.0 240.0"
+  ],
+  "PDF417BarCode1": [
+   "1 192.0 11.3 462.0 30.0",
+   "2 192.0 11.3 462.0 30.0",
+   "3 192.0 11.3 462.0 30.0",
+   "4 192.0 11.3 462.0 30.0"
+  ],
+  "Pt1ItemNumber7_FaxNumber": [
+   "1 60.0 126.0 294.0 144.0"
+  ],
+  "Pt1Line1_USCISOnlineAcctNumber": [
+   "1 120.1 624.0 294.1 642.0"
+  ],
+  "Pt1Line2a_FamilyName": [
+   "1 120.0 570.0 294.0 588.0"
+  ],
+  "Pt1Line2b_GivenName": [
+   "1 120.0 546.0 294.0 564.0"
+  ],
+  "Pt1Line2c_MiddleName": [
+   "1 120.0 522.0 294.0 540.0"
+  ],
+  "Pt2Line1a_LicensingAuthority": [
+   "1 360.0 528.0 576.0 546.0"
+  ],
+  "Pt2Line1b_BarNumber": [
+   "1 342.0 492.0 576.0 510.0"
+  ],
+  "Pt2Line1d_NameofFirmOrOrganization": [
+   "1 342.0 378.0 576.0 396.0"
+  ],
+  "Pt3Line4_ReceiptNumber": [
+   "2 105.6 438.0 294.0 456.0"
+  ],
+  "Pt3Line5a_FamilyName": [
+   "2 120.0 294.0 294.0 312.0",
+   "4 120.0 606.0 294.0 624.0"
+  ],
+  "Pt3Line5b_GivenName": [
+   "2 120.0 270.0 294.0 288.0",
+   "4 120.0 582.0 294.0 600.0"
+  ],
+  "Pt3Line5c_MiddleName": [
+   "2 120.0 246.0 294.0 264.0",
+   "4 120.0 558.0 294.0 576.0"
+  ],
+  "Pt3Line7a_NameOfEntity": [
+   "2 60.0 210.1 294.0 228.1"
+  ],
+  "Pt3Line7b_TitleofEntity": [
+   "2 60.0 174.0 294.0 192.0"
+  ],
+  "Pt3Line8_USCISOnlineAcctNumber": [
+   "2 119.9 138.0 294.0 156.0"
+  ],
+  "Pt3Line9_ANumber": [
+   "2 162.0 102.0 294.0 120.0"
+  ],
+  "Pt4Line2a_CheckBox2a": [
+   "3 61.0 535.0 71.0 545.0"
+  ],
+  "Pt4Line2b_CheckBox2b": [
+   "3 61.0 481.0 71.0 491.0"
+  ],
+  "Pt4Line2b_DateofSignature": [
+   "3 204.0 198.0 294.0 216.0"
+  ],
+  "Pt4Line2c_CheckBox2c": [
+   "3 61.0 313.0 71.0 323.0"
+  ],
+  "Pt5Line2b_DateofSignature": [
+   "3 485.8 522.0 576.0 540.0"
+  ],
+  "Pt9Line3a_PageNumber": [
+   "4 60.0 516.0 114.0 534.0"
+  ],
+  "Pt9Line3b_PartNumber": [
+   "4 150.0 516.0 204.0 534.0"
+  ],
+  "Pt9Line3c_ItemNumber": [
+   "4 240.0 516.0 294.0 534.0"
+  ],
+  "Pt9Line3d_AdditionalInfo": [
+   "4 60.0 312.0 294.0 510.0"
+  ],
+  "Pt9Line4a_PageNumber": [
+   "4 60.0 270.0 114.0 288.0"
+  ],
+  "Pt9Line4b_PartNumber": [
+   "4 150.0 270.0 204.0 288.0"
+  ],
+  "Pt9Line4c_ItemNumber": [
+   "4 240.0 270.0 294.0 288.0"
+  ],
+  "Pt9Line4d_AdditionalInfo": [
+   "4 60.0 66.0 294.0 264.0"
+  ],
+  "Pt9Line5a_PageNumber": [
+   "4 342.2 708.0 396.2 726.0"
+  ],
+  "Pt9Line5b_PartNumber": [
+   "4 432.2 708.0 486.2 726.0"
+  ],
+  "Pt9Line5c_ItemNumber": [
+   "4 522.0 708.0 576.0 726.0"
+  ],
+  "Pt9Line5d_AdditionalInfo": [
+   "4 342.2 504.0 576.3 702.0"
+  ],
+  "Pt9Line6a_PageNumber": [
+   "4 342.2 234.0 396.2 252.0",
+   "4 342.2 462.0 396.2 480.0"
+  ],
+  "Pt9Line6b_PartNumber": [
+   "4 432.0 234.0 486.0 252.0",
+   "4 432.0 462.0 486.0 480.0"
+  ],
+  "Pt9Line6c_ItemNumber": [
+   "4 521.8 234.0 575.8 252.0",
+   "4 521.8 462.0 575.8 480.0"
+  ],
+  "Pt9Line6d_AdditionalInfo": [
+   "4 342.2 276.0 576.3 456.0",
+   "4 342.2 48.0 576.3 228.0"
+  ]
+ }
+}

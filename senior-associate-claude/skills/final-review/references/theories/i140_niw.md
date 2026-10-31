@@ -1,0 +1,11 @@
+# I-140 national interest waiver petition packet
+
+Officer theories that most often drive an RFE, NOID, or denial in this case type. Read them with `../checklists.md`, which has the checks for every packet (and the theories for any I-485). The authorities files carry the citations; confirm a theory against current authority before you rely on it.
+
+- A rejection on its face: Part 1 items 5 and 6 unanswered, the wrong Asylum Program Fee for the answers given, or an unsigned petition (uscis.gov/i-140 filing tips). No ETA-9089 Appendix A, or a Final Determination not signed by the petitioner, the attorney and the beneficiary: required initial evidence, without which "USCIS may reject or deny your petition" (I-140 instructions, p. 7).
+- EB-2 not shown first: experience before the bachelor's or outside the specialty counted toward the five years, a three-year degree treated as a bachelor's (*Matter of Shah*, 17 I&N Dec. 244, 245 (Reg'l Comm'r 1977)), exceptional ability resting on three criteria with no final merits showing, or an occupation behind the endeavor that isn't a profession (6 USCIS-PM F.5(D)(1)).
+- An endeavor described as an occupation or a list of job duties, or national importance argued from the field, a labor shortage, or benefit to the employer and its clients, instead of the endeavor's own broader implications (6 USCIS-PM F.5(D)(3); *Matter of Dhanasar*, 26 I&N Dec. 884, 889 (AAO 2016)).
+- Well positioned asserted, not shown: letters from close colleagues only, generic letters without specific examples, letters the rest of the record doesn't corroborate (*Matter of Caron International*, 19 I&N Dec. 791, 795 (Comm'r 1988)), or a business plan with no independent evidence of progress or interest.
+- The third prong argued as a labor shortage, or not argued at all; for an employer-filed petition, no reason a labor certification is impractical.
+- An endeavor that differs between the letter, I-140 Part 6, the ETA-9089 Appendix A and the petitioner's statement: an RFE that invites redefining it is a material-change trap (*Matter of Izummi*, 22 I&N Dec. 169, 175 (Assoc. Comm'r 1998)).
+- A denial is generally unreviewable in court (*Poursina v. USCIS*, 936 F.3d 868 (9th Cir. 2019)), so a weak point left for an RFE response costs more than it does elsewhere.

@@ -1,0 +1,2735 @@
+{
+ "pdf": "I-693.pdf",
+ "pdf_sha256": "ac8d8032f4bf1421ed2ce76c9754aa5f68b636cbb9b18b5ab16bf09bca5403d2",
+ "fields": {
+  "P10_Remarks": {
+   "type": "/Tx",
+   "states": []
+  },
+  "P10_Results": {
+   "type": "/Btn",
+   "states": [
+    "A",
+    "D",
+    "B"
+   ]
+  },
+  "P10_TDVaccineCheckBox": {
+   "type": "/Btn",
+   "states": [
+    "Td"
+   ]
+  },
+  "P10_USCIS_Remarks": {
+   "type": "/Tx",
+   "states": []
+  },
+  "P10_VaccineCheckBox": {
+   "type": "/Btn",
+   "states": [
+    "DT",
+    "DTP",
+    "DTaP"
+   ]
+  },
+  "P1Line2_CityOrTown": {
+   "type": "/Tx",
+   "states": []
+  },
+  "P1Line2_Country": {
+   "type": "/Tx",
+   "states": []
+  },
+  "P1Line2_PostalCode": {
+   "type": "/Tx",
+   "states": []
+  },
+  "P1Line2_Province": {
+   "type": "/Tx",
+   "states": []
+  },
+  "P1Line2_State": {
+   "type": "/Ch",
+   "states": [
+    " ",
+    "AA",
+    "AE",
+    "AK",
+    "AL",
+    "AP",
+    "AR",
+    "AS",
+    "AZ",
+    "CA",
+    "CO",
+    "CT",
+    "DC",
+    "DE",
+    "FL",
+    "FM",
+    "GA",
+    "GU",
+    "HI",
+    "IA",
+    "ID",
+    "IL",
+    "IN",
+    "KS",
+    "KY",
+    "LA",
+    "MA",
+    "MD",
+    "ME",
+    "MH",
+    "MI",
+    "MN",
+    "MO",
+    "MP",
+    "MS",
+    "MT",
+    "NC",
+    "ND",
+    "NE",
+    "NH",
+    "NJ",
+    "NM",
+    "NV",
+    "NY",
+    "OH",
+    "OK",
+    "OR",
+    "PA",
+    "PR",
+    "PW",
+    "RI",
+    "SC",
+    "SD",
+    "TN",
+    "TX",
+    "UT",
+    "VA",
+    "VI",
+    "VT",
+    "WA",
+    "WI",
+    "WV",
+    "WY"
+   ]
+  },
+  "P1Line2_ZipCode": {
+   "type": "/Tx",
+   "states": []
+  },
+  "P9_TDVaccineCheckBox": {
+   "type": "/Btn",
+   "states": [
+    "Tdap"
+   ]
+  },
+  "PDF417BarCode2": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line10_ContraCheckBox10": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt10Line10_DateGiven_1": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line10_InsufficientCheckBox10": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt10Line10_InsufficientCheckBox9": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt10Line10_NotAge10": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt10Line10a_DateReceived_1": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line10b_DateReceived_2": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line10c_DateReceived_3": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line10d_DateReceived_4": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line11_ContraCheckBox11": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt10Line11_DateGiven_1": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line11_InsufficientCheckBox11": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt10Line11_NotAge11": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt10Line11a_DateReceived_1": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line11b_DateReceived_2": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line11c_DateReceived_3": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line11d_DateReceived_4": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line12_ContraCheckBox12": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt10Line12_DateGiven_1": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line12_InsufficientCheckBox12": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt10Line12_NotAge12": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt10Line12a_DateReceived_1": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line12b_DateReceived_2": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line12c_DateReceived_3": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line12d_DateReceived_4": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line13_CheckBox13": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt10Line13_CompleteSeries": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line13_ContraCheckBox12": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt10Line13_DateGiven_1": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line13_InsufficientCheckBox12": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt10Line13_NotAge12": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt10Line13a_DateReceived_1": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line13b_DateReceived_2": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line13c_DateReceived_3": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line13d_DateReceived_4": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line1_CompleteSeries": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line1_ContraCheckBox1": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt10Line1_DTCompleteSeries": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line1_DTDateGiven": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line1_DTDateReceived1": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line1_DTDateReceived2": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line1_DTDateReceived3": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line1_DTDateReceived4": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line1_HBCompleteSeries": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line1_InsufficientCheckBox1": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt10Line1_NotAge1": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt10Line2_InsufficientCheckBox2": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt10Line2_NotAge2": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt10Line2_TdCompleteSeries": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line2_TdContra": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt10Line2_TdDateGiven": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line2_TdDateReceived1": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line2_TdDateReceived2": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line2_TdDateReceived3": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line2_TdDateReceived4": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line3_ContraCheckBox3": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt10Line3_DateGiven_1": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line3_InsufficientCheckBox3": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt10Line3_NotAge3": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt10Line3a_DateReceived_1": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line3b_DateReceived_2": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line3c_DateReceived_3": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line3d_DateReceived_4": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line4_ContraCheckBox4": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt10Line4_DateGiven_1": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line4_InsufficientCheckBox4": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt10Line4_NotAge4": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt10Line4a_DateReceived_1": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line4b_DateReceived_2": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line4c_DateReceived_3": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line4d_DateReceived_4": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line5_ContraCheckBox5": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt10Line5_DateGiven_1": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line5_InsufficientCheckBox5": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt10Line5_NotAge5": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt10Line5a_DateReceived_1": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line5b_DateReceived_2": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line5c_DateReceived_3": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line5d_DateReceived_4": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line6_ContraCheckBox6": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt10Line6_HBDateGiven": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line6_HBDateReceived1": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line6_HBDateReceived2": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line6_HBDateReceived3": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line6_HBDateReceived4": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line6_InsufficientCheckBox6": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt10Line6_NotAge6": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt10Line7_ContraCheckBox7": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt10Line7_DateGiven_1": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line7_InsufficientCheckBox7": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt10Line7_NotAge7": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt10Line7a_DateReceived_1": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line7b_DateReceived_2": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line7c_DateReceived_3": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line7d_DateReceived_4": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line8_ContraCheckBox8": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt10Line8_DateGiven_1": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line8_InsufficientCheckBox8": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt10Line8_NotAge8": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt10Line8a_DateReceived_1": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line8b_DateReceived_2": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line8c_DateReceived_3": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line8d_DateReceived_4": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line9_ContraCheckBox9": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt10Line9_DateGiven_1": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line9_InfluVaccineInsufficient9": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt10Line9_NotAge9": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt10Line9a_DateReceived_1": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line9b_DateReceived_2": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line9c_DateReceived_3": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line9d_DateReceived_4": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10_PVVaccineCheckBox": {
+   "type": "/Btn",
+   "states": [
+    "OPV",
+    "IPV"
+   ]
+  },
+  "Pt11Line3a_PageNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt11Line3b_PartNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt11Line3c_ItemNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt11Line3d_AdditionalInfo": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt11Line4a_PageNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt11Line4b_PartNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt11Line4c_ItemNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt11Line4d_AdditionalInfo": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt11Line5a_PageNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt11Line5b_PartNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt11Line5c_ItemNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt11Line5d_AdditionalInfo": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt11Line6a_PageNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt11Line6b_PartNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt11Line6c_ItemNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt11Line6d_AdditionalInfo": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt1Line1a_FamilyName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt1Line1b_GivenName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt1Line1c_MiddleName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt1Line2_AptSteFlrNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt1Line2_StreetNumberName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt1Line2_Unit": {
+   "type": "/Btn",
+   "states": [
+    " FLR ",
+    " STE ",
+    " APT "
+   ]
+  },
+  "Pt1Line3_CityTownVillageofBirth": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt1Line3_CountryofBirth": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt1Line3_DateOfBirth": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt1Line3_Gender": {
+   "type": "/Btn",
+   "states": [
+    "M",
+    "F"
+   ]
+  },
+  "Pt1Line3e_AlienNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt1Line3f_USCISOnlineAcctNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt1_Line4_ImmMedExamReq": {
+   "type": "/Btn",
+   "states": [
+    "A"
+   ]
+  },
+  "Pt2Line3_DaytimePhone": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt2Line4_Mobilephone": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt2Line5_EmailAddress": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt2Line6_ApplicantSignature": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt2Line6_DateofSignature": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt3Line1_InterpreterFamilyName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt3Line1_InterpreterGivenName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt3Line2_NameofBusinessorOrgName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt3Line4_DaytimePhone": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt3Line5_MobilePhone": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt3Line6_EmailAddress": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt3Line7_DateofSignature": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt3Line7_Signature": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt3Line_NameOfLanguage": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt4Line1_PreparerFamilyName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt4Line1_PreparerGivenName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt4Line2_PreparerNameofBusinessorOrgName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt4Line3_DaytimePhone": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt4Line4_MobilePhone": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt4Line5_EmailAddress": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt4Line8_DateofSignature": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt4Line8_Signature": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line1_ApplicantFormOfID": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line2_IDNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt6Line1_OverallFinding": {
+   "type": "/Btn",
+   "states": [
+    "B",
+    "A",
+    "C"
+   ]
+  },
+  "Pt6Line2_DateoExam": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt6Line3_DateofExam1": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt6Line3_DateofExam2": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt6Line3_DateofExam3": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt7Line1B1b_DateScreeningRun": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt7Line1B1c_TiterOne": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt7Line1B1d_name": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt7Line1B1h_DateOfrepeatTest": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt7Line1C1b_DateScreeningNucleicAcid": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt7Line1_CivilSurgeonID": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt7Line1_CompleteSeries": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt7Line1_FamilyName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt7Line1_GivenName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt7Line1_MiddleName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt7Line2_MedPracticeName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt7Line3_AptSteFlrNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt7Line3_CityOrTown": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt7Line3_State": {
+   "type": "/Ch",
+   "states": [
+    " ",
+    "AA",
+    "AE",
+    "AK",
+    "AL",
+    "AP",
+    "AR",
+    "AS",
+    "AZ",
+    "CA",
+    "CO",
+    "CT",
+    "DC",
+    "DE",
+    "FL",
+    "FM",
+    "GA",
+    "GU",
+    "HI",
+    "IA",
+    "ID",
+    "IL",
+    "IN",
+    "KS",
+    "KY",
+    "LA",
+    "MA",
+    "MD",
+    "ME",
+    "MH",
+    "MI",
+    "MN",
+    "MO",
+    "MP",
+    "MS",
+    "MT",
+    "NC",
+    "ND",
+    "NE",
+    "NH",
+    "NJ",
+    "NM",
+    "NV",
+    "NY",
+    "OH",
+    "OK",
+    "OR",
+    "PA",
+    "PR",
+    "PW",
+    "RI",
+    "SC",
+    "SD",
+    "TN",
+    "TX",
+    "UT",
+    "VA",
+    "VI",
+    "VT",
+    "WA",
+    "WI",
+    "WV",
+    "WY"
+   ]
+  },
+  "Pt7Line3_StreetNumberName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt7Line3_Unit": {
+   "type": "/Btn",
+   "states": [
+    " FLR ",
+    " STE ",
+    " APT "
+   ]
+  },
+  "Pt7Line3_ZipCode": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt7Line4_AptSteFlrNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt7Line4_CityOrTown": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt7Line4_State": {
+   "type": "/Ch",
+   "states": [
+    " ",
+    "AA",
+    "AE",
+    "AK",
+    "AL",
+    "AP",
+    "AR",
+    "AS",
+    "AZ",
+    "CA",
+    "CO",
+    "CT",
+    "DC",
+    "DE",
+    "FL",
+    "FM",
+    "GA",
+    "GU",
+    "HI",
+    "IA",
+    "ID",
+    "IL",
+    "IN",
+    "KS",
+    "KY",
+    "LA",
+    "MA",
+    "MD",
+    "ME",
+    "MH",
+    "MI",
+    "MN",
+    "MO",
+    "MP",
+    "MS",
+    "MT",
+    "NC",
+    "ND",
+    "NE",
+    "NH",
+    "NJ",
+    "NM",
+    "NV",
+    "NY",
+    "OH",
+    "OK",
+    "OR",
+    "PA",
+    "PR",
+    "PW",
+    "RI",
+    "SC",
+    "SD",
+    "TN",
+    "TX",
+    "UT",
+    "VA",
+    "VI",
+    "VT",
+    "WA",
+    "WI",
+    "WV",
+    "WY"
+   ]
+  },
+  "Pt7Line4_StreetNumberName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt7Line4_Unit": {
+   "type": "/Btn",
+   "states": [
+    " FLR ",
+    " STE ",
+    " APT "
+   ]
+  },
+  "Pt7Line4_ZipCode": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt7Line5_DaytimePhone": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt7Line6_MobilePhone": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt7Line7_CivilSurgeonSignature": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt7Line7_EmailAddress": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt7Line8_DateofSignature": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line1A1_QFDate": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line1A1_Result": {
+   "type": "/Btn",
+   "states": [
+    "N",
+    "P",
+    "I"
+   ]
+  },
+  "Pt8Line1A1_TSDate": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line1A2_InitialScreening": {
+   "type": "/Btn",
+   "states": [
+    "A",
+    "D",
+    "C",
+    "B"
+   ]
+  },
+  "Pt8Line1A3_Cavitylesion": {
+   "type": "/Btn",
+   "states": [
+    "E"
+   ]
+  },
+  "Pt8Line1A3_DiscreteNodule": {
+   "type": "/Btn",
+   "states": [
+    "Discrete Nodule"
+   ]
+  },
+  "Pt8Line1A3_DiscretelinearOpac": {
+   "type": "/Btn",
+   "states": [
+    "H"
+   ]
+  },
+  "Pt8Line1A3_Hilar": {
+   "type": "/Btn",
+   "states": [
+    "G"
+   ]
+  },
+  "Pt8Line1A3_Infiltrate": {
+   "type": "/Btn",
+   "states": [
+    "Infiltrate"
+   ]
+  },
+  "Pt8Line1A3_Irregularthickpleural": {
+   "type": "/Btn",
+   "states": [
+    "C"
+   ]
+  },
+  "Pt8Line1A3_Miliary": {
+   "type": "/Btn",
+   "states": [
+    "C"
+   ]
+  },
+  "Pt8Line1A3_NodulesorMass": {
+   "type": "/Btn",
+   "states": [
+    "F"
+   ]
+  },
+  "Pt8Line1A3_Other": {
+   "type": "/Btn",
+   "states": [
+    "H"
+   ]
+  },
+  "Pt8Line1A3_Pleuraleffusion": {
+   "type": "/Btn",
+   "states": [
+    "PE"
+   ]
+  },
+  "Pt8Line1A3_Results": {
+   "type": "/Btn",
+   "states": [
+    "N",
+    "A"
+   ]
+  },
+  "Pt8Line1A3_Reticular": {
+   "type": "/Btn",
+   "states": [
+    "B"
+   ]
+  },
+  "Pt8Line1A3_Volumeloss": {
+   "type": "/Btn",
+   "states": [
+    "G"
+   ]
+  },
+  "Pt8Line1A3_XrayReadDate": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line1A3_XrayTakenDate": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line1A4_SputumSmearsCultures": {
+   "type": "/Btn",
+   "states": [
+    "No",
+    "B",
+    "C",
+    "E",
+    "D"
+   ]
+  },
+  "Pt8Line1A6_TBClassification": {
+   "type": "/Btn",
+   "states": [
+    "NOClassA",
+    "CA",
+    "B1Pul",
+    "B0",
+    "B1Extrapul",
+    "B2 TB Latent",
+    "Class B Other Chest "
+   ]
+  },
+  "Pt8Line1A7_Remarks": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line1A_GammarRelease": {
+   "type": "/Btn",
+   "states": [
+    "TS",
+    "QF",
+    "IGRA"
+   ]
+  },
+  "Pt8Line1B1a_name": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line1B1b_DateNontrepoemaltest": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line1B1c_DateNontreponemalTest": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line1B1c_SyphilisScreen": {
+   "type": "/Btn",
+   "states": [
+    "B",
+    "A"
+   ]
+  },
+  "Pt8Line1B1d_TreponemalReactiveNon": {
+   "type": "/Btn",
+   "states": [
+    "B",
+    "C"
+   ]
+  },
+  "Pt8Line1B1d_name": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line1B1e_DateScreeningRun": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line1B1f_TiterOne": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line1B1g_nameOfrepeat": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line1B1i_RepeatReativeNon": {
+   "type": "/Btn",
+   "states": [
+    "A",
+    "B"
+   ]
+  },
+  "Pt8Line1B2_Findings": {
+   "type": "/Btn",
+   "states": [
+    "A",
+    "C",
+    "B"
+   ]
+  },
+  "Pt8Line1B3_Dosage": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line1B3_Drug": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line1B3_Remarks": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line1B3_endDate": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line1B3_startDate": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line1C1a_name": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line1C1c": {
+   "type": "/Btn",
+   "states": [
+    "P",
+    "N"
+   ]
+  },
+  "Pt8Line1C1c_Checkboxg": {
+   "type": "/Btn",
+   "states": [
+    "I",
+    "M"
+   ]
+  },
+  "Pt8Line1C2_Remarks": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line1C3_Dosage": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line1C3_Drug": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line1C3_endDate": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line1C3_startDate": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line1D1_Findings": {
+   "type": "/Btn",
+   "states": [
+    "a",
+    "b",
+    "c"
+   ]
+  },
+  "Pt8Line1D1b_Checkboxf": {
+   "type": "/Btn",
+   "states": [
+    "I",
+    "M"
+   ]
+  },
+  "Pt8Line1c2_Findings": {
+   "type": "/Btn",
+   "states": [
+    "C",
+    "B",
+    "A"
+   ]
+  },
+  "Pt8Line1c3_Remarks": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line2A_Disorders": {
+   "type": "/Btn",
+   "states": [
+    "1",
+    "5",
+    "4",
+    "3",
+    "2"
+   ]
+  },
+  "Pt8Line2B_Remarks": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line3A_Findings": {
+   "type": "/Btn",
+   "states": [
+    "4",
+    "3",
+    "1",
+    "2"
+   ]
+  },
+  "Pt8Line3B_Remarks": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line4_ListOtherMedConditions": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line5A_DoctorOrHDptName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line5B_AptSteFlrNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line5B_CityOrTown": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line5B_State": {
+   "type": "/Ch",
+   "states": [
+    " ",
+    "AA",
+    "AE",
+    "AK",
+    "AL",
+    "AP",
+    "AR",
+    "AS",
+    "AZ",
+    "CA",
+    "CO",
+    "CT",
+    "DC",
+    "DE",
+    "FL",
+    "FM",
+    "GA",
+    "GU",
+    "HI",
+    "IA",
+    "ID",
+    "IL",
+    "IN",
+    "KS",
+    "KY",
+    "LA",
+    "MA",
+    "MD",
+    "ME",
+    "MH",
+    "MI",
+    "MN",
+    "MO",
+    "MP",
+    "MS",
+    "MT",
+    "NC",
+    "ND",
+    "NE",
+    "NH",
+    "NJ",
+    "NM",
+    "NV",
+    "NY",
+    "OH",
+    "OK",
+    "OR",
+    "PA",
+    "PR",
+    "PW",
+    "RI",
+    "SC",
+    "SD",
+    "TN",
+    "TX",
+    "UT",
+    "VA",
+    "VI",
+    "VT",
+    "WA",
+    "WI",
+    "WV",
+    "WY"
+   ]
+  },
+  "Pt8Line5B_StreetNumberName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line5B_Unit": {
+   "type": "/Btn",
+   "states": [
+    " FLR ",
+    " STE ",
+    " APT "
+   ]
+  },
+  "Pt8Line5B_ZipCode": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line5C_DateOfReferral": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line5D_Remarks": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line1_FamilyName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line1_GivenName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line1_MiddleName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line1_NameOfMPorHD": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line2_AptSteFlrNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line2_CityOrTown": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line2_State": {
+   "type": "/Ch",
+   "states": [
+    " ",
+    "AA",
+    "AE",
+    "AK",
+    "AL",
+    "AP",
+    "AR",
+    "AS",
+    "AZ",
+    "CA",
+    "CO",
+    "CT",
+    "DC",
+    "DE",
+    "FL",
+    "FM",
+    "GA",
+    "GU",
+    "HI",
+    "IA",
+    "ID",
+    "IL",
+    "IN",
+    "KS",
+    "KY",
+    "LA",
+    "MA",
+    "MD",
+    "ME",
+    "MH",
+    "MI",
+    "MN",
+    "MO",
+    "MP",
+    "MS",
+    "MT",
+    "NC",
+    "ND",
+    "NE",
+    "NH",
+    "NJ",
+    "NM",
+    "NV",
+    "NY",
+    "OH",
+    "OK",
+    "OR",
+    "PA",
+    "PR",
+    "PW",
+    "RI",
+    "SC",
+    "SD",
+    "TN",
+    "TX",
+    "UT",
+    "VA",
+    "VI",
+    "VT",
+    "WA",
+    "WI",
+    "WV",
+    "WY"
+   ]
+  },
+  "Pt9Line2_StreetNumberName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line2_Unit": {
+   "type": "/Btn",
+   "states": [
+    " FLR ",
+    " STE ",
+    " APT "
+   ]
+  },
+  "Pt9Line2_ZipCode": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line3_DateSigned": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line3_Signature": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line4_NameOfMPorHD": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line5_DaytimePhone": {
+   "type": "/Tx",
+   "states": []
+  }
+ },
+ "widgets": {
+  "P10_Remarks": [
+   "13 36.1 426.0 414.0 534.0"
+  ],
+  "P10_Results": [
+   "13 55.0 602.0 63.0 610.0",
+   "13 55.0 554.0 63.0 562.0",
+   "13 55.0 572.0 63.0 580.0"
+  ],
+  "P10_TDVaccineCheckBox": [
+   "12 39.0 432.6 47.0 440.6"
+  ],
+  "P10_USCIS_Remarks": [
+   "13 428.0 426.0 575.0 599.6"
+  ],
+  "P10_VaccineCheckBox": [
+   "12 39.0 479.0 47.0 487.0",
+   "12 39.0 465.0 47.0 473.0",
+   "12 73.6 479.0 81.6 487.0"
+  ],
+  "P1Line2_CityOrTown": [
+   "1 54.0 456.0 408.0 474.0"
+  ],
+  "P1Line2_Country": [
+   "1 342.0 420.0 576.0 438.0"
+  ],
+  "P1Line2_PostalCode": [
+   "1 240.0 420.0 336.0 438.0"
+  ],
+  "P1Line2_Province": [
+   "1 54.0 420.0 234.0 438.0"
+  ],
+  "P1Line2_State": [
+   "1 414.0 456.0 469.5 474.0"
+  ],
+  "P1Line2_ZipCode": [
+   "1 474.0 456.0 576.0 474.0"
+  ],
+  "P9_TDVaccineCheckBox": [
+   "12 73.6 432.6 81.6 440.6"
+  ],
+  "PDF417BarCode2": [
+   "1 192.0 16.5 462.0 34.5",
+   "2 192.0 16.5 462.0 34.5",
+   "3 192.0 16.5 462.0 34.5",
+   "4 192.0 16.5 462.0 34.5",
+   "5 192.0 16.5 462.0 34.5",
+   "6 192.0 16.5 462.0 34.5",
+   "7 192.0 16.5 462.0 34.5",
+   "8 192.0 16.5 462.0 34.5",
+   "9 192.0 16.5 462.0 34.5",
+   "10 192.0 16.5 462.0 34.5",
+   "11 192.0 16.5 462.0 34.5",
+   "12 192.0 16.5 462.0 34.5",
+   "13 192.0 16.5 462.0 34.5",
+   "14 192.0 16.5 462.0 34.5"
+  ],
+  "Pt10Line10_ContraCheckBox10": [
+   "12 494.0 169.0 504.0 179.0"
+  ],
+  "Pt10Line10_DateGiven_1": [
+   "12 325.5 166.0 376.5 180.0"
+  ],
+  "Pt10Line10_InsufficientCheckBox10": [
+   "12 530.2 169.0 540.2 179.0"
+  ],
+  "Pt10Line10_InsufficientCheckBox9": [
+   "12 530.2 193.0 540.2 203.0"
+  ],
+  "Pt10Line10_NotAge10": [
+   "12 458.2 169.0 468.2 179.0"
+  ],
+  "Pt10Line10a_DateReceived_1": [
+   "12 109.5 166.0 160.5 180.0"
+  ],
+  "Pt10Line10b_DateReceived_2": [
+   "12 163.5 166.0 214.5 180.0"
+  ],
+  "Pt10Line10c_DateReceived_3": [
+   "12 217.5 166.0 268.5 180.0"
+  ],
+  "Pt10Line10d_DateReceived_4": [
+   "12 271.5 166.0 322.5 180.0"
+  ],
+  "Pt10Line11_ContraCheckBox11": [
+   "12 494.0 145.0 504.0 155.0"
+  ],
+  "Pt10Line11_DateGiven_1": [
+   "12 325.5 142.0 376.5 156.0"
+  ],
+  "Pt10Line11_InsufficientCheckBox11": [
+   "12 530.2 145.0 540.2 155.0"
+  ],
+  "Pt10Line11_NotAge11": [
+   "12 458.2 145.0 468.2 155.0"
+  ],
+  "Pt10Line11a_DateReceived_1": [
+   "12 109.5 142.0 160.5 156.0"
+  ],
+  "Pt10Line11b_DateReceived_2": [
+   "12 163.5 142.0 214.5 156.0"
+  ],
+  "Pt10Line11c_DateReceived_3": [
+   "12 217.5 142.0 268.5 156.0"
+  ],
+  "Pt10Line11d_DateReceived_4": [
+   "12 271.5 142.0 322.5 156.0"
+  ],
+  "Pt10Line12_ContraCheckBox12": [
+   "12 494.0 122.0 504.0 132.0"
+  ],
+  "Pt10Line12_DateGiven_1": [
+   "12 325.5 119.0 376.5 133.0"
+  ],
+  "Pt10Line12_InsufficientCheckBox12": [
+   "12 530.2 122.0 540.2 132.0"
+  ],
+  "Pt10Line12_NotAge12": [
+   "12 458.2 122.0 468.2 132.0"
+  ],
+  "Pt10Line12a_DateReceived_1": [
+   "12 109.5 119.0 160.5 133.0"
+  ],
+  "Pt10Line12b_DateReceived_2": [
+   "12 163.5 119.0 214.5 133.0"
+  ],
+  "Pt10Line12c_DateReceived_3": [
+   "12 217.5 119.0 268.5 133.0"
+  ],
+  "Pt10Line12d_DateReceived_4": [
+   "12 271.5 119.0 322.5 133.0"
+  ],
+  "Pt10Line13_CheckBox13": [
+   "12 560.0 91.1 570.0 101.1"
+  ],
+  "Pt10Line13_CompleteSeries": [
+   "12 379.5 84.0 442.5 108.0"
+  ],
+  "Pt10Line13_ContraCheckBox12": [
+   "12 494.0 91.1 504.0 101.1"
+  ],
+  "Pt10Line13_DateGiven_1": [
+   "12 325.5 88.3 376.5 102.0"
+  ],
+  "Pt10Line13_InsufficientCheckBox12": [
+   "12 530.2 91.1 540.2 101.1"
+  ],
+  "Pt10Line13_NotAge12": [
+   "12 458.2 91.1 468.2 101.1"
+  ],
+  "Pt10Line13a_DateReceived_1": [
+   "12 109.5 88.3 160.5 102.0"
+  ],
+  "Pt10Line13b_DateReceived_2": [
+   "12 163.5 88.3 214.5 102.0"
+  ],
+  "Pt10Line13c_DateReceived_3": [
+   "12 217.5 88.3 268.5 102.0"
+  ],
+  "Pt10Line13d_DateReceived_4": [
+   "12 271.5 88.3 322.5 102.0"
+  ],
+  "Pt10Line1_CompleteSeries": [
+   "12 379.5 396.0 442.5 420.0",
+   "12 379.7 312.0 442.7 384.0",
+   "12 379.7 283.0 442.7 305.0",
+   "12 379.5 235.0 442.5 257.0",
+   "12 379.5 211.0 442.5 233.0",
+   "12 379.7 187.0 442.7 209.0",
+   "12 379.7 139.0 442.7 161.0",
+   "12 379.5 115.0 442.5 137.0"
+  ],
+  "Pt10Line1_ContraCheckBox1": [
+   "12 494.0 475.0 504.0 485.0"
+  ],
+  "Pt10Line1_DTCompleteSeries": [
+   "12 379.5 462.0 442.5 492.0"
+  ],
+  "Pt10Line1_DTDateGiven": [
+   "12 325.5 468.0 376.5 486.0"
+  ],
+  "Pt10Line1_DTDateReceived1": [
+   "12 109.5 468.0 160.5 486.0"
+  ],
+  "Pt10Line1_DTDateReceived2": [
+   "12 163.5 468.0 214.5 486.0"
+  ],
+  "Pt10Line1_DTDateReceived3": [
+   "12 217.5 468.0 268.5 486.0"
+  ],
+  "Pt10Line1_DTDateReceived4": [
+   "12 271.5 468.0 322.5 486.0"
+  ],
+  "Pt10Line1_HBCompleteSeries": [
+   "12 379.5 259.0 442.5 281.0"
+  ],
+  "Pt10Line1_InsufficientCheckBox1": [
+   "12 530.0 475.0 540.0 485.0"
+  ],
+  "Pt10Line1_NotAge1": [
+   "12 458.0 475.0 468.0 485.0"
+  ],
+  "Pt10Line2_InsufficientCheckBox2": [
+   "12 530.2 439.0 540.2 449.0"
+  ],
+  "Pt10Line2_NotAge2": [
+   "12 458.0 439.0 468.0 449.0"
+  ],
+  "Pt10Line2_TdCompleteSeries": [
+   "12 379.5 429.0 442.5 453.0"
+  ],
+  "Pt10Line2_TdContra": [
+   "12 494.0 439.0 504.0 449.0"
+  ],
+  "Pt10Line2_TdDateGiven": [
+   "12 325.5 432.0 376.5 450.0"
+  ],
+  "Pt10Line2_TdDateReceived1": [
+   "12 109.5 432.0 160.5 450.0"
+  ],
+  "Pt10Line2_TdDateReceived2": [
+   "12 163.5 432.0 214.5 450.0"
+  ],
+  "Pt10Line2_TdDateReceived3": [
+   "12 217.5 432.0 268.5 450.0"
+  ],
+  "Pt10Line2_TdDateReceived4": [
+   "12 271.5 432.0 322.5 450.0"
+  ],
+  "Pt10Line3_ContraCheckBox3": [
+   "12 494.0 406.0 504.0 416.0"
+  ],
+  "Pt10Line3_DateGiven_1": [
+   "12 325.5 399.0 376.5 417.0"
+  ],
+  "Pt10Line3_InsufficientCheckBox3": [
+   "12 530.2 406.0 540.2 416.0"
+  ],
+  "Pt10Line3_NotAge3": [
+   "12 458.2 406.0 468.2 416.0"
+  ],
+  "Pt10Line3a_DateReceived_1": [
+   "12 109.5 399.0 160.5 417.0"
+  ],
+  "Pt10Line3b_DateReceived_2": [
+   "12 163.5 399.0 214.5 417.0"
+  ],
+  "Pt10Line3c_DateReceived_3": [
+   "12 217.5 399.0 268.5 417.0"
+  ],
+  "Pt10Line3d_DateReceived_4": [
+   "12 271.5 399.0 322.5 417.0"
+  ],
+  "Pt10Line4_ContraCheckBox4": [
+   "12 494.0 349.0 504.0 359.0"
+  ],
+  "Pt10Line4_DateGiven_1": [
+   "12 325.5 348.0 376.5 366.0"
+  ],
+  "Pt10Line4_InsufficientCheckBox4": [
+   "12 530.2 349.0 540.2 359.0"
+  ],
+  "Pt10Line4_NotAge4": [
+   "12 458.2 349.0 468.2 359.0"
+  ],
+  "Pt10Line4a_DateReceived_1": [
+   "12 109.5 348.0 160.5 366.0"
+  ],
+  "Pt10Line4b_DateReceived_2": [
+   "12 163.5 348.0 214.5 366.0"
+  ],
+  "Pt10Line4c_DateReceived_3": [
+   "12 217.5 348.0 268.5 366.0"
+  ],
+  "Pt10Line4d_DateReceived_4": [
+   "12 271.5 348.0 322.5 366.0"
+  ],
+  "Pt10Line5_ContraCheckBox5": [
+   "12 494.0 289.0 504.0 299.0"
+  ],
+  "Pt10Line5_DateGiven_1": [
+   "12 325.5 286.0 376.5 300.0"
+  ],
+  "Pt10Line5_InsufficientCheckBox5": [
+   "12 530.2 289.0 540.2 299.0"
+  ],
+  "Pt10Line5_NotAge5": [
+   "12 458.2 288.0 468.2 298.0"
+  ],
+  "Pt10Line5a_DateReceived_1": [
+   "12 109.5 286.0 160.5 300.0"
+  ],
+  "Pt10Line5b_DateReceived_2": [
+   "12 163.5 286.0 214.5 300.0"
+  ],
+  "Pt10Line5c_DateReceived_3": [
+   "12 217.5 286.0 268.5 300.0"
+  ],
+  "Pt10Line5d_DateReceived_4": [
+   "12 271.5 286.0 322.5 300.0"
+  ],
+  "Pt10Line6_ContraCheckBox6": [
+   "12 494.0 265.0 504.0 275.0"
+  ],
+  "Pt10Line6_HBDateGiven": [
+   "12 325.5 262.0 376.5 276.0"
+  ],
+  "Pt10Line6_HBDateReceived1": [
+   "12 109.5 262.0 160.5 276.0"
+  ],
+  "Pt10Line6_HBDateReceived2": [
+   "12 163.5 262.0 214.5 276.0"
+  ],
+  "Pt10Line6_HBDateReceived3": [
+   "12 217.5 262.0 268.5 276.0"
+  ],
+  "Pt10Line6_HBDateReceived4": [
+   "12 271.5 262.0 322.5 276.0"
+  ],
+  "Pt10Line6_InsufficientCheckBox6": [
+   "12 530.2 265.0 540.2 275.0"
+  ],
+  "Pt10Line6_NotAge6": [
+   "12 458.2 265.0 468.2 275.0"
+  ],
+  "Pt10Line7_ContraCheckBox7": [
+   "12 494.0 241.0 504.0 251.0"
+  ],
+  "Pt10Line7_DateGiven_1": [
+   "12 325.5 238.0 376.5 252.0"
+  ],
+  "Pt10Line7_InsufficientCheckBox7": [
+   "12 530.2 241.0 540.2 251.0"
+  ],
+  "Pt10Line7_NotAge7": [
+   "12 458.2 241.0 468.2 251.0"
+  ],
+  "Pt10Line7a_DateReceived_1": [
+   "12 109.5 238.0 160.5 252.0"
+  ],
+  "Pt10Line7b_DateReceived_2": [
+   "12 163.5 238.0 214.5 252.0"
+  ],
+  "Pt10Line7c_DateReceived_3": [
+   "12 217.5 238.0 268.5 252.0"
+  ],
+  "Pt10Line7d_DateReceived_4": [
+   "12 271.5 238.0 322.5 252.0"
+  ],
+  "Pt10Line8_ContraCheckBox8": [
+   "12 494.0 217.0 504.0 227.0"
+  ],
+  "Pt10Line8_DateGiven_1": [
+   "12 325.5 214.0 376.5 228.0"
+  ],
+  "Pt10Line8_InsufficientCheckBox8": [
+   "12 530.2 217.0 540.2 227.0"
+  ],
+  "Pt10Line8_NotAge8": [
+   "12 458.2 217.0 468.2 227.0"
+  ],
+  "Pt10Line8a_DateReceived_1": [
+   "12 109.5 214.0 160.5 228.0"
+  ],
+  "Pt10Line8b_DateReceived_2": [
+   "12 163.5 214.0 214.5 228.0"
+  ],
+  "Pt10Line8c_DateReceived_3": [
+   "12 217.5 214.0 268.5 228.0"
+  ],
+  "Pt10Line8d_DateReceived_4": [
+   "12 271.5 214.0 322.5 228.0"
+  ],
+  "Pt10Line9_ContraCheckBox9": [
+   "12 494.0 193.0 504.0 203.0"
+  ],
+  "Pt10Line9_DateGiven_1": [
+   "12 325.5 189.9 376.5 203.9"
+  ],
+  "Pt10Line9_InfluVaccineInsufficient9": [
+   "12 560.2 192.9 570.2 202.9"
+  ],
+  "Pt10Line9_NotAge9": [
+   "12 458.2 193.0 468.2 203.0"
+  ],
+  "Pt10Line9a_DateReceived_1": [
+   "12 109.5 190.0 160.5 204.0"
+  ],
+  "Pt10Line9b_DateReceived_2": [
+   "12 163.5 189.9 214.5 203.9"
+  ],
+  "Pt10Line9c_DateReceived_3": [
+   "12 217.5 189.9 268.5 203.9"
+  ],
+  "Pt10Line9d_DateReceived_4": [
+   "12 271.5 189.9 322.5 203.9"
+  ],
+  "Pt10_PVVaccineCheckBox": [
+   "12 39.0 395.0 47.0 403.0",
+   "12 73.6 395.0 81.6 403.0"
+  ],
+  "Pt11Line3a_PageNumber": [
+   "14 72.1 576.0 132.1 594.0"
+  ],
+  "Pt11Line3b_PartNumber": [
+   "14 162.1 576.0 222.1 594.0"
+  ],
+  "Pt11Line3c_ItemNumber": [
+   "14 252.1 576.0 312.1 594.0"
+  ],
+  "Pt11Line3d_AdditionalInfo": [
+   "14 72.1 498.0 575.9 570.0"
+  ],
+  "Pt11Line4a_PageNumber": [
+   "14 72.1 462.0 132.1 480.0"
+  ],
+  "Pt11Line4b_PartNumber": [
+   "14 162.1 462.0 222.1 480.0"
+  ],
+  "Pt11Line4c_ItemNumber": [
+   "14 252.1 462.0 312.1 480.0"
+  ],
+  "Pt11Line4d_AdditionalInfo": [
+   "14 72.1 384.0 575.9 456.0"
+  ],
+  "Pt11Line5a_PageNumber": [
+   "14 72.1 348.0 132.1 366.0"
+  ],
+  "Pt11Line5b_PartNumber": [
+   "14 162.1 348.0 222.1 366.0"
+  ],
+  "Pt11Line5c_ItemNumber": [
+   "14 252.1 348.0 312.1 366.0"
+  ],
+  "Pt11Line5d_AdditionalInfo": [
+   "14 72.1 252.0 575.9 342.0"
+  ],
+  "Pt11Line6a_PageNumber": [
+   "14 72.1 216.0 132.1 234.0"
+  ],
+  "Pt11Line6b_PartNumber": [
+   "14 162.1 216.0 222.1 234.0"
+  ],
+  "Pt11Line6c_ItemNumber": [
+   "14 252.1 216.0 312.1 234.0"
+  ],
+  "Pt11Line6d_AdditionalInfo": [
+   "14 72.1 120.0 575.9 210.0"
+  ],
+  "Pt1Line1a_FamilyName": [
+   "1 54.0 582.0 264.0 600.0",
+   "2 36.0 732.0 192.0 750.0",
+   "3 36.0 732.0 192.0 750.0",
+   "4 36.0 732.0 192.0 750.0",
+   "5 36.1 732.0 192.1 750.0",
+   "6 36.0 732.0 192.0 750.0",
+   "7 36.0 732.0 192.0 750.0",
+   "8 36.0 732.0 192.0 750.0",
+   "9 36.0 732.0 192.0 750.0",
+   "10 36.2 732.0 192.2 750.0",
+   "11 36.2 732.0 192.2 750.0",
+   "12 36.2 732.0 192.2 750.0",
+   "13 36.0 732.0 192.0 750.0",
+   "14 54.0 636.0 234.0 654.0"
+  ],
+  "Pt1Line1b_GivenName": [
+   "1 270.0 582.0 438.0 600.0",
+   "2 192.0 732.0 306.0 750.0",
+   "3 192.0 732.0 306.0 750.0",
+   "4 192.0 732.0 306.0 750.0",
+   "5 192.1 732.0 306.1 750.0",
+   "6 192.0 732.0 306.0 750.0",
+   "7 192.0 732.0 306.0 750.0",
+   "8 192.0 732.0 306.0 750.0",
+   "9 192.0 732.0 306.0 750.0",
+   "10 192.1 732.0 306.1 750.0",
+   "11 192.2 732.0 306.2 750.0",
+   "12 192.2 732.0 306.2 750.0",
+   "13 192.0 732.0 306.0 750.0",
+   "14 240.1 636.0 414.1 654.0"
+  ],
+  "Pt1Line1c_MiddleName": [
+   "1 444.0 582.0 576.0 600.0",
+   "2 306.0 732.0 414.0 750.0",
+   "3 306.0 732.0 414.0 750.0",
+   "4 306.0 732.0 414.0 750.0",
+   "5 306.1 732.0 414.1 750.0",
+   "6 306.0 732.0 414.0 750.0",
+   "7 306.0 732.0 414.0 750.0",
+   "8 306.0 732.0 414.0 750.0",
+   "9 306.0 732.0 414.0 750.0",
+   "10 306.1 732.0 414.1 750.0",
+   "11 306.2 732.0 414.2 750.0",
+   "12 306.2 732.0 414.2 750.0",
+   "13 306.0 732.0 414.0 750.0",
+   "14 420.1 636.0 576.1 654.0"
+  ],
+  "Pt1Line2_AptSteFlrNumber": [
+   "1 474.0 492.0 576.0 510.0"
+  ],
+  "Pt1Line2_StreetNumberName": [
+   "1 54.0 492.0 408.0 510.0",
+   "1 54.0 528.0 576.0 546.0"
+  ],
+  "Pt1Line2_Unit": [
+   "1 454.0 496.0 464.0 506.0",
+   "1 436.0 496.0 446.0 506.0",
+   "1 418.0 496.0 428.0 506.0"
+  ],
+  "Pt1Line3_CityTownVillageofBirth": [
+   "1 349.2 366.0 576.0 384.0"
+  ],
+  "Pt1Line3_CountryofBirth": [
+   "1 71.2 330.0 317.2 348.0"
+  ],
+  "Pt1Line3_DateOfBirth": [
+   "1 198.0 366.0 318.0 384.0"
+  ],
+  "Pt1Line3_Gender": [
+   "1 72.0 369.9 82.0 379.9",
+   "1 120.0 369.9 130.0 379.9"
+  ],
+  "Pt1Line3e_AlienNumber": [
+   "1 393.3 329.8 576.1 347.9",
+   "2 447.0 732.0 576.0 750.0",
+   "3 447.0 732.0 576.0 750.0",
+   "4 447.0 732.0 576.0 750.0",
+   "5 447.1 732.0 576.1 750.0",
+   "6 447.0 732.0 576.0 750.0",
+   "7 447.0 732.0 576.0 750.0",
+   "8 447.0 732.0 576.0 750.0",
+   "9 447.0 732.0 576.0 750.0",
+   "10 447.1 732.0 576.1 750.0",
+   "11 447.2 732.0 576.0 750.0",
+   "12 447.2 732.0 576.2 750.0",
+   "13 447.0 732.0 576.0 750.0",
+   "14 165.0 612.0 294.0 630.0"
+  ],
+  "Pt1Line3f_USCISOnlineAcctNumber": [
+   "1 95.0 293.9 317.7 311.9"
+  ],
+  "Pt1_Line4_ImmMedExamReq": [
+   "1 74.6 259.0 84.6 269.0"
+  ],
+  "Pt2Line3_DaytimePhone": [
+   "2 54.0 612.0 300.0 630.0"
+  ],
+  "Pt2Line4_Mobilephone": [
+   "2 330.0 612.0 576.0 630.0"
+  ],
+  "Pt2Line5_EmailAddress": [
+   "2 54.0 576.0 300.0 594.0"
+  ],
+  "Pt2Line6_ApplicantSignature": [
+   "2 54.0 365.6 432.0 383.6"
+  ],
+  "Pt2Line6_DateofSignature": [
+   "2 444.0 366.0 576.0 384.0"
+  ],
+  "Pt3Line1_InterpreterFamilyName": [
+   "2 54.0 264.0 312.0 282.0"
+  ],
+  "Pt3Line1_InterpreterGivenName": [
+   "2 324.0 264.0 576.0 282.0"
+  ],
+  "Pt3Line2_NameofBusinessorOrgName": [
+   "2 54.0 228.0 312.0 246.0"
+  ],
+  "Pt3Line4_DaytimePhone": [
+   "2 54.0 162.0 312.3 180.0"
+  ],
+  "Pt3Line5_MobilePhone": [
+   "2 341.5 162.0 576.0 180.0"
+  ],
+  "Pt3Line6_EmailAddress": [
+   "2 54.0 126.0 312.3 144.0"
+  ],
+  "Pt3Line7_DateofSignature": [
+   "3 444.0 582.0 576.0 600.0"
+  ],
+  "Pt3Line7_Signature": [
+   "3 54.0 582.0 432.0 600.0"
+  ],
+  "Pt3Line_NameOfLanguage": [
+   "3 300.0 642.0 498.0 660.0"
+  ],
+  "Pt4Line1_PreparerFamilyName": [
+   "3 54.0 468.0 312.0 486.0"
+  ],
+  "Pt4Line1_PreparerGivenName": [
+   "3 324.0 468.0 576.0 486.0"
+  ],
+  "Pt4Line2_PreparerNameofBusinessorOrgName": [
+   "3 54.0 432.0 312.0 450.0"
+  ],
+  "Pt4Line3_DaytimePhone": [
+   "3 54.0 366.0 312.3 384.0"
+  ],
+  "Pt4Line4_MobilePhone": [
+   "3 341.5 366.0 576.0 384.0"
+  ],
+  "Pt4Line5_EmailAddress": [
+   "3 54.0 330.0 312.3 348.0"
+  ],
+  "Pt4Line8_DateofSignature": [
+   "3 444.0 210.0 576.0 228.0"
+  ],
+  "Pt4Line8_Signature": [
+   "3 54.0 210.0 432.0 228.0"
+  ],
+  "Pt5Line1_ApplicantFormOfID": [
+   "3 54.0 90.0 576.0 108.0"
+  ],
+  "Pt5Line2_IDNumber": [
+   "3 53.9 54.0 575.9 72.0"
+  ],
+  "Pt6Line1_OverallFinding": [
+   "4 74.6 643.0 84.6 653.0",
+   "4 74.6 661.0 84.6 671.0",
+   "4 74.6 625.0 84.6 635.0"
+  ],
+  "Pt6Line2_DateoExam": [
+   "4 114.0 588.0 300.0 606.0"
+  ],
+  "Pt6Line3_DateofExam1": [
+   "4 53.9 534.0 204.0 552.0"
+  ],
+  "Pt6Line3_DateofExam2": [
+   "4 215.9 534.0 365.9 552.0"
+  ],
+  "Pt6Line3_DateofExam3": [
+   "4 377.9 534.0 527.9 552.0"
+  ],
+  "Pt7Line1B1b_DateScreeningRun": [
+   "7 102.5 534.1 264.3 552.0",
+   "7 102.5 516.1 264.3 534.1",
+   "7 102.5 498.2 264.3 516.1",
+   "7 264.3 534.1 450.0 552.0",
+   "7 264.3 516.1 450.0 534.1",
+   "7 264.3 498.2 450.0 516.1",
+   "7 102.0 426.0 228.0 444.0",
+   "7 102.0 408.0 228.0 426.0",
+   "7 102.0 390.0 228.0 408.0",
+   "7 228.0 426.0 366.0 444.0",
+   "7 228.0 408.0 366.0 426.0",
+   "7 228.0 390.0 366.0 408.0"
+  ],
+  "Pt7Line1B1c_TiterOne": [
+   "7 240.0 42.0 576.0 60.0"
+  ],
+  "Pt7Line1B1d_name": [
+   "7 516.0 534.1 576.0 552.0",
+   "7 516.0 516.1 576.0 534.1",
+   "7 516.0 498.2 576.0 516.1",
+   "7 449.9 534.1 516.0 552.0",
+   "7 449.9 516.1 516.0 534.1",
+   "7 449.9 498.2 516.0 516.1",
+   "7 414.0 426.0 462.0 444.0",
+   "7 414.0 408.0 462.0 426.0",
+   "7 414.0 390.0 462.0 408.0",
+   "7 366.0 426.0 414.0 444.0",
+   "7 366.0 408.0 414.0 426.0",
+   "7 366.0 390.0 414.0 408.0",
+   "7 510.0 426.0 576.0 444.0",
+   "7 510.0 408.0 576.0 426.0",
+   "7 510.0 390.0 576.0 408.0",
+   "7 462.0 426.0 510.0 444.0",
+   "7 462.0 408.0 510.0 426.0",
+   "7 462.0 390.0 510.0 408.0"
+  ],
+  "Pt7Line1B1h_DateOfrepeatTest": [
+   "8 336.0 564.0 468.0 582.0"
+  ],
+  "Pt7Line1C1b_DateScreeningNucleicAcid": [
+   "8 264.0 246.0 396.0 264.0"
+  ],
+  "Pt7Line1_CivilSurgeonID": [
+   "4 258.0 384.0 414.0 402.0"
+  ],
+  "Pt7Line1_CompleteSeries": [
+   "12 379.7 163.0 442.7 185.0"
+  ],
+  "Pt7Line1_FamilyName": [
+   "4 53.9 420.0 269.9 438.0"
+  ],
+  "Pt7Line1_GivenName": [
+   "4 275.8 420.0 431.8 438.0"
+  ],
+  "Pt7Line1_MiddleName": [
+   "4 438.4 420.0 576.0 438.0"
+  ],
+  "Pt7Line2_MedPracticeName": [
+   "4 54.0 348.0 576.0 366.0"
+  ],
+  "Pt7Line3_AptSteFlrNumber": [
+   "4 474.0 282.0 576.0 300.0"
+  ],
+  "Pt7Line3_CityOrTown": [
+   "4 54.1 246.0 408.2 264.0"
+  ],
+  "Pt7Line3_State": [
+   "4 414.1 246.0 469.6 264.0"
+  ],
+  "Pt7Line3_StreetNumberName": [
+   "4 54.1 282.0 408.2 300.0"
+  ],
+  "Pt7Line3_Unit": [
+   "4 454.1 286.0 464.1 296.0",
+   "4 436.1 286.0 446.1 296.0",
+   "4 418.1 286.0 428.1 296.0"
+  ],
+  "Pt7Line3_ZipCode": [
+   "4 474.0 246.0 576.0 264.0"
+  ],
+  "Pt7Line4_AptSteFlrNumber": [
+   "4 474.0 180.0 576.0 198.0"
+  ],
+  "Pt7Line4_CityOrTown": [
+   "4 54.0 144.0 408.1 162.0"
+  ],
+  "Pt7Line4_State": [
+   "4 414.0 144.0 469.5 162.0"
+  ],
+  "Pt7Line4_StreetNumberName": [
+   "4 54.0 180.0 408.1 198.0"
+  ],
+  "Pt7Line4_Unit": [
+   "4 454.0 184.0 464.0 194.0",
+   "4 436.0 184.0 446.0 194.0",
+   "4 418.0 184.0 428.0 194.0"
+  ],
+  "Pt7Line4_ZipCode": [
+   "4 474.0 144.0 576.0 162.0"
+  ],
+  "Pt7Line5_DaytimePhone": [
+   "4 54.0 78.0 300.0 96.0"
+  ],
+  "Pt7Line6_MobilePhone": [
+   "4 336.0 78.0 576.0 96.0"
+  ],
+  "Pt7Line7_CivilSurgeonSignature": [
+   "5 54.0 402.0 432.0 420.0"
+  ],
+  "Pt7Line7_EmailAddress": [
+   "4 54.0 42.0 300.0 60.0"
+  ],
+  "Pt7Line8_DateofSignature": [
+   "5 444.0 402.0 576.0 420.0"
+  ],
+  "Pt8Line1A1_QFDate": [
+   "6 126.0 486.0 294.0 504.0"
+  ],
+  "Pt8Line1A1_Result": [
+   "6 162.9 469.5 173.4 480.0",
+   "6 162.9 451.5 173.4 462.0",
+   "6 162.9 433.5 173.4 444.0"
+  ],
+  "Pt8Line1A1_TSDate": [
+   "6 348.0 486.0 516.0 504.0"
+  ],
+  "Pt8Line1A2_InitialScreening": [
+   "6 90.9 397.5 101.4 408.0",
+   "6 90.9 343.5 101.4 354.0",
+   "6 90.9 361.5 101.4 372.0",
+   "6 90.9 379.5 101.4 390.0"
+  ],
+  "Pt8Line1A3_Cavitylesion": [
+   "6 150.9 169.5 161.4 180.0"
+  ],
+  "Pt8Line1A3_DiscreteNodule": [
+   "6 348.9 169.5 359.4 180.0"
+  ],
+  "Pt8Line1A3_DiscretelinearOpac": [
+   "6 348.9 187.5 359.4 198.0"
+  ],
+  "Pt8Line1A3_Hilar": [
+   "6 150.9 103.5 161.4 114.0"
+  ],
+  "Pt8Line1A3_Infiltrate": [
+   "6 150.9 205.5 161.4 216.0"
+  ],
+  "Pt8Line1A3_Irregularthickpleural": [
+   "6 348.9 121.5 359.4 132.0"
+  ],
+  "Pt8Line1A3_Miliary": [
+   "6 348.9 205.5 359.4 216.0"
+  ],
+  "Pt8Line1A3_NodulesorMass": [
+   "6 150.9 151.5 161.4 162.0"
+  ],
+  "Pt8Line1A3_Other": [
+   "6 348.9 103.5 359.4 114.0"
+  ],
+  "Pt8Line1A3_Pleuraleffusion": [
+   "6 150.9 121.5 161.4 132.0"
+  ],
+  "Pt8Line1A3_Results": [
+   "6 132.9 241.5 143.4 252.0",
+   "6 132.9 223.5 143.4 234.0"
+  ],
+  "Pt8Line1A3_Reticular": [
+   "6 150.9 187.5 161.4 198.0"
+  ],
+  "Pt8Line1A3_Volumeloss": [
+   "6 348.9 151.5 359.4 162.0"
+  ],
+  "Pt8Line1A3_XrayReadDate": [
+   "6 300.0 258.0 468.0 276.0"
+  ],
+  "Pt8Line1A3_XrayTakenDate": [
+   "6 90.0 258.0 258.0 276.0"
+  ],
+  "Pt8Line1A4_SputumSmearsCultures": [
+   "7 90.9 661.5 101.4 672.0",
+   "7 90.9 643.5 101.4 654.0",
+   "7 90.9 625.5 101.4 636.0",
+   "7 324.9 625.5 335.4 636.0",
+   "7 324.9 661.5 335.4 672.0"
+  ],
+  "Pt8Line1A6_TBClassification": [
+   "7 90.9 355.5 101.4 366.0",
+   "7 90.9 337.5 101.4 348.0",
+   "7 90.9 301.5 101.4 312.0",
+   "7 90.9 319.5 101.4 330.0",
+   "7 252.9 355.5 263.4 366.0",
+   "7 252.9 337.5 263.4 348.0",
+   "7 252.9 319.5 263.4 330.0"
+  ],
+  "Pt8Line1A7_Remarks": [
+   "7 90.0 198.0 576.0 270.0"
+  ],
+  "Pt8Line1A_GammarRelease": [
+   "6 330.9 523.5 341.4 534.0",
+   "6 108.9 523.5 119.4 534.0",
+   "6 91.5 559.5 102.0 570.0"
+  ],
+  "Pt8Line1B1a_name": [
+   "7 234.0 114.0 576.0 132.0"
+  ],
+  "Pt8Line1B1b_DateNontrepoemaltest": [
+   "7 384.0 90.0 516.0 108.0"
+  ],
+  "Pt8Line1B1c_DateNontreponemalTest": [
+   "7 384.0 66.0 516.0 84.0"
+  ],
+  "Pt8Line1B1c_SyphilisScreen": [
+   "7 109.0 46.0 119.0 56.0",
+   "7 109.0 70.0 119.0 80.0"
+  ],
+  "Pt8Line1B1d_TreponemalReactiveNon": [
+   "8 247.0 628.0 257.0 638.0",
+   "8 109.0 628.0 119.0 638.0"
+  ],
+  "Pt8Line1B1d_name": [
+   "8 228.0 672.0 576.0 690.0"
+  ],
+  "Pt8Line1B1e_DateScreeningRun": [
+   "8 330.0 648.0 468.0 666.0"
+  ],
+  "Pt8Line1B1f_TiterOne": [
+   "8 378.0 624.0 576.0 642.0"
+  ],
+  "Pt8Line1B1g_nameOfrepeat": [
+   "8 378.0 588.0 576.0 606.0"
+  ],
+  "Pt8Line1B1i_RepeatReativeNon": [
+   "8 109.0 547.0 119.0 557.0",
+   "8 289.0 547.0 299.0 557.0"
+  ],
+  "Pt8Line1B2_Findings": [
+   "8 90.4 511.5 100.9 522.0",
+   "8 396.4 511.5 406.9 522.0",
+   "8 246.4 511.5 256.9 522.0"
+  ],
+  "Pt8Line1B3_Dosage": [
+   "8 387.5 378.0 575.5 396.0"
+  ],
+  "Pt8Line1B3_Drug": [
+   "8 120.0 378.0 330.0 396.0"
+  ],
+  "Pt8Line1B3_Remarks": [
+   "8 90.0 402.0 576.0 474.0"
+  ],
+  "Pt8Line1B3_endDate": [
+   "8 444.0 354.0 576.0 372.0"
+  ],
+  "Pt8Line1B3_startDate": [
+   "8 198.0 354.0 330.0 372.0"
+  ],
+  "Pt8Line1C1a_name": [
+   "8 354.0 270.0 576.0 288.0"
+  ],
+  "Pt8Line1C1c": [
+   "8 109.0 229.0 119.0 239.0",
+   "8 175.0 229.0 185.0 239.0"
+  ],
+  "Pt8Line1C1c_Checkboxg": [
+   "9 126.5 523.5 137.0 534.0",
+   "9 126.5 505.5 137.0 516.0"
+  ],
+  "Pt8Line1C2_Remarks": [
+   "9 90.0 438.0 576.0 474.0"
+  ],
+  "Pt8Line1C3_Dosage": [
+   "8 387.7 96.0 575.7 114.0"
+  ],
+  "Pt8Line1C3_Drug": [
+   "8 120.0 96.0 330.0 114.0"
+  ],
+  "Pt8Line1C3_endDate": [
+   "8 444.0 72.0 576.0 90.0"
+  ],
+  "Pt8Line1C3_startDate": [
+   "8 198.0 72.0 330.0 90.0"
+  ],
+  "Pt8Line1D1_Findings": [
+   "9 108.5 613.5 119.0 624.0",
+   "9 108.5 595.5 119.0 606.0",
+   "9 108.5 541.5 119.0 552.0"
+  ],
+  "Pt8Line1D1b_Checkboxf": [
+   "9 126.5 577.5 137.0 588.0",
+   "9 126.5 559.5 137.0 570.0"
+  ],
+  "Pt8Line1c2_Findings": [
+   "8 90.4 175.5 100.9 186.0",
+   "8 252.4 193.5 262.9 204.0",
+   "8 90.4 193.5 100.9 204.0"
+  ],
+  "Pt8Line1c3_Remarks": [
+   "8 90.0 120.0 576.0 156.0"
+  ],
+  "Pt8Line2A_Disorders": [
+   "9 91.5 259.5 102.0 270.0",
+   "9 91.5 187.5 102.0 198.0",
+   "9 91.5 205.5 102.0 216.0",
+   "9 91.5 223.5 102.0 234.0",
+   "9 91.5 241.5 102.0 252.0"
+  ],
+  "Pt8Line2B_Remarks": [
+   "9 72.0 48.0 576.0 156.0"
+  ],
+  "Pt8Line3A_Findings": [
+   "10 90.5 445.5 101.0 456.0",
+   "10 90.5 463.5 101.0 474.0",
+   "10 90.5 499.5 101.0 510.0",
+   "10 90.5 481.5 101.0 492.0"
+  ],
+  "Pt8Line3B_Remarks": [
+   "10 72.0 306.0 576.0 414.0"
+  ],
+  "Pt8Line4_ListOtherMedConditions": [
+   "10 54.0 156.0 576.0 264.0"
+  ],
+  "Pt8Line5A_DoctorOrHDptName": [
+   "11 72.0 642.0 576.0 660.0"
+  ],
+  "Pt8Line5B_AptSteFlrNumber": [
+   "11 473.8 594.0 575.8 612.0"
+  ],
+  "Pt8Line5B_CityOrTown": [
+   "11 71.8 558.0 407.6 576.0"
+  ],
+  "Pt8Line5B_State": [
+   "11 413.8 558.0 469.3 576.0"
+  ],
+  "Pt8Line5B_StreetNumberName": [
+   "11 71.8 594.0 407.6 612.0"
+  ],
+  "Pt8Line5B_Unit": [
+   "11 453.8 598.0 463.8 608.0",
+   "11 435.8 598.0 445.8 608.0",
+   "11 417.8 598.0 427.8 608.0"
+  ],
+  "Pt8Line5B_ZipCode": [
+   "11 473.8 558.0 575.8 576.0"
+  ],
+  "Pt8Line5C_DateOfReferral": [
+   "11 72.4 522.0 204.4 540.0"
+  ],
+  "Pt8Line5D_Remarks": [
+   "11 72.2 420.0 576.3 492.0"
+  ],
+  "Pt9Line1_FamilyName": [
+   "11 72.1 276.0 258.1 294.0"
+  ],
+  "Pt9Line1_GivenName": [
+   "11 263.5 276.0 426.1 294.0"
+  ],
+  "Pt9Line1_MiddleName": [
+   "11 431.5 276.0 576.1 294.0"
+  ],
+  "Pt9Line1_NameOfMPorHD": [
+   "11 72.1 240.0 576.5 258.0"
+  ],
+  "Pt9Line2_AptSteFlrNumber": [
+   "11 474.2 186.0 576.2 204.0"
+  ],
+  "Pt9Line2_CityOrTown": [
+   "11 54.5 150.0 408.5 168.0"
+  ],
+  "Pt9Line2_State": [
+   "11 413.8 150.0 469.3 168.0"
+  ],
+  "Pt9Line2_StreetNumberName": [
+   "11 54.5 186.0 408.5 204.0"
+  ],
+  "Pt9Line2_Unit": [
+   "11 453.8 190.0 463.8 200.0",
+   "11 435.8 190.0 445.8 200.0",
+   "11 417.8 190.0 427.8 200.0"
+  ],
+  "Pt9Line2_ZipCode": [
+   "11 473.8 150.0 576.4 168.0"
+  ],
+  "Pt9Line3_DateSigned": [
+   "11 426.2 96.0 576.5 114.0"
+  ],
+  "Pt9Line3_Signature": [
+   "11 54.5 96.0 408.2 114.0"
+  ],
+  "Pt9Line4_NameOfMPorHD": [
+   "11 54.5 60.6 408.5 78.6"
+  ],
+  "Pt9Line5_DaytimePhone": [
+   "11 425.9 60.6 576.7 78.6"
+  ]
+ }
+}

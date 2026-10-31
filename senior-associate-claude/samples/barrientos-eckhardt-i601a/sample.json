@@ -1,0 +1,25 @@
+{
+  "id": "barrientos-eckhardt-i601a",
+  "name": "Sample - Barrientos-Eckhardt",
+  "matter_type": "i601a",
+  "filing_posture": "new filing packet",
+  "filing_method": "paper",
+  "documents": "Client documents",
+  "guide": {
+    "title": "This is a sample matter",
+    "intro": "Everything in it is fictional: an I-601A provisional waiver for a Guatemalan husband of a U.S. citizen, with 14 scanned documents marked SPECIMEN. Some documents and answers are missing on purpose.",
+    "try": "Press Review documents first. In about 5 to 10 minutes Claude lists what's there, what's missing, and what to ask the client for. Then compare it with the list this card shows.",
+    "caught_title": "What a good review catches",
+    "caught": [
+      "No proof the immigrant visa fee was paid. NVC's letter asks for it, and neither intake confirms it.",
+      "No proof of the wife's U.S. citizenship.",
+      "No English translation of the Guatemalan birth certificate.",
+      "The wife hasn't said whether she would stay or move, so hardship has to be argued both ways until she decides.",
+      "No diagnosis or therapy records for the son's autism, the core of the hardship case.",
+      "No court record of the 2019 DWI arrest. A class certificate isn't a disposition, and the outcome decides whether it's a conviction.",
+      "The intake doesn't say whether he has left the U.S. since 2012 (his mother died in Guatemala in 2014). A return after a year of unlawful presence would be a permanent bar the I-601A can't waive.",
+      "His intake gives the wedding date as March 12, 2016; the certificate says March 19, 2016."
+    ],
+    "after": "A full build of the packet takes about an hour and uses your Claude plan like any matter. Archive this matter when you're done with it."
+  }
+}

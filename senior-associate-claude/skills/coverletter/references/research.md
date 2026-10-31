@@ -1,0 +1,95 @@
+# Research
+
+The researcher's job is to make every legal sentence in the letter defensible: the right authority, verified current, saying what the letter claims. It isn't to show volume; a routine petition might need five authorities.
+
+Most of a letter's law is the same every time. A spouse I-130/I-485 always rests on the same statutes, regulations, Policy Manual chapters, and a few BIA precedents. Those are verified once and shipped with the plugin in `references/authorities/`, one file per case type. Your work on a matter is to confirm the file is still current and to research what's unusual about this client. Re-researching the standard points costs a great deal of context and adds nothing.
+
+## 1. Start from the case type's authorities file
+
+The file is `references/authorities/<key>.md`, with the case type's key from the matter contract's "Matter types" table (an NIW with an I-485 also uses `i140_i485.md` A7–A9). Each entry (A1, A2, ...) gives a proposition, its controlling authority with pinpoint, a quote of 25 words or fewer, the URL, the BIA Edge `document_id` for cases, the date verified, and the validity. "Current" for a statute or regulation means the connector's text matched on that date; a Policy Manual chapter shows its last-updated date; a case shows its ImmCite status and what review of the treatment found.
+
+Every proposition in `propositions.json` that a file entry covers is cited from the file, without new research. Read the companion file too when the letter argues a second benefit (an I-131 or I-765 filed with an I-485, for example). If no file fits, say so in the authority pack and research every proposition by the method in section 3.
+
+The files ship with the plugin, so don't edit them during a matter. If the currency check shows an entry has changed, record the change in the authority pack and cite what you verified instead.
+
+**Chat research notes.** When the attorney has talked the matter through with Claude, `output/working/vault/research/chat/research notes.md` holds the authorities verified there, numbered R1, R2, ..., in the same fields as a file entry plus how each applies to this client. Treat them like file entries: cite them for the propositions they cover, include their case IDs in the currency check, and copy each one you use into the support matrix with `"source": "chat research notes R2"`. The letter check also accepts a cite from an entry whose `- Authority:` line gives the full cite and whose `- Verified:` line starts with the date verified and records no negative treatment, since the matter chat may cite one after the build; an entry without a dated Verified line covers nothing. The attorney's conclusions in them ("lead with the lease") are already in the attorney instructions when they were meant to direct the letter; the notes themselves are research, not instructions.
+
+## 2. Check currency cheaply
+
+Run this once per matter, before citing anything from the file. It usually takes four to six calls.
+
+1. **Cases.** One `check_validity` call with `document_ids` set to the file's case IDs (up to 10 per call). An entry marked "not yet run through ImmCite" was read at the official source after the file's last connector refresh and has no ID yet: if the letter will cite it, resolve its `document_id` with `get_case_by_citation` (small `max_chars`) and add it to the same batch. `treatment_available` with no adverse entries, or `unchecked` on a recent decision, needs nothing more. For `caution`, `negative`, `overruled`, or `vacated`, read that case's adverse entries (`check_validity` with its `document_id`, `treatment="negative"`, `limit=3`) and either drop the authority or explain the limit in the pack.
+2. **Updates since the verified date.** Set `days` to the days since the file's verified date, with a floor of 30.
+   - First call: `get_regulatory_updates` with `source="uscis_pm,uscis_policy_memo"` and no topic. Policy changes are few, and each record lists its `affected_chapters`.
+   - Second call: `source="federal_register,bia"`, `topic` set to the file's update-feed topic, and `update_type="new_regulation,new_decision,court_order"`.
+
+   The feed reaches back about 180 days, and wider windows have timed out, so a file older than that can't be checked this way. Tell the senior associate the file is stale, and re-verify the entries the letter uses at the source.
+3. **Spot-checks.** For each chapter in `affected_chapters` that the file cites, and each new rule or decision that touches a cited provision, re-read the quoted phrase with `find_in_reference` or `find_in_statute`. If the text or its effect changed, re-verify that entry as in section 3 and note it in the pack.
+
+Record the window checked, the calls made, and what changed in the authority pack.
+
+## Without the connector
+
+When BIA Edge isn't available (not installed, not signed in, or the network gate refuses it):
+
+- Cite the authorities file and the chat research notes as verified on their dates, and say in the authority pack that the currency check couldn't be run.
+- Verify statutes, regulations, the Policy Manual and the form instructions at the official sources (uscode.house.gov, ecfr.gov, uscis.gov) and record the URL and date, as usual.
+- Add no case law beyond the authorities file and the notes. A case found another way can't be checked for later treatment, and a case cited without that check is how a letter ends up relying on overruled law. When a case would materially help, add an `attorney_decision` item (the case, what it holds, and that its treatment couldn't be checked; recommend leaving it out unless it carries an element) and keep it out of the letter.
+- If the attorney approves a case anyway, its support-matrix row says `"validity": "treatment not checked"`, and you add a non-blocking `attorney_action` item, "Check that <case> is still good law before filing". The reviewer flags any such row whose item is missing.
+
+## 3. Research only what the file doesn't cover
+
+That is this client's adverse facts, waivers, unusual postures (an RFE's specific grounds, a refiling after denial), and circuit-specific points. Each file's "Not covered here" list names the usual ones. For each:
+
+1. **Start at the top of the hierarchy:** the INA, then 8 C.F.R., then the current USCIS Policy Manual chapter, then the form instructions.
+2. **Add case law where it does work:** a BIA precedent decision or the controlling circuit's decision on a contested or fact-sensitive point. Prefer precedential decisions; label anything unpublished as non-precedential.
+3. **Verify.** Read the passage you'd cite, record the pinpoint, and check its treatment with `check_validity`. An authority with negative treatment either goes or comes with an explanation.
+4. **Look for the adverse authority** an officer could cite against the proposition, and say how the letter should handle it.
+5. **Recommend:** cite as is, narrow the proposition, or drop it.
+
+Use the BIA Edge connector for case law and for statute, regulation, and Policy Manual text; its records link to the official sources. Phrase queries as legal propositions ("good-faith marriage evidence when spouses kept separate residences for work"), never with client names, dates of birth, or A-numbers. Run the network gate before the first query (`uv run --script "${CLAUDE_PLUGIN_ROOT}/scripts/network_gate.py" "<matter>" --action mcp_research --role cover_letter_researcher --json`; the matter contract's "Network gate" has the rules).
+
+## 4. Keep results small
+
+Every tool result stays in your context for the rest of the run, and each later step re-reads it, so a long statute pasted early costs many times over.
+
+- **Known citations:** `get_statute_by_citation` with the subsection in the citation (for example "INA 245(c)(2)") and `max_chars` of 800 to 1,500; `get_reference_by_citation` with a small `max_chars` or a `section`; `get_case_by_citation` with `max_chars` of 500 or less, just to resolve the `document_id`.
+- **Quotes and pinpoints:** prefer `find_in_statute`, `find_in_reference`, and `search_passages` with `document_id` (and `expected_page` to confirm a pin) to full text. Use `get_document` with `include="text"` only when a passage search fails.
+- **Searches:** `search_cases` and `search_references` with `limit` of 5 to 8.
+- **Validity:** batch `check_validity`; single-document mode only for a case with adverse treatment, with `limit=3`.
+- **Feed vocabulary:** `get_regulatory_updates` accepts source codes such as `uscis_pm`, `uscis_policy_memo`, `federal_register`, and `bia` (Attorney General decisions come under `bia`; `uscis` and `aao` are rejected), and named topics such as `adjustment of status`, `asylum/refugees`, `citizenship/naturalization`, `employment-based/national interest waiver/niw`, `parole`, `public charge`, `visas/family reunification`, `waivers of inadmissibility`, and `work authorization/employment`. Free-text topics such as a section number match loosely and can return unrelated items.
+- **Quotes in your outputs** stay at 25 words or fewer. Cite the provision and quote its operative phrase; don't paste statute or regulation text into the conversation, the pack, or the matrix.
+
+## 5. Budget
+
+Aim for 20 connector calls or fewer per letter: about five for the currency check and the rest for this client's issues. A genuinely contested issue may need more. When it does, say in the authority pack how many calls you made and why.
+
+## Outputs
+
+**`authority pack.md`**, for the writer and the attorney:
+
+- **Standard authorities:** a short section naming the file and the entries the letter relies on (for example "`i130_i485.md` A1, A4, A6, A8–A10, A12"), with the currency-check result. Don't restate the entries.
+- **Researched propositions:** for each, the recommended authority with its pinpoint and a short quotation, why it fits, any adverse authority and how to answer it, and the recommendation.
+- **Sources and calls:** the sources checked and their dates, the number of connector calls (with the reason if over 20), and a note if case-law research wasn't available.
+
+**`support matrix.json`**, for the writer and the reviewer. It has one row for every authority the letter cites, including the standard ones the writer took from the authorities file, so the reviewer can check every citation in one place. For a file entry, copy its fields, set `checked` to the date of your currency check, and add `source` naming the file and entry:
+
+```json
+{"propositions": [
+  {"id": "P1",
+   "proposition": "A spouse of a U.S. citizen is an immediate relative exempt from numerical limits.",
+   "recommendation": "cite",
+   "support": [
+     {"authority": "INA § 201(b)(2)(A)(i)", "citation": "8 U.S.C. § 1151(b)(2)(A)(i)", "url": "https://...",
+      "pinpoint": "(b)(2)(A)(i)", "quote": "...", "validity": "current statute", "weight": "controlling", "checked": "2026-10-28",
+      "source": "authorities/i130_i485.md A1"}
+   ],
+   "adverse": []}
+]}
+```
+
+`recommendation` is `cite`, `narrow` (give the narrower wording in `note`), or `drop`. `weight` is `controlling`, `persuasive`, or `background`. `source` is optional and appears only on rows taken from an authorities file or the chat research notes.
+
+## Refreshing an authorities file
+
+This is plugin maintenance, done outside any matter. Re-verify each entry with the same tools (subsection-focused statute lookups, `find_in_reference` for Policy Manual quotes, `search_passages` for case pinpoints, and one batch `check_validity`), update each entry's checked date and the header's verified date, and keep the file to about a page. Don't add anything the connector didn't confirm.

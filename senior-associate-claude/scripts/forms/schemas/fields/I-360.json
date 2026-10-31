@@ -1,0 +1,3830 @@
+{
+ "pdf": "I-360.pdf",
+ "pdf_sha256": "cbe6fa2e031885452459be4870742dc84b6ec337f7c2696c8f2f94e91fbf4f38",
+ "fields": {
+  "AttorneyStateBarNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "CheckBox1": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "PDF417BarCode1": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Part4Line1b_Country": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line10_AptSteFlrNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line10_CityOrTown": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line10_Country": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line10_PostalCode": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line10_Province": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line10_State": {
+   "type": "/Ch",
+   "states": [
+    " ",
+    "AA",
+    "AE",
+    "AK",
+    "AL",
+    "AP",
+    "AR",
+    "AS",
+    "AZ",
+    "CA",
+    "CO",
+    "CT",
+    "DC",
+    "DE",
+    "FL",
+    "FM",
+    "GA",
+    "GU",
+    "HI",
+    "IA",
+    "ID",
+    "IL",
+    "IN",
+    "KS",
+    "KY",
+    "LA",
+    "MA",
+    "MD",
+    "ME",
+    "MH",
+    "MI",
+    "MN",
+    "MO",
+    "MP",
+    "MS",
+    "MT",
+    "NC",
+    "ND",
+    "NE",
+    "NH",
+    "NJ",
+    "NM",
+    "NV",
+    "NY",
+    "OH",
+    "OK",
+    "OR",
+    "PA",
+    "PR",
+    "PW",
+    "RI",
+    "SC",
+    "SD",
+    "TN",
+    "TX",
+    "UT",
+    "VA",
+    "VI",
+    "VT",
+    "WA",
+    "WI",
+    "WV",
+    "WY"
+   ]
+  },
+  "Pt10Line10_StreetNumberName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line10_Unit": {
+   "type": "/Btn",
+   "states": [
+    " STE ",
+    " APT ",
+    " FLR "
+   ]
+  },
+  "Pt10Line10_ZipCode": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line11_DateFrom": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line11_DateTo": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line12": {
+   "type": "/Btn",
+   "states": [
+    "Y",
+    "N"
+   ]
+  },
+  "Pt10Line1_FamilyName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line1_GivenName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line1_MiddleName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line2_DateOfBirth": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line3_CountryOfBirth": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line4_DateOfDeath": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line5_Checkbox": {
+   "type": "/Btn",
+   "states": [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E"
+   ]
+  },
+  "Pt10Line5c1_AlienNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line5d1_AlienNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line5e_Explain": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line6_NumberofMarriages": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line7_NumberofAbuseMarriages": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line9_DateFrom": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt10Line9_DateTo": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt11Line1_Checkbox": {
+   "type": "/Btn",
+   "states": [
+    "A",
+    "B"
+   ]
+  },
+  "Pt11Line1b_Language": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt11Line2_Checkbox": {
+   "type": "/Btn",
+   "states": [
+    "C"
+   ]
+  },
+  "Pt11Line2_RepresentativeName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt11Line3_DaytimePhoneNumber1": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt11Line4_MobileNumber1": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt11Line5_Email": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt11Line6_DateofSignature": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt11Line6_Signature": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt12Line1_Checkbox": {
+   "type": "/Btn",
+   "states": [
+    "A",
+    "B"
+   ]
+  },
+  "Pt12Line1b_Language": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt12Line2_Checkbox": {
+   "type": "/Btn",
+   "states": [
+    "C"
+   ]
+  },
+  "Pt12Line2_RepresentativeName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt12Line3_AuthorizedSignatoryFamilyName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt12Line3_AuthorizedSignatoryGivenName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt12Line4_AuthorizedSignatoryTitle": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt12Line4_InterpreterDaytimeTelephone": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt12Line5_DaytimePhoneNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt12Line5_Email": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt12Line5_InterpreterMobileTelephone": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt12Line6_DateofSignature": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt12Line6_MobileNumber1": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt12Line6_Signature": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt12Line7_Email": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt12Line8_DateofSignature": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt12Line8_Signature": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt12_NameofLanguage": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt13Line1_InterpreterFamilyName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt13Line1_InterpreterGivenName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt13Line1_PreparerFamilyName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt13Line1_PreparerGivenName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt13Line2_BusinessName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt13Line2_InterpreterBusinessorOrg": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt13Line3_AptSteFlrNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt13Line3_CityOrTown": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt13Line3_Country": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt13Line3_PostalCode": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt13Line3_Province": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt13Line3_State": {
+   "type": "/Ch",
+   "states": [
+    " ",
+    "AA",
+    "AE",
+    "AK",
+    "AL",
+    "AP",
+    "AR",
+    "AS",
+    "AZ",
+    "CA",
+    "CO",
+    "CT",
+    "DC",
+    "DE",
+    "FL",
+    "FM",
+    "GA",
+    "GU",
+    "HI",
+    "IA",
+    "ID",
+    "IL",
+    "IN",
+    "KS",
+    "KY",
+    "LA",
+    "MA",
+    "MD",
+    "ME",
+    "MH",
+    "MI",
+    "MN",
+    "MO",
+    "MP",
+    "MS",
+    "MT",
+    "NC",
+    "ND",
+    "NE",
+    "NH",
+    "NJ",
+    "NM",
+    "NV",
+    "NY",
+    "OH",
+    "OK",
+    "OR",
+    "PA",
+    "PR",
+    "PW",
+    "RI",
+    "SC",
+    "SD",
+    "TN",
+    "TX",
+    "UT",
+    "VA",
+    "VI",
+    "VT",
+    "WA",
+    "WI",
+    "WV",
+    "WY"
+   ]
+  },
+  "Pt13Line3_StreetNumberName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt13Line3_Unit": {
+   "type": "/Btn",
+   "states": [
+    " STE ",
+    " APT ",
+    " FLR "
+   ]
+  },
+  "Pt13Line3_ZipCode": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt13Line4_DaytimePhoneNumber1": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt13Line6_Email": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt13Line7_Checkbox": {
+   "type": "/Btn",
+   "states": [
+    "A",
+    "B"
+   ]
+  },
+  "Pt13Line7b_extends": {
+   "type": "/Btn",
+   "states": [
+    "N",
+    "Y"
+   ]
+  },
+  "Pt13Line8_DateofSignature": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt13ine5_PreparerFaxNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt14Line3_AptSteFlrNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt14Line3_CityOrTown": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt14Line3_Country": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt14Line3_PostalCode": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt14Line3_Province": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt14Line3_State": {
+   "type": "/Ch",
+   "states": [
+    " ",
+    "AA",
+    "AE",
+    "AK",
+    "AL",
+    "AP",
+    "AR",
+    "AS",
+    "AZ",
+    "CA",
+    "CO",
+    "CT",
+    "DC",
+    "DE",
+    "FL",
+    "FM",
+    "GA",
+    "GU",
+    "HI",
+    "IA",
+    "ID",
+    "IL",
+    "IN",
+    "KS",
+    "KY",
+    "LA",
+    "MA",
+    "MD",
+    "ME",
+    "MH",
+    "MI",
+    "MN",
+    "MO",
+    "MP",
+    "MS",
+    "MT",
+    "NC",
+    "ND",
+    "NE",
+    "NH",
+    "NJ",
+    "NM",
+    "NV",
+    "NY",
+    "OH",
+    "OK",
+    "OR",
+    "PA",
+    "PR",
+    "PW",
+    "RI",
+    "SC",
+    "SD",
+    "TN",
+    "TX",
+    "UT",
+    "VA",
+    "VI",
+    "VT",
+    "WA",
+    "WI",
+    "WV",
+    "WY"
+   ]
+  },
+  "Pt14Line3_StreetNumberName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt14Line3_Unit": {
+   "type": "/Btn",
+   "states": [
+    " STE ",
+    " APT ",
+    " FLR "
+   ]
+  },
+  "Pt14Line3_ZipCode": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt14Line3a_PageNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt14Line3b_PartNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt14Line3c_ItemNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt14Line3d_AdditionalInfo": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt14Line4a_PageNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt14Line4b_PartNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt14Line4c_ItemNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt14Line4d_AdditionalInfo": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt14Line5a_PageNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt14Line5b_PartNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt14Line5c_ItemNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt14Line5d_AdditionalInfo": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt14Line6a_PageNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt14Line6b_PartNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt14Line6c_ItemNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt14Line6d_AdditionalInfo": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt1Line1_FamilyName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt1Line1_GivenName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt1Line1_MiddleName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt1Line2_OnlineAcctNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt1Line3_SSN": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt1Line4_AlienNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt1Line5_IRSTaxNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt1Line6_AptSteFlrNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt1Line6_CityOrTown": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt1Line6_Country": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt1Line6_InCareofName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt1Line6_OrganizationName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt1Line6_PostalCode": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt1Line6_Province": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt1Line6_State": {
+   "type": "/Ch",
+   "states": [
+    " ",
+    "AA",
+    "AE",
+    "AK",
+    "AL",
+    "AP",
+    "AR",
+    "AS",
+    "AZ",
+    "CA",
+    "CO",
+    "CT",
+    "DC",
+    "DE",
+    "FL",
+    "FM",
+    "GA",
+    "GU",
+    "HI",
+    "IA",
+    "ID",
+    "IL",
+    "IN",
+    "KS",
+    "KY",
+    "LA",
+    "MA",
+    "MD",
+    "ME",
+    "MH",
+    "MI",
+    "MN",
+    "MO",
+    "MP",
+    "MS",
+    "MT",
+    "NC",
+    "ND",
+    "NE",
+    "NH",
+    "NJ",
+    "NM",
+    "NV",
+    "NY",
+    "OH",
+    "OK",
+    "OR",
+    "PA",
+    "PR",
+    "PW",
+    "RI",
+    "SC",
+    "SD",
+    "TN",
+    "TX",
+    "UT",
+    "VA",
+    "VI",
+    "VT",
+    "WA",
+    "WI",
+    "WV",
+    "WY"
+   ]
+  },
+  "Pt1Line6_StreetNumberName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt1Line6_Unit": {
+   "type": "/Btn",
+   "states": [
+    " STE ",
+    " APT ",
+    " FLR "
+   ]
+  },
+  "Pt1Line6_ZipCode": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt1Line7_AptSteFlrNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt1Line7_CityOrTown": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt1Line7_Country": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt1Line7_InCareofName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt1Line7_PostalCode": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt1Line7_Province": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt1Line7_State": {
+   "type": "/Ch",
+   "states": [
+    " ",
+    "AA",
+    "AE",
+    "AK",
+    "AL",
+    "AP",
+    "AR",
+    "AS",
+    "AZ",
+    "CA",
+    "CO",
+    "CT",
+    "DC",
+    "DE",
+    "FL",
+    "FM",
+    "GA",
+    "GU",
+    "HI",
+    "IA",
+    "ID",
+    "IL",
+    "IN",
+    "KS",
+    "KY",
+    "LA",
+    "MA",
+    "MD",
+    "ME",
+    "MH",
+    "MI",
+    "MN",
+    "MO",
+    "MP",
+    "MS",
+    "MT",
+    "NC",
+    "ND",
+    "NE",
+    "NH",
+    "NJ",
+    "NM",
+    "NV",
+    "NY",
+    "OH",
+    "OK",
+    "OR",
+    "PA",
+    "PR",
+    "PW",
+    "RI",
+    "SC",
+    "SD",
+    "TN",
+    "TX",
+    "UT",
+    "VA",
+    "VI",
+    "VT",
+    "WA",
+    "WI",
+    "WV",
+    "WY"
+   ]
+  },
+  "Pt1Line7_StreetNumberName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt1Line7_Unit": {
+   "type": "/Btn",
+   "states": [
+    " STE ",
+    " APT ",
+    " FLR "
+   ]
+  },
+  "Pt1Line7_ZipCode": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt2Line1": {
+   "type": "/Btn",
+   "states": [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "H",
+    "F",
+    "I",
+    "G",
+    "L",
+    "K",
+    "J",
+    "P",
+    "M",
+    "N",
+    "O"
+   ]
+  },
+  "Pt2Line1d1_no": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt2Line1d1_yes": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt2Line1p_Describe": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt3Line10_Passport": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt3Line11_TravelDoc": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt3Line12_CountryOfIssuanceDocument": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt3Line13_ExpDate": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt3Line14_CurrentUSCISStatus": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt3Line15_DateOfExpired": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt3Line1_FamilyName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt3Line1_GivenName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt3Line1_MiddleName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt3Line2_AptSteFlrNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt3Line2_CityOrTown": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt3Line2_Country": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt3Line2_InCareofName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt3Line2_PostalCode": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt3Line2_Province": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt3Line2_State": {
+   "type": "/Ch",
+   "states": [
+    " ",
+    "AA",
+    "AE",
+    "AK",
+    "AL",
+    "AP",
+    "AR",
+    "AS",
+    "AZ",
+    "CA",
+    "CO",
+    "CT",
+    "DC",
+    "DE",
+    "FL",
+    "FM",
+    "GA",
+    "GU",
+    "HI",
+    "IA",
+    "ID",
+    "IL",
+    "IN",
+    "KS",
+    "KY",
+    "LA",
+    "MA",
+    "MD",
+    "ME",
+    "MH",
+    "MI",
+    "MN",
+    "MO",
+    "MP",
+    "MS",
+    "MT",
+    "NC",
+    "ND",
+    "NE",
+    "NH",
+    "NJ",
+    "NM",
+    "NV",
+    "NY",
+    "OH",
+    "OK",
+    "OR",
+    "PA",
+    "PR",
+    "PW",
+    "RI",
+    "SC",
+    "SD",
+    "TN",
+    "TX",
+    "UT",
+    "VA",
+    "VI",
+    "VT",
+    "WA",
+    "WI",
+    "WV",
+    "WY"
+   ]
+  },
+  "Pt3Line2_StreetNumberName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt3Line2_Unit": {
+   "type": "/Btn",
+   "states": [
+    " STE ",
+    " APT ",
+    " FLR "
+   ]
+  },
+  "Pt3Line2_ZipCode": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt3Line3_DateOfBirth": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt3Line4_CountryOfBirth": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt3Line5_SSN": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt3Line6_AlienNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt3Line7_MaritalStatus": {
+   "type": "/Btn",
+   "states": [
+    "S",
+    "M",
+    "D",
+    "W"
+   ]
+  },
+  "Pt3Line8_DateOfLastArrival": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt3Line9_I94": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt4Line1a_CityOrTown": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt4Line2a_FamilyName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt4Line2a_GivenName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt4Line2a_MiddleName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt4Line2b_AptSteFlrNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt4Line2b_CityOrTown": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt4Line2b_Country": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt4Line2b_PostalCode": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt4Line2b_Province": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt4Line2b_StreetNumberName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt4Line2b_Unit": {
+   "type": "/Btn",
+   "states": [
+    " STE ",
+    " APT ",
+    " FLR "
+   ]
+  },
+  "Pt4Line3_Sex": {
+   "type": "/Btn",
+   "states": [
+    "M",
+    "F"
+   ]
+  },
+  "Pt4Line4a": {
+   "type": "/Btn",
+   "states": [
+    "Y",
+    "N"
+   ]
+  },
+  "Pt4Line4b_HowMany": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt4Line5": {
+   "type": "/Btn",
+   "states": [
+    "Y",
+    "N"
+   ]
+  },
+  "Pt4Line6": {
+   "type": "/Btn",
+   "states": [
+    "Y",
+    "N"
+   ]
+  },
+  "Pt4Line6d_DaytimeTelephoneNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt4Line7": {
+   "type": "/Btn",
+   "states": [
+    "Y",
+    "N"
+   ]
+  },
+  "Pt5Line10_AlienNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line10_CountryOfBirth": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line10_DateOfBirth": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line10_FamilyName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line10_GivenName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line10_MiddleName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line10_Relationship": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt5Line1_Checkbox": {
+   "type": "/Btn",
+   "states": [
+    "Y",
+    "N"
+   ]
+  },
+  "Pt5Line2_AlienNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line2_CountryOfBirth": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line2_DateOfBirth": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line2_FamilyName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line2_GivenName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line2_MiddleName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line2_Relationship": {
+   "type": "/Btn",
+   "states": [
+    "S",
+    "C"
+   ]
+  },
+  "Pt5Line3_AlienNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line3_CountryOfBirth": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line3_DateOfBirth": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line3_FamilyName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line3_GivenName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line3_MiddleName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line3_Relationship": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt5Line4_AlienNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line4_CountryOfBirth": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line4_DateOfBirth": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line4_FamilyName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line4_GivenName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line4_MiddleName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line4_Relationship": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt5Line5_AlienNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line5_CountryOfBirth": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line5_DateOfBirth": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line5_FamilyName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line5_GivenName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line5_MiddleName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line5_Relationship": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt5Line6_AlienNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line6_CountryOfBirth": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line6_DateOfBirth": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line6_FamilyName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line6_GivenName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line6_MiddleName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line6_Relationship": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt5Line7_AlienNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line7_CountryOfBirth": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line7_DateOfBirth": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line7_FamilyName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line7_GivenName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line7_MiddleName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line7_Relationship": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt5Line8_AlienNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line8_CountryOfBirth": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line8_DateOfBirth": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line8_FamilyName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line8_GivenName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line8_MiddleName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line8_Relationship": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt5Line9_AlienNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line9_CountryOfBirth": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line9_DateOfBirth": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line9_FamilyName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line9_GivenName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line9_MiddleName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt5Line9_Relationship": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt6Line1_FamilyName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt6Line1_GivenName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt6Line1_MiddleName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt6Line2a": {
+   "type": "/Btn",
+   "states": [
+    "U",
+    "Y",
+    "N"
+   ]
+  },
+  "Pt6Line2b_AptSteFlrNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt6Line2b_CityOrTown": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt6Line2b_Country": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt6Line2b_InCareofName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt6Line2b_PostalCode": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt6Line2b_Province": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt6Line2b_State": {
+   "type": "/Ch",
+   "states": [
+    " ",
+    "AA",
+    "AE",
+    "AK",
+    "AL",
+    "AP",
+    "AR",
+    "AS",
+    "AZ",
+    "CA",
+    "CO",
+    "CT",
+    "DC",
+    "DE",
+    "FL",
+    "FM",
+    "GA",
+    "GU",
+    "HI",
+    "IA",
+    "ID",
+    "IL",
+    "IN",
+    "KS",
+    "KY",
+    "LA",
+    "MA",
+    "MD",
+    "ME",
+    "MH",
+    "MI",
+    "MN",
+    "MO",
+    "MP",
+    "MS",
+    "MT",
+    "NC",
+    "ND",
+    "NE",
+    "NH",
+    "NJ",
+    "NM",
+    "NV",
+    "NY",
+    "OH",
+    "OK",
+    "OR",
+    "PA",
+    "PR",
+    "PW",
+    "RI",
+    "SC",
+    "SD",
+    "TN",
+    "TX",
+    "UT",
+    "VA",
+    "VI",
+    "VT",
+    "WA",
+    "WI",
+    "WV",
+    "WY"
+   ]
+  },
+  "Pt6Line2b_StreetNumberName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt6Line2b_Unit": {
+   "type": "/Btn",
+   "states": [
+    " STE ",
+    " APT ",
+    " FLR "
+   ]
+  },
+  "Pt6Line2b_ZipCode": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt6Line2c_DateofDeath": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt6Line3_FamilyName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt6Line3_GivenName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt6Line3_MiddleName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt6Line4_DateOfBirth": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt6Line5_CountryOfBirth": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt6Line6a": {
+   "type": "/Btn",
+   "states": [
+    "U",
+    "Y",
+    "N"
+   ]
+  },
+  "Pt6Line6b_AptSteFlrNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt6Line6b_CityOrTown": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt6Line6b_Country": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt6Line6b_InCareofName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt6Line6b_PostalCode": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt6Line6b_Province": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt6Line6b_State": {
+   "type": "/Ch",
+   "states": [
+    " ",
+    "AA",
+    "AE",
+    "AK",
+    "AL",
+    "AP",
+    "AR",
+    "AS",
+    "AZ",
+    "CA",
+    "CO",
+    "CT",
+    "DC",
+    "DE",
+    "FL",
+    "FM",
+    "GA",
+    "GU",
+    "HI",
+    "IA",
+    "ID",
+    "IL",
+    "IN",
+    "KS",
+    "KY",
+    "LA",
+    "MA",
+    "MD",
+    "ME",
+    "MH",
+    "MI",
+    "MN",
+    "MO",
+    "MP",
+    "MS",
+    "MT",
+    "NC",
+    "ND",
+    "NE",
+    "NH",
+    "NJ",
+    "NM",
+    "NV",
+    "NY",
+    "OH",
+    "OK",
+    "OR",
+    "PA",
+    "PR",
+    "PW",
+    "RI",
+    "SC",
+    "SD",
+    "TN",
+    "TX",
+    "UT",
+    "VA",
+    "VI",
+    "VT",
+    "WA",
+    "WI",
+    "WV",
+    "WY"
+   ]
+  },
+  "Pt6Line6b_StreetNumberName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt6Line6b_Unit": {
+   "type": "/Btn",
+   "states": [
+    "APT",
+    " FLR ",
+    " STE "
+   ]
+  },
+  "Pt6Line6b_ZipCode": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt6Line6c_DateofDeath": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt6Line6e_WorkTelephoneNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt6Line7a": {
+   "type": "/Btn",
+   "states": [
+    "A",
+    "F",
+    "N",
+    "M",
+    "C",
+    "O"
+   ]
+  },
+  "Pt6Line7b_BranchServiceNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt7Line10": {
+   "type": "/Btn",
+   "states": [
+    "Y",
+    "N"
+   ]
+  },
+  "Pt7Line1_FamilyName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt7Line1_GivenName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt7Line1_MiddleName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt7Line2_DateOfBirth": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt7Line3_CountryOfBirth": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt7Line4_DateOfDeath": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt7Line5a_USCitizen": {
+   "type": "/Btn",
+   "states": [
+    "A"
+   ]
+  },
+  "Pt7Line5b_citizenabroad": {
+   "type": "/Btn",
+   "states": [
+    "B"
+   ]
+  },
+  "Pt7Line5c1_AlienNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt7Line5c_USNaturalized": {
+   "type": "/Btn",
+   "states": [
+    "C"
+   ]
+  },
+  "Pt7Line5d_Explain": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt7Line5d_Other": {
+   "type": "/Btn",
+   "states": [
+    "D"
+   ]
+  },
+  "Pt7Line6_NumberofMarriages": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt7Line7_NumberofSpouseMarriages": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt7Line8a_DateofMarriage": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt7Line8b_PlaceOfMarriage": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt7Line9a_no": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt7Line9a_yes": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt7Line9b_DateofReMarriage": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line1a_FamilyName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line1a_GivenName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line1a_MiddleName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line1b_FamilyName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line1b_GivenName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line1b_MiddleName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line2a": {
+   "type": "/Btn",
+   "states": [
+    "N",
+    "Y"
+   ]
+  },
+  "Pt8Line2b_Name": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line2c": {
+   "type": "/Btn",
+   "states": [
+    "Y",
+    "N"
+   ]
+  },
+  "Pt8Line3A_Checkbox": {
+   "type": "/Btn",
+   "states": [
+    "A",
+    "D",
+    "B",
+    "C"
+   ]
+  },
+  "Pt8Line3a": {
+   "type": "/Btn",
+   "states": [
+    "O",
+    "B"
+   ]
+  },
+  "Pt8Line3a_Specify": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line3b_Checkbox": {
+   "type": "/Btn",
+   "states": [
+    "A",
+    "B",
+    "C"
+   ]
+  },
+  "Pt8Line4a": {
+   "type": "/Btn",
+   "states": [
+    "N",
+    "Y"
+   ]
+  },
+  "Pt8Line4b_NameOfParent": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt8Line5": {
+   "type": "/Btn",
+   "states": [
+    "Y",
+    "N"
+   ]
+  },
+  "Pt8Line6a": {
+   "type": "/Btn",
+   "states": [
+    "Y",
+    "N"
+   ]
+  },
+  "Pt8Line6b": {
+   "type": "/Btn",
+   "states": [
+    "N",
+    "Y"
+   ]
+  },
+  "Pt9Line10": {
+   "type": "/Btn",
+   "states": [
+    "Y",
+    "N"
+   ]
+  },
+  "Pt9Line11": {
+   "type": "/Btn",
+   "states": [
+    "N",
+    "Y"
+   ]
+  },
+  "Pt9Line12": {
+   "type": "/Btn",
+   "states": [
+    "Y",
+    "N"
+   ]
+  },
+  "Pt9Line13": {
+   "type": "/Btn",
+   "states": [
+    "N",
+    "Y"
+   ]
+  },
+  "Pt9Line15_EmployerOrOrgName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line15_FamilyName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line15_GivenName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line15_MiddleName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line16_TitleofSignatory": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line17_AptSteFlrNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line17_CityOrTown": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line17_State": {
+   "type": "/Ch",
+   "states": [
+    " ",
+    "AA",
+    "AE",
+    "AK",
+    "AL",
+    "AP",
+    "AR",
+    "AS",
+    "AZ",
+    "CA",
+    "CO",
+    "CT",
+    "DC",
+    "DE",
+    "FL",
+    "FM",
+    "GA",
+    "GU",
+    "HI",
+    "IA",
+    "ID",
+    "IL",
+    "IN",
+    "KS",
+    "KY",
+    "LA",
+    "MA",
+    "MD",
+    "ME",
+    "MH",
+    "MI",
+    "MN",
+    "MO",
+    "MP",
+    "MS",
+    "MT",
+    "NC",
+    "ND",
+    "NE",
+    "NH",
+    "NJ",
+    "NM",
+    "NV",
+    "NY",
+    "OH",
+    "OK",
+    "OR",
+    "PA",
+    "PR",
+    "PW",
+    "RI",
+    "SC",
+    "SD",
+    "TN",
+    "TX",
+    "UT",
+    "VA",
+    "VI",
+    "VT",
+    "WA",
+    "WI",
+    "WV",
+    "WY"
+   ]
+  },
+  "Pt9Line17_Unit": {
+   "type": "/Btn",
+   "states": [
+    " STE ",
+    " APT ",
+    " FLR "
+   ]
+  },
+  "Pt9Line17_ZipCode": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line1a_NumberofMembers": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line1b_NumberofEmployees": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line1c_NumberofBeneficiaries": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line1d_NumberofSIRWandNIRW": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line1e_NumberofSIRWPetitions": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line2": {
+   "type": "/Btn",
+   "states": [
+    "N",
+    "Y"
+   ]
+  },
+  "Pt9Line24_NameofAROWRD": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line25_AROWRDCityTown": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line25_AROWRDState": {
+   "type": "/Ch",
+   "states": [
+    " ",
+    "AA",
+    "AE",
+    "AK",
+    "AL",
+    "AP",
+    "AR",
+    "AS",
+    "AZ",
+    "CA",
+    "CO",
+    "CT",
+    "DC",
+    "DE",
+    "FL",
+    "FM",
+    "GA",
+    "GU",
+    "HI",
+    "IA",
+    "ID",
+    "IL",
+    "IN",
+    "KS",
+    "KY",
+    "LA",
+    "MA",
+    "MD",
+    "ME",
+    "MH",
+    "MI",
+    "MN",
+    "MO",
+    "MP",
+    "MS",
+    "MT",
+    "NC",
+    "ND",
+    "NE",
+    "NH",
+    "NJ",
+    "NM",
+    "NV",
+    "NY",
+    "OH",
+    "OK",
+    "OR",
+    "PA",
+    "PR",
+    "PW",
+    "RI",
+    "SC",
+    "SD",
+    "TN",
+    "TX",
+    "UT",
+    "VA",
+    "VI",
+    "VT",
+    "WA",
+    "WI",
+    "WV",
+    "WY"
+   ]
+  },
+  "Pt9Line25_AROWRDStreetNumberName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line25_AROWRDZipCode": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line25_AptSteFlrNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line26_AROWRDDaytimePhoneNumber1": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line27_AROWRDPreparerFaxNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line28_AROWRDEmail": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line29_AROWRDIRSTaxNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line3_DateFrom": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line3_DateTo": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line3_FamilyName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line3_GivenName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line3_MiddleName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line4_Position": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line4_Summary": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line5_DescribeRelationship": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line6a_Title": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line6b": {
+   "type": "/Btn",
+   "states": [
+    "A",
+    "B",
+    "C"
+   ]
+  },
+  "Pt9Line6b_DetailedDescription": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line6c_Description": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line6d_Description": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line6f_AptSteFlrNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line6f_CityOrTown": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line6f_CompanyName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line6f_Country": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line6f_PostalCode": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line6f_Province": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line6f_State": {
+   "type": "/Ch",
+   "states": [
+    " ",
+    "AA",
+    "AE",
+    "AK",
+    "AL",
+    "AP",
+    "AR",
+    "AS",
+    "AZ",
+    "CA",
+    "CO",
+    "CT",
+    "DC",
+    "DE",
+    "FL",
+    "FM",
+    "GA",
+    "GU",
+    "HI",
+    "IA",
+    "ID",
+    "IL",
+    "IN",
+    "KS",
+    "KY",
+    "LA",
+    "MA",
+    "MD",
+    "ME",
+    "MH",
+    "MI",
+    "MN",
+    "MO",
+    "MP",
+    "MS",
+    "MT",
+    "NC",
+    "ND",
+    "NE",
+    "NH",
+    "NJ",
+    "NM",
+    "NV",
+    "NY",
+    "OH",
+    "OK",
+    "OR",
+    "PA",
+    "PR",
+    "PW",
+    "RI",
+    "SC",
+    "SD",
+    "TN",
+    "TX",
+    "UT",
+    "VA",
+    "VI",
+    "VT",
+    "WA",
+    "WI",
+    "WV",
+    "WY"
+   ]
+  },
+  "Pt9Line6f_StreetNumberName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line6f_Unit": {
+   "type": "/Btn",
+   "states": [
+    " STE ",
+    " APT ",
+    " FLR "
+   ]
+  },
+  "Pt9Line6f_ZipCode": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line7": {
+   "type": "/Btn",
+   "states": [
+    "N",
+    "Y"
+   ]
+  },
+  "Pt9Line7_Checkbox": {
+   "type": "/Btn",
+   "states": [
+    "A",
+    "B",
+    "C"
+   ]
+  },
+  "Pt9Line7_CheckboxC1": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt9Line7_CheckboxC2": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt9Line7_CheckboxC3": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt9Line7_CheckboxC4": {
+   "type": "/Btn",
+   "states": [
+    "1"
+   ]
+  },
+  "Pt9Line8": {
+   "type": "/Btn",
+   "states": [
+    "Y",
+    "N"
+   ]
+  },
+  "Pt9Line8a_DateOfMarriage": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line8b_PlaceOfMarriage": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9Line9": {
+   "type": "/Btn",
+   "states": [
+    "N",
+    "Y"
+   ]
+  },
+  "Pt9Lne25_Unit": {
+   "type": "/Btn",
+   "states": [
+    " STE ",
+    " APT ",
+    " FLR "
+   ]
+  },
+  "Pt9_ARRDSignature": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9_DateofSignature": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9_DateofSignatureofARRD": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9_DaytimePhoneNumber1": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9_Email": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9_PetitioningOrgName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9_PreparerFaxNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9_RDFamilyName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9_RDGivenName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9_RDMiddleName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9_RDTitle": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9_ReligiousDenominationName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9_Signature": {
+   "type": "/Tx",
+   "states": []
+  },
+  "Pt9_StreetNumberName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "USCISOnlineAcctNumber": {
+   "type": "/Tx",
+   "states": []
+  }
+ },
+ "widgets": {
+  "AttorneyStateBarNumber": [
+   "1 264.0 480.0 384.0 498.0"
+  ],
+  "CheckBox1": [
+   "1 156.5 511.0 166.5 521.0"
+  ],
+  "PDF417BarCode1": [
+   "1 192.0 12.0 462.0 30.0",
+   "2 192.0 12.0 462.0 30.0",
+   "3 192.0 12.0 462.0 30.0",
+   "4 192.0 12.0 462.0 30.0",
+   "5 192.0 12.0 462.0 30.0",
+   "6 192.0 12.0 462.0 30.0",
+   "7 192.0 12.0 462.0 30.0",
+   "8 192.0 12.0 462.0 30.0",
+   "9 192.0 12.0 462.0 30.0",
+   "10 192.0 12.0 462.0 30.0",
+   "11 192.0 12.0 462.0 30.0",
+   "12 192.0 12.0 462.0 30.0",
+   "13 192.0 12.0 462.0 30.0",
+   "14 192.0 12.0 462.0 30.0",
+   "15 192.0 12.0 462.0 30.0",
+   "16 192.0 12.0 462.0 30.0",
+   "17 192.0 12.0 462.0 30.0",
+   "18 192.0 12.0 462.0 30.0",
+   "19 192.0 12.0 462.0 30.0"
+  ],
+  "Part4Line1b_Country": [
+   "3 138.0 48.0 408.0 66.0"
+  ],
+  "Pt10Line10_AptSteFlrNumber": [
+   "14 468.0 504.0 576.0 522.0"
+  ],
+  "Pt10Line10_CityOrTown": [
+   "14 60.0 468.0 402.0 486.0"
+  ],
+  "Pt10Line10_Country": [
+   "14 354.0 432.0 576.0 450.0"
+  ],
+  "Pt10Line10_PostalCode": [
+   "14 246.0 432.0 348.0 450.0"
+  ],
+  "Pt10Line10_Province": [
+   "14 60.0 432.0 240.0 450.0"
+  ],
+  "Pt10Line10_State": [
+   "14 408.0 468.0 463.5 486.0"
+  ],
+  "Pt10Line10_StreetNumberName": [
+   "14 60.0 504.0 402.0 522.0"
+  ],
+  "Pt10Line10_Unit": [
+   "14 430.0 508.0 440.0 518.0",
+   "14 412.0 508.0 422.0 518.0",
+   "14 448.0 508.0 458.0 518.0"
+  ],
+  "Pt10Line10_ZipCode": [
+   "14 468.0 468.0 576.0 486.0"
+  ],
+  "Pt10Line11_DateFrom": [
+   "14 150.0 396.0 282.0 414.0"
+  ],
+  "Pt10Line11_DateTo": [
+   "14 372.0 396.0 504.0 414.0"
+  ],
+  "Pt10Line12": [
+   "14 500.2 376.0 510.2 386.0",
+   "14 542.2 376.0 552.2 386.0"
+  ],
+  "Pt10Line1_FamilyName": [
+   "13 60.0 366.0 276.0 384.0"
+  ],
+  "Pt10Line1_GivenName": [
+   "13 282.0 366.0 444.0 384.0"
+  ],
+  "Pt10Line1_MiddleName": [
+   "13 450.0 366.0 576.0 384.0"
+  ],
+  "Pt10Line2_DateOfBirth": [
+   "13 60.0 330.0 192.0 348.0"
+  ],
+  "Pt10Line3_CountryOfBirth": [
+   "13 210.0 330.0 426.0 348.0"
+  ],
+  "Pt10Line4_DateOfDeath": [
+   "13 444.0 330.0 576.0 348.0"
+  ],
+  "Pt10Line5_Checkbox": [
+   "13 79.3 289.0 89.3 299.0",
+   "13 79.3 271.0 89.3 281.0",
+   "13 79.3 253.0 89.3 263.0",
+   "13 79.3 211.0 89.3 221.0",
+   "13 79.3 166.0 89.3 176.0"
+  ],
+  "Pt10Line5c1_AlienNumber": [
+   "13 259.5 228.0 388.5 246.0"
+  ],
+  "Pt10Line5d1_AlienNumber": [
+   "13 246.1 186.0 375.1 204.0"
+  ],
+  "Pt10Line5e_Explain": [
+   "13 96.0 144.0 576.0 162.0"
+  ],
+  "Pt10Line6_NumberofMarriages": [
+   "13 305.9 120.0 395.5 138.0"
+  ],
+  "Pt10Line7_NumberofAbuseMarriages": [
+   "13 305.9 96.0 395.5 114.0"
+  ],
+  "Pt10Line9_DateFrom": [
+   "14 150.0 576.0 282.0 594.0"
+  ],
+  "Pt10Line9_DateTo": [
+   "14 372.0 576.0 504.0 594.0"
+  ],
+  "Pt11Line1_Checkbox": [
+   "14 79.0 193.0 89.0 203.0",
+   "14 79.0 163.0 89.0 173.0"
+  ],
+  "Pt11Line1b_Language": [
+   "14 144.0 144.0 570.0 162.0"
+  ],
+  "Pt11Line2_Checkbox": [
+   "14 61.0 94.0 71.0 104.0"
+  ],
+  "Pt11Line2_RepresentativeName": [
+   "14 270.0 90.0 570.0 108.0"
+  ],
+  "Pt11Line3_DaytimePhoneNumber1": [
+   "15 60.0 660.0 300.0 678.0"
+  ],
+  "Pt11Line4_MobileNumber1": [
+   "15 336.0 660.0 576.0 678.0"
+  ],
+  "Pt11Line5_Email": [
+   "15 60.0 624.0 300.0 642.0"
+  ],
+  "Pt11Line6_DateofSignature": [
+   "15 444.0 330.0 576.0 348.0"
+  ],
+  "Pt11Line6_Signature": [
+   "15 60.0 330.0 438.3 348.0"
+  ],
+  "Pt12Line1_Checkbox": [
+   "15 79.0 103.0 89.0 113.0",
+   "15 79.0 73.0 89.0 83.0"
+  ],
+  "Pt12Line1b_Language": [
+   "15 144.0 54.0 570.0 72.0"
+  ],
+  "Pt12Line2_Checkbox": [
+   "16 61.0 670.0 71.0 680.0"
+  ],
+  "Pt12Line2_RepresentativeName": [
+   "16 270.0 666.0 570.0 684.0"
+  ],
+  "Pt12Line3_AuthorizedSignatoryFamilyName": [
+   "16 60.0 588.0 306.0 606.0"
+  ],
+  "Pt12Line3_AuthorizedSignatoryGivenName": [
+   "16 312.0 588.0 575.8 606.0"
+  ],
+  "Pt12Line4_AuthorizedSignatoryTitle": [
+   "16 60.0 552.0 300.0 570.0"
+  ],
+  "Pt12Line4_InterpreterDaytimeTelephone": [
+   "17 60.0 396.0 300.0 414.0"
+  ],
+  "Pt12Line5_DaytimePhoneNumber": [
+   "16 336.0 552.0 576.0 570.0"
+  ],
+  "Pt12Line5_Email": [
+   "17 60.0 360.0 300.0 378.0"
+  ],
+  "Pt12Line5_InterpreterMobileTelephone": [
+   "17 336.0 396.0 576.0 414.0"
+  ],
+  "Pt12Line6_DateofSignature": [
+   "17 444.0 162.0 576.0 180.0"
+  ],
+  "Pt12Line6_MobileNumber1": [
+   "16 60.0 516.0 300.0 534.0"
+  ],
+  "Pt12Line6_Signature": [
+   "17 60.0 162.0 438.0 180.0"
+  ],
+  "Pt12Line7_Email": [
+   "16 336.0 516.0 576.0 534.0"
+  ],
+  "Pt12Line8_DateofSignature": [
+   "16 444.0 276.0 576.0 294.0"
+  ],
+  "Pt12Line8_Signature": [
+   "16 60.0 276.0 438.3 294.0",
+   "18 60.0 48.0 438.3 66.0"
+  ],
+  "Pt12_NameofLanguage": [
+   "17 144.0 288.0 324.0 306.0"
+  ],
+  "Pt13Line1_InterpreterFamilyName": [
+   "17 60.0 636.0 306.0 654.0"
+  ],
+  "Pt13Line1_InterpreterGivenName": [
+   "17 312.0 636.0 575.8 654.0"
+  ],
+  "Pt13Line1_PreparerFamilyName": [
+   "18 59.9 624.0 311.9 642.0"
+  ],
+  "Pt13Line1_PreparerGivenName": [
+   "18 323.9 624.0 575.9 642.0"
+  ],
+  "Pt13Line2_BusinessName": [
+   "18 59.9 588.0 311.9 606.0"
+  ],
+  "Pt13Line2_InterpreterBusinessorOrg": [
+   "17 60.0 600.0 306.0 618.0"
+  ],
+  "Pt13Line3_AptSteFlrNumber": [
+   "17 468.0 534.0 576.0 552.0"
+  ],
+  "Pt13Line3_CityOrTown": [
+   "17 60.0 498.0 402.0 516.0"
+  ],
+  "Pt13Line3_Country": [
+   "17 336.0 462.0 576.0 480.0"
+  ],
+  "Pt13Line3_PostalCode": [
+   "17 246.0 462.0 330.0 480.0"
+  ],
+  "Pt13Line3_Province": [
+   "17 60.0 462.0 240.0 480.0"
+  ],
+  "Pt13Line3_State": [
+   "17 408.0 498.0 463.5 516.0"
+  ],
+  "Pt13Line3_StreetNumberName": [
+   "17 60.0 534.0 402.0 552.0"
+  ],
+  "Pt13Line3_Unit": [
+   "17 430.0 538.0 440.0 548.0",
+   "17 412.0 538.0 422.0 548.0",
+   "17 448.0 538.0 458.0 548.0"
+  ],
+  "Pt13Line3_ZipCode": [
+   "17 468.0 498.0 576.0 516.0"
+  ],
+  "Pt13Line4_DaytimePhoneNumber1": [
+   "18 60.0 384.0 302.0 402.0"
+  ],
+  "Pt13Line6_Email": [
+   "18 60.0 348.0 302.0 366.0"
+  ],
+  "Pt13Line7_Checkbox": [
+   "18 79.0 301.0 89.0 311.0",
+   "18 79.0 271.0 89.0 281.0"
+  ],
+  "Pt13Line7b_extends": [
+   "18 151.0 257.5 161.0 267.5",
+   "18 97.0 257.5 107.0 267.5"
+  ],
+  "Pt13Line8_DateofSignature": [
+   "18 444.0 48.0 576.0 66.0"
+  ],
+  "Pt13ine5_PreparerFaxNumber": [
+   "18 336.0 384.0 576.0 402.0"
+  ],
+  "Pt14Line3_AptSteFlrNumber": [
+   "18 468.0 522.0 576.0 540.0"
+  ],
+  "Pt14Line3_CityOrTown": [
+   "18 60.0 486.0 402.0 504.0"
+  ],
+  "Pt14Line3_Country": [
+   "18 336.0 450.0 576.0 468.0"
+  ],
+  "Pt14Line3_PostalCode": [
+   "18 246.0 450.0 330.0 468.0"
+  ],
+  "Pt14Line3_Province": [
+   "18 60.0 450.0 240.0 468.0"
+  ],
+  "Pt14Line3_State": [
+   "18 408.0 486.0 463.5 504.0"
+  ],
+  "Pt14Line3_StreetNumberName": [
+   "18 60.0 522.0 402.0 540.0"
+  ],
+  "Pt14Line3_Unit": [
+   "18 430.0 526.0 440.0 536.0",
+   "18 412.0 526.0 422.0 536.0",
+   "18 448.0 526.0 458.0 536.0"
+  ],
+  "Pt14Line3_ZipCode": [
+   "18 468.0 486.0 576.0 504.0"
+  ],
+  "Pt14Line3a_PageNumber": [
+   "19 78.0 570.0 138.0 588.0"
+  ],
+  "Pt14Line3b_PartNumber": [
+   "19 168.0 570.0 228.0 588.0"
+  ],
+  "Pt14Line3c_ItemNumber": [
+   "19 258.0 570.0 318.0 588.0"
+  ],
+  "Pt14Line3d_AdditionalInfo": [
+   "19 78.0 492.0 576.1 564.0"
+  ],
+  "Pt14Line4a_PageNumber": [
+   "19 78.0 450.0 138.0 468.0"
+  ],
+  "Pt14Line4b_PartNumber": [
+   "19 168.0 450.0 228.0 468.0"
+  ],
+  "Pt14Line4c_ItemNumber": [
+   "19 258.0 450.0 318.0 468.0"
+  ],
+  "Pt14Line4d_AdditionalInfo": [
+   "19 78.0 372.0 576.1 444.0"
+  ],
+  "Pt14Line5a_PageNumber": [
+   "19 78.0 330.0 138.0 348.0"
+  ],
+  "Pt14Line5b_PartNumber": [
+   "19 168.0 330.0 228.0 348.0"
+  ],
+  "Pt14Line5c_ItemNumber": [
+   "19 258.0 330.0 318.0 348.0"
+  ],
+  "Pt14Line5d_AdditionalInfo": [
+   "19 78.0 234.0 576.1 324.0"
+  ],
+  "Pt14Line6a_PageNumber": [
+   "19 78.0 192.0 138.0 210.0"
+  ],
+  "Pt14Line6b_PartNumber": [
+   "19 168.0 192.0 228.0 210.0"
+  ],
+  "Pt14Line6c_ItemNumber": [
+   "19 258.0 192.0 318.0 210.0"
+  ],
+  "Pt14Line6d_AdditionalInfo": [
+   "19 78.0 96.0 576.1 186.0"
+  ],
+  "Pt1Line1_FamilyName": [
+   "1 60.0 348.0 276.0 366.0",
+   "19 60.0 630.0 234.0 648.0"
+  ],
+  "Pt1Line1_GivenName": [
+   "1 282.0 348.0 444.0 366.0",
+   "19 240.0 630.0 414.0 648.0"
+  ],
+  "Pt1Line1_MiddleName": [
+   "1 450.0 348.0 576.0 366.0",
+   "19 420.0 630.0 576.0 648.0"
+  ],
+  "Pt1Line2_OnlineAcctNumber": [
+   "1 78.0 312.0 252.0 330.0"
+  ],
+  "Pt1Line3_SSN": [
+   "1 300.0 312.0 429.0 330.0"
+  ],
+  "Pt1Line4_AlienNumber": [
+   "1 96.0 276.0 225.1 294.0",
+   "19 170.9 606.0 300.0 624.0"
+  ],
+  "Pt1Line5_IRSTaxNumber": [
+   "1 288.0 276.0 417.0 294.0"
+  ],
+  "Pt1Line6_AptSteFlrNumber": [
+   "1 468.0 150.0 576.2 168.0"
+  ],
+  "Pt1Line6_CityOrTown": [
+   "1 60.0 114.0 402.0 132.0"
+  ],
+  "Pt1Line6_Country": [
+   "1 348.0 78.0 576.1 96.0"
+  ],
+  "Pt1Line6_InCareofName": [
+   "1 60.0 222.0 576.0 240.0"
+  ],
+  "Pt1Line6_OrganizationName": [
+   "1 59.8 185.3 575.8 203.3"
+  ],
+  "Pt1Line6_PostalCode": [
+   "1 246.0 78.0 342.0 96.0"
+  ],
+  "Pt1Line6_Province": [
+   "1 60.0 78.0 240.0 96.0"
+  ],
+  "Pt1Line6_State": [
+   "1 408.1 114.0 463.6 132.0"
+  ],
+  "Pt1Line6_StreetNumberName": [
+   "1 60.0 150.0 402.0 168.0"
+  ],
+  "Pt1Line6_Unit": [
+   "1 430.0 154.0 440.0 164.0",
+   "1 412.0 154.0 422.0 164.0",
+   "1 448.0 154.0 458.0 164.0"
+  ],
+  "Pt1Line6_ZipCode": [
+   "1 468.0 114.0 576.2 132.0"
+  ],
+  "Pt1Line7_AptSteFlrNumber": [
+   "2 468.0 588.0 576.0 606.0"
+  ],
+  "Pt1Line7_CityOrTown": [
+   "2 60.0 552.0 402.0 570.0"
+  ],
+  "Pt1Line7_Country": [
+   "2 348.0 516.0 576.0 534.0"
+  ],
+  "Pt1Line7_InCareofName": [
+   "2 60.0 624.0 575.7 642.0"
+  ],
+  "Pt1Line7_PostalCode": [
+   "2 246.0 516.0 342.0 534.0"
+  ],
+  "Pt1Line7_Province": [
+   "2 60.0 516.0 240.0 534.0"
+  ],
+  "Pt1Line7_State": [
+   "2 408.0 552.0 463.5 570.0"
+  ],
+  "Pt1Line7_StreetNumberName": [
+   "2 60.0 588.0 402.0 606.0"
+  ],
+  "Pt1Line7_Unit": [
+   "2 430.0 592.0 440.0 602.0",
+   "2 412.0 592.0 422.0 602.0",
+   "2 448.0 592.0 458.0 602.0"
+  ],
+  "Pt1Line7_ZipCode": [
+   "2 468.0 552.0 576.0 570.0"
+  ],
+  "Pt2Line1": [
+   "2 79.5 442.0 89.5 452.0",
+   "2 79.5 424.0 89.5 434.0",
+   "2 79.5 406.0 89.5 416.0",
+   "2 79.5 388.0 89.5 398.0",
+   "2 79.5 346.0 89.5 356.0",
+   "2 79.5 268.0 89.5 278.0",
+   "2 79.5 316.0 89.5 326.0",
+   "2 79.5 250.0 89.5 260.0",
+   "2 79.5 298.0 89.5 308.0",
+   "2 79.5 196.0 89.5 206.0",
+   "2 79.5 214.0 89.5 224.0",
+   "2 79.5 232.0 89.5 242.0",
+   "2 79.5 112.0 89.5 122.0",
+   "2 79.5 178.0 89.5 188.0",
+   "2 79.5 160.0 89.5 170.0",
+   "2 79.5 130.0 89.5 140.0"
+  ],
+  "Pt2Line1d1_no": [
+   "2 338.2 367.5 347.2 376.5"
+  ],
+  "Pt2Line1d1_yes": [
+   "2 296.2 367.5 305.2 376.5"
+  ],
+  "Pt2Line1p_Describe": [
+   "2 96.0 78.0 576.0 96.0"
+  ],
+  "Pt3Line10_Passport": [
+   "3 60.0 246.0 312.0 264.0"
+  ],
+  "Pt3Line11_TravelDoc": [
+   "3 342.0 246.0 576.0 264.0"
+  ],
+  "Pt3Line12_CountryOfIssuanceDocument": [
+   "3 60.0 210.0 312.0 228.0"
+  ],
+  "Pt3Line13_ExpDate": [
+   "3 408.0 210.0 540.0 228.0"
+  ],
+  "Pt3Line14_CurrentUSCISStatus": [
+   "3 60.0 174.0 312.0 192.0"
+  ],
+  "Pt3Line15_DateOfExpired": [
+   "3 480.0 174.0 576.0 192.0"
+  ],
+  "Pt3Line1_FamilyName": [
+   "3 60.0 636.0 276.0 654.0"
+  ],
+  "Pt3Line1_GivenName": [
+   "3 282.0 636.0 444.0 654.0"
+  ],
+  "Pt3Line1_MiddleName": [
+   "3 450.0 636.0 576.0 654.0"
+  ],
+  "Pt3Line2_AptSteFlrNumber": [
+   "3 468.0 546.0 576.0 564.0"
+  ],
+  "Pt3Line2_CityOrTown": [
+   "3 60.0 510.0 402.0 528.0"
+  ],
+  "Pt3Line2_Country": [
+   "3 348.0 474.0 576.0 492.0"
+  ],
+  "Pt3Line2_InCareofName": [
+   "3 60.0 582.0 575.7 600.0"
+  ],
+  "Pt3Line2_PostalCode": [
+   "3 246.0 474.0 342.0 492.0"
+  ],
+  "Pt3Line2_Province": [
+   "3 60.0 474.0 240.0 492.0"
+  ],
+  "Pt3Line2_State": [
+   "3 408.0 510.0 463.5 528.0"
+  ],
+  "Pt3Line2_StreetNumberName": [
+   "3 60.0 546.0 402.0 564.0"
+  ],
+  "Pt3Line2_Unit": [
+   "3 430.0 550.0 440.0 560.0",
+   "3 412.0 550.0 422.0 560.0",
+   "3 448.0 550.0 458.0 560.0"
+  ],
+  "Pt3Line2_ZipCode": [
+   "3 468.0 510.0 576.0 528.0"
+  ],
+  "Pt3Line3_DateOfBirth": [
+   "3 60.0 408.0 191.9 426.0"
+  ],
+  "Pt3Line4_CountryOfBirth": [
+   "3 222.0 408.0 540.0 426.0"
+  ],
+  "Pt3Line5_SSN": [
+   "3 78.0 372.0 207.0 390.0"
+  ],
+  "Pt3Line6_AlienNumber": [
+   "3 282.0 372.0 411.0 390.0"
+  ],
+  "Pt3Line7_MaritalStatus": [
+   "3 139.5 352.0 149.5 362.0",
+   "3 199.5 352.0 209.5 362.0",
+   "3 265.5 352.0 275.5 362.0",
+   "3 337.5 352.0 347.5 362.0"
+  ],
+  "Pt3Line8_DateOfLastArrival": [
+   "3 60.0 282.0 192.0 300.0"
+  ],
+  "Pt3Line9_I94": [
+   "3 252.0 282.0 412.0 300.0"
+  ],
+  "Pt4Line1a_CityOrTown": [
+   "3 138.0 72.0 408.0 90.0"
+  ],
+  "Pt4Line2a_FamilyName": [
+   "4 78.0 624.0 294.0 642.0"
+  ],
+  "Pt4Line2a_GivenName": [
+   "4 300.0 624.0 456.0 642.0"
+  ],
+  "Pt4Line2a_MiddleName": [
+   "4 462.0 624.0 576.0 642.0"
+  ],
+  "Pt4Line2b_AptSteFlrNumber": [
+   "4 486.0 570.0 576.0 588.0"
+  ],
+  "Pt4Line2b_CityOrTown": [
+   "4 78.1 534.0 576.1 552.0"
+  ],
+  "Pt4Line2b_Country": [
+   "4 360.0 498.0 576.0 516.0"
+  ],
+  "Pt4Line2b_PostalCode": [
+   "4 264.0 498.0 354.0 516.0"
+  ],
+  "Pt4Line2b_Province": [
+   "4 78.1 498.0 258.1 516.0"
+  ],
+  "Pt4Line2b_StreetNumberName": [
+   "4 78.0 570.0 420.0 588.0"
+  ],
+  "Pt4Line2b_Unit": [
+   "4 448.1 574.0 458.1 584.0",
+   "4 430.1 574.0 440.1 584.0",
+   "4 466.1 574.0 476.1 584.0"
+  ],
+  "Pt4Line3_Sex": [
+   "4 182.3 478.5 191.3 487.5",
+   "4 230.3 478.5 239.3 487.5"
+  ],
+  "Pt4Line4a": [
+   "4 500.2 454.5 509.2 463.5",
+   "4 542.2 454.5 551.2 463.5"
+  ],
+  "Pt4Line4b_HowMany": [
+   "4 480.0 426.0 576.0 444.0"
+  ],
+  "Pt4Line5": [
+   "4 500.2 388.5 509.2 397.5",
+   "4 542.2 388.5 551.2 397.5"
+  ],
+  "Pt4Line6": [
+   "4 500.2 364.5 509.2 373.5",
+   "4 542.2 364.5 551.2 373.5"
+  ],
+  "Pt4Line6d_DaytimeTelephoneNumber": [
+   "7 78.0 300.0 306.0 318.0"
+  ],
+  "Pt4Line7": [
+   "4 500.2 334.5 509.2 343.5",
+   "4 542.2 334.5 551.2 343.5"
+  ],
+  "Pt5Line10_AlienNumber": [
+   "6 162.0 342.0 291.0 360.0"
+  ],
+  "Pt5Line10_CountryOfBirth": [
+   "6 204.0 378.0 462.0 396.0"
+  ],
+  "Pt5Line10_DateOfBirth": [
+   "6 60.0 378.0 192.0 396.0"
+  ],
+  "Pt5Line10_FamilyName": [
+   "6 60.0 414.0 276.0 432.0"
+  ],
+  "Pt5Line10_GivenName": [
+   "6 282.0 414.0 444.0 432.0"
+  ],
+  "Pt5Line10_MiddleName": [
+   "6 450.0 414.0 576.0 432.0"
+  ],
+  "Pt5Line10_Relationship": [
+   "6 62.2 346.5 71.2 355.5"
+  ],
+  "Pt5Line1_Checkbox": [
+   "4 500.2 232.5 509.2 241.5",
+   "4 542.2 232.5 551.2 241.5"
+  ],
+  "Pt5Line2_AlienNumber": [
+   "4 210.1 102.0 339.1 120.0"
+  ],
+  "Pt5Line2_CountryOfBirth": [
+   "4 204.0 138.0 462.0 156.0"
+  ],
+  "Pt5Line2_DateOfBirth": [
+   "4 60.0 138.0 192.0 156.0"
+  ],
+  "Pt5Line2_FamilyName": [
+   "4 60.0 174.0 276.0 192.0"
+  ],
+  "Pt5Line2_GivenName": [
+   "4 282.0 174.0 444.0 192.0"
+  ],
+  "Pt5Line2_MiddleName": [
+   "4 450.0 174.0 576.0 192.0"
+  ],
+  "Pt5Line2_Relationship": [
+   "4 62.2 106.5 71.2 115.5",
+   "4 122.2 106.5 131.2 115.5"
+  ],
+  "Pt5Line3_AlienNumber": [
+   "5 162.0 594.0 291.0 612.0"
+  ],
+  "Pt5Line3_CountryOfBirth": [
+   "5 204.0 630.0 462.0 648.0"
+  ],
+  "Pt5Line3_DateOfBirth": [
+   "5 60.0 630.0 192.0 648.0"
+  ],
+  "Pt5Line3_FamilyName": [
+   "5 60.0 666.0 276.0 684.0"
+  ],
+  "Pt5Line3_GivenName": [
+   "5 282.0 666.0 444.0 684.0"
+  ],
+  "Pt5Line3_MiddleName": [
+   "5 450.0 666.0 576.0 684.0"
+  ],
+  "Pt5Line3_Relationship": [
+   "5 62.2 598.5 71.2 607.5"
+  ],
+  "Pt5Line4_AlienNumber": [
+   "5 162.0 468.0 291.0 486.0"
+  ],
+  "Pt5Line4_CountryOfBirth": [
+   "5 204.0 504.0 462.0 522.0"
+  ],
+  "Pt5Line4_DateOfBirth": [
+   "5 60.0 504.0 192.0 522.0"
+  ],
+  "Pt5Line4_FamilyName": [
+   "5 60.0 540.0 276.0 558.0"
+  ],
+  "Pt5Line4_GivenName": [
+   "5 282.0 540.0 444.0 558.0"
+  ],
+  "Pt5Line4_MiddleName": [
+   "5 450.0 540.0 576.0 558.0"
+  ],
+  "Pt5Line4_Relationship": [
+   "5 62.2 472.5 71.2 481.5"
+  ],
+  "Pt5Line5_AlienNumber": [
+   "5 162.0 342.0 291.0 360.0"
+  ],
+  "Pt5Line5_CountryOfBirth": [
+   "5 204.0 378.0 462.0 396.0"
+  ],
+  "Pt5Line5_DateOfBirth": [
+   "5 60.0 378.0 192.0 396.0"
+  ],
+  "Pt5Line5_FamilyName": [
+   "5 60.0 414.0 276.0 432.0"
+  ],
+  "Pt5Line5_GivenName": [
+   "5 282.0 414.0 444.0 432.0"
+  ],
+  "Pt5Line5_MiddleName": [
+   "5 450.0 414.0 576.0 432.0"
+  ],
+  "Pt5Line5_Relationship": [
+   "5 62.2 346.5 71.2 355.5"
+  ],
+  "Pt5Line6_AlienNumber": [
+   "5 162.0 216.0 291.0 234.0"
+  ],
+  "Pt5Line6_CountryOfBirth": [
+   "5 204.0 252.0 462.0 270.0"
+  ],
+  "Pt5Line6_DateOfBirth": [
+   "5 60.0 252.0 192.0 270.0"
+  ],
+  "Pt5Line6_FamilyName": [
+   "5 60.0 288.0 276.0 306.0"
+  ],
+  "Pt5Line6_GivenName": [
+   "5 282.0 288.0 444.0 306.0"
+  ],
+  "Pt5Line6_MiddleName": [
+   "5 450.0 288.0 576.0 306.0"
+  ],
+  "Pt5Line6_Relationship": [
+   "5 62.2 220.5 71.2 229.5"
+  ],
+  "Pt5Line7_AlienNumber": [
+   "5 162.0 90.0 291.0 108.0"
+  ],
+  "Pt5Line7_CountryOfBirth": [
+   "5 204.0 126.0 462.0 144.0"
+  ],
+  "Pt5Line7_DateOfBirth": [
+   "5 60.0 126.0 192.0 144.0"
+  ],
+  "Pt5Line7_FamilyName": [
+   "5 60.0 162.0 276.0 180.0"
+  ],
+  "Pt5Line7_GivenName": [
+   "5 282.0 162.0 444.0 180.0"
+  ],
+  "Pt5Line7_MiddleName": [
+   "5 450.0 162.0 576.0 180.0"
+  ],
+  "Pt5Line7_Relationship": [
+   "5 62.2 94.5 71.2 103.5"
+  ],
+  "Pt5Line8_AlienNumber": [
+   "6 162.0 594.0 291.0 612.0"
+  ],
+  "Pt5Line8_CountryOfBirth": [
+   "6 204.0 630.0 462.0 648.0"
+  ],
+  "Pt5Line8_DateOfBirth": [
+   "6 60.0 630.0 192.0 648.0"
+  ],
+  "Pt5Line8_FamilyName": [
+   "6 60.0 666.0 276.0 684.0"
+  ],
+  "Pt5Line8_GivenName": [
+   "6 282.0 666.0 444.0 684.0"
+  ],
+  "Pt5Line8_MiddleName": [
+   "6 450.0 666.0 576.0 684.0"
+  ],
+  "Pt5Line8_Relationship": [
+   "6 62.2 598.5 71.2 607.5"
+  ],
+  "Pt5Line9_AlienNumber": [
+   "6 162.0 468.0 291.0 486.0"
+  ],
+  "Pt5Line9_CountryOfBirth": [
+   "6 204.0 504.0 462.0 522.0"
+  ],
+  "Pt5Line9_DateOfBirth": [
+   "6 60.0 504.0 192.0 522.0"
+  ],
+  "Pt5Line9_FamilyName": [
+   "6 60.0 540.0 276.0 558.0"
+  ],
+  "Pt5Line9_GivenName": [
+   "6 282.0 540.0 444.0 558.0"
+  ],
+  "Pt5Line9_MiddleName": [
+   "6 450.0 540.0 576.0 558.0"
+  ],
+  "Pt5Line9_Relationship": [
+   "6 62.2 472.5 71.2 481.5"
+  ],
+  "Pt6Line1_FamilyName": [
+   "6 60.0 228.0 276.0 246.0"
+  ],
+  "Pt6Line1_GivenName": [
+   "6 282.0 228.0 444.0 246.0"
+  ],
+  "Pt6Line1_MiddleName": [
+   "6 450.0 228.0 576.0 246.0"
+  ],
+  "Pt6Line2a": [
+   "6 434.2 208.0 444.2 218.0",
+   "6 500.2 208.0 510.2 218.0",
+   "6 542.2 208.0 552.2 218.0"
+  ],
+  "Pt6Line2b_AptSteFlrNumber": [
+   "6 486.0 114.0 576.0 132.0"
+  ],
+  "Pt6Line2b_CityOrTown": [
+   "6 78.0 78.0 420.0 96.0"
+  ],
+  "Pt6Line2b_Country": [
+   "6 354.0 42.0 576.0 60.0"
+  ],
+  "Pt6Line2b_InCareofName": [
+   "6 78.0 150.0 576.0 168.0"
+  ],
+  "Pt6Line2b_PostalCode": [
+   "6 264.0 42.0 348.0 60.0"
+  ],
+  "Pt6Line2b_Province": [
+   "6 78.0 42.0 258.0 60.0"
+  ],
+  "Pt6Line2b_State": [
+   "6 426.0 78.0 481.5 96.0"
+  ],
+  "Pt6Line2b_StreetNumberName": [
+   "6 78.0 114.0 420.0 132.0"
+  ],
+  "Pt6Line2b_Unit": [
+   "6 448.0 118.0 458.0 128.0",
+   "6 430.0 118.0 440.0 128.0",
+   "6 466.0 118.0 476.0 128.0"
+  ],
+  "Pt6Line2b_ZipCode": [
+   "6 486.0 78.0 576.0 96.0"
+  ],
+  "Pt6Line2c_DateofDeath": [
+   "7 468.0 696.0 576.0 714.0"
+  ],
+  "Pt6Line3_FamilyName": [
+   "7 60.0 582.0 276.0 600.0"
+  ],
+  "Pt6Line3_GivenName": [
+   "7 282.0 582.0 444.0 600.0"
+  ],
+  "Pt6Line3_MiddleName": [
+   "7 450.0 582.0 576.0 600.0"
+  ],
+  "Pt6Line4_DateOfBirth": [
+   "7 60.0 546.0 192.0 564.0"
+  ],
+  "Pt6Line5_CountryOfBirth": [
+   "7 222.0 546.0 533.7 564.0"
+  ],
+  "Pt6Line6a": [
+   "7 434.2 526.0 444.2 536.0",
+   "7 500.2 526.0 510.2 536.0",
+   "7 542.2 526.0 552.2 536.0"
+  ],
+  "Pt6Line6b_AptSteFlrNumber": [
+   "7 486.0 432.0 576.0 450.0"
+  ],
+  "Pt6Line6b_CityOrTown": [
+   "7 78.0 396.0 420.0 414.0"
+  ],
+  "Pt6Line6b_Country": [
+   "7 354.0 360.0 576.0 378.0"
+  ],
+  "Pt6Line6b_InCareofName": [
+   "7 78.0 468.0 576.0 486.0"
+  ],
+  "Pt6Line6b_PostalCode": [
+   "7 264.0 360.0 348.0 378.0"
+  ],
+  "Pt6Line6b_Province": [
+   "7 78.0 360.0 258.0 378.0"
+  ],
+  "Pt6Line6b_State": [
+   "7 426.0 396.0 481.5 414.0"
+  ],
+  "Pt6Line6b_StreetNumberName": [
+   "7 78.0 432.0 420.0 450.0"
+  ],
+  "Pt6Line6b_Unit": [
+   "7 430.0 436.0 440.0 446.0",
+   "7 466.0 436.0 476.0 446.0",
+   "7 448.0 436.0 458.0 446.0"
+  ],
+  "Pt6Line6b_ZipCode": [
+   "7 486.0 396.0 576.0 414.0"
+  ],
+  "Pt6Line6c_DateofDeath": [
+   "7 468.0 336.0 576.0 354.0"
+  ],
+  "Pt6Line6e_WorkTelephoneNumber": [
+   "7 336.0 300.0 564.0 318.0"
+  ],
+  "Pt6Line7a": [
+   "7 78.0 241.0 88.0 251.0",
+   "7 132.0 241.0 142.0 251.0",
+   "7 204.0 241.0 214.0 251.0",
+   "7 258.0 241.0 268.0 251.0",
+   "7 348.0 241.0 358.0 251.0",
+   "7 78.0 199.0 88.0 209.0"
+  ],
+  "Pt6Line7b_BranchServiceNumber": [
+   "7 228.0 216.0 576.0 234.0"
+  ],
+  "Pt7Line10": [
+   "8 500.2 418.5 509.2 427.5",
+   "8 542.2 418.5 551.2 427.5"
+  ],
+  "Pt7Line1_FamilyName": [
+   "7 60.0 96.0 276.0 114.0"
+  ],
+  "Pt7Line1_GivenName": [
+   "7 282.0 96.0 444.0 114.0"
+  ],
+  "Pt7Line1_MiddleName": [
+   "7 450.0 96.0 576.0 114.0"
+  ],
+  "Pt7Line2_DateOfBirth": [
+   "7 60.0 60.0 174.0 78.0"
+  ],
+  "Pt7Line3_CountryOfBirth": [
+   "7 204.0 60.0 432.0 78.0"
+  ],
+  "Pt7Line4_DateOfDeath": [
+   "7 462.0 60.0 576.0 78.0"
+  ],
+  "Pt7Line5a_USCitizen": [
+   "8 79.0 685.0 89.0 695.0"
+  ],
+  "Pt7Line5b_citizenabroad": [
+   "8 79.0 667.0 89.0 677.0"
+  ],
+  "Pt7Line5c1_AlienNumber": [
+   "8 246.1 624.0 375.1 642.0"
+  ],
+  "Pt7Line5c_USNaturalized": [
+   "8 79.0 649.0 89.0 659.0"
+  ],
+  "Pt7Line5d_Explain": [
+   "8 96.0 582.0 576.0 600.0"
+  ],
+  "Pt7Line5d_Other": [
+   "8 79.0 604.0 89.0 614.0"
+  ],
+  "Pt7Line6_NumberofMarriages": [
+   "8 492.0 558.0 576.0 576.0"
+  ],
+  "Pt7Line7_NumberofSpouseMarriages": [
+   "8 492.0 534.0 576.0 552.0"
+  ],
+  "Pt7Line8a_DateofMarriage": [
+   "8 444.0 510.0 576.0 528.0"
+  ],
+  "Pt7Line8b_PlaceOfMarriage": [
+   "8 312.0 486.0 576.0 504.0"
+  ],
+  "Pt7Line9a_no": [
+   "8 542.2 466.5 551.2 475.5"
+  ],
+  "Pt7Line9a_yes": [
+   "8 500.2 466.5 509.2 475.5"
+  ],
+  "Pt7Line9b_DateofReMarriage": [
+   "8 492.0 438.0 576.0 456.0"
+  ],
+  "Pt8Line1a_FamilyName": [
+   "8 78.0 258.0 288.0 276.0"
+  ],
+  "Pt8Line1a_GivenName": [
+   "8 294.0 258.0 450.0 276.0"
+  ],
+  "Pt8Line1a_MiddleName": [
+   "8 456.0 258.0 576.0 276.0"
+  ],
+  "Pt8Line1b_FamilyName": [
+   "8 78.0 222.0 288.0 240.0"
+  ],
+  "Pt8Line1b_GivenName": [
+   "8 294.0 222.0 450.0 240.0"
+  ],
+  "Pt8Line1b_MiddleName": [
+   "8 456.0 222.0 576.0 240.0"
+  ],
+  "Pt8Line2a": [
+   "8 542.2 169.5 551.2 178.5",
+   "8 500.2 169.5 509.2 178.5"
+  ],
+  "Pt8Line2b_Name": [
+   "8 78.0 96.0 576.0 114.0"
+  ],
+  "Pt8Line2c": [
+   "8 500.2 79.5 509.2 88.5",
+   "8 542.2 79.5 551.2 88.5"
+  ],
+  "Pt8Line3A_Checkbox": [
+   "9 79.0 565.5 88.0 574.5",
+   "9 79.0 544.5 88.0 553.5",
+   "9 139.0 565.5 148.0 574.5",
+   "9 205.0 565.5 214.0 574.5"
+  ],
+  "Pt8Line3a": [
+   "9 309.0 586.5 318.0 595.5",
+   "9 363.0 586.5 372.0 595.5"
+  ],
+  "Pt8Line3a_Specify": [
+   "9 258.0 540.0 576.0 558.0"
+  ],
+  "Pt8Line3b_Checkbox": [
+   "9 79.0 655.5 88.0 664.5",
+   "9 79.0 625.5 88.0 634.5",
+   "9 79.0 607.5 88.0 616.5"
+  ],
+  "Pt8Line4a": [
+   "9 542.2 697.5 551.2 706.5",
+   "9 500.2 697.5 509.2 706.5"
+  ],
+  "Pt8Line4b_NameOfParent": [
+   "9 78.0 504.0 576.0 522.0"
+  ],
+  "Pt8Line5": [
+   "9 500.2 487.5 509.2 496.5",
+   "9 542.2 487.5 551.2 496.5"
+  ],
+  "Pt8Line6a": [
+   "9 500.2 457.5 509.2 466.5",
+   "9 542.2 457.5 551.2 466.5"
+  ],
+  "Pt8Line6b": [
+   "9 542.2 427.5 551.2 436.5",
+   "9 500.2 427.5 509.2 436.5"
+  ],
+  "Pt9Line10": [
+   "11 500.2 313.5 509.2 322.5",
+   "11 542.2 313.5 551.2 322.5"
+  ],
+  "Pt9Line11": [
+   "11 542.2 283.5 551.2 292.5",
+   "11 500.2 283.5 509.2 292.5"
+  ],
+  "Pt9Line12": [
+   "11 500.2 259.5 509.2 268.5",
+   "11 542.2 259.5 551.2 268.5"
+  ],
+  "Pt9Line13": [
+   "11 542.2 229.5 551.2 238.5",
+   "11 500.2 229.5 509.2 238.5"
+  ],
+  "Pt9Line15_EmployerOrOrgName": [
+   "12 60.0 552.0 576.0 570.0"
+  ],
+  "Pt9Line15_FamilyName": [
+   "12 60.0 654.0 276.0 672.0"
+  ],
+  "Pt9Line15_GivenName": [
+   "12 282.0 654.0 438.0 672.0"
+  ],
+  "Pt9Line15_MiddleName": [
+   "12 444.0 654.0 576.0 672.0"
+  ],
+  "Pt9Line16_TitleofSignatory": [
+   "12 60.0 618.0 348.0 636.0"
+  ],
+  "Pt9Line17_AptSteFlrNumber": [
+   "12 455.9 516.0 576.2 534.0"
+  ],
+  "Pt9Line17_CityOrTown": [
+   "12 60.0 480.0 390.3 498.0"
+  ],
+  "Pt9Line17_State": [
+   "12 395.9 480.0 451.4 498.0"
+  ],
+  "Pt9Line17_Unit": [
+   "12 417.9 520.0 427.9 530.0",
+   "12 399.9 520.0 409.9 530.0",
+   "12 435.9 520.0 445.9 530.0"
+  ],
+  "Pt9Line17_ZipCode": [
+   "12 455.9 480.0 576.2 498.0"
+  ],
+  "Pt9Line1a_NumberofMembers": [
+   "9 522.0 312.0 576.0 330.0"
+  ],
+  "Pt9Line1b_NumberofEmployees": [
+   "9 522.0 288.0 576.0 306.0"
+  ],
+  "Pt9Line1c_NumberofBeneficiaries": [
+   "9 522.0 264.0 576.0 282.0"
+  ],
+  "Pt9Line1d_NumberofSIRWandNIRW": [
+   "9 522.0 234.0 576.0 252.0"
+  ],
+  "Pt9Line1e_NumberofSIRWPetitions": [
+   "9 522.0 204.0 576.0 222.0"
+  ],
+  "Pt9Line2": [
+   "9 542.2 181.5 551.2 190.5",
+   "9 500.2 181.5 509.2 190.5"
+  ],
+  "Pt9Line24_NameofAROWRD": [
+   "13 60.0 660.0 576.0 678.0"
+  ],
+  "Pt9Line25_AROWRDCityTown": [
+   "13 60.0 588.0 390.3 606.0"
+  ],
+  "Pt9Line25_AROWRDState": [
+   "13 396.0 588.0 451.5 606.0"
+  ],
+  "Pt9Line25_AROWRDStreetNumberName": [
+   "13 60.0 624.0 390.3 642.0"
+  ],
+  "Pt9Line25_AROWRDZipCode": [
+   "13 456.0 588.0 576.3 606.0"
+  ],
+  "Pt9Line25_AptSteFlrNumber": [
+   "13 456.0 624.0 576.2 642.0"
+  ],
+  "Pt9Line26_AROWRDDaytimePhoneNumber1": [
+   "13 60.0 552.0 302.0 570.0"
+  ],
+  "Pt9Line27_AROWRDPreparerFaxNumber": [
+   "13 336.0 552.0 576.0 570.0"
+  ],
+  "Pt9Line28_AROWRDEmail": [
+   "13 60.0 516.0 302.0 534.0"
+  ],
+  "Pt9Line29_AROWRDIRSTaxNumber": [
+   "13 336.0 516.0 576.0 534.0"
+  ],
+  "Pt9Line3_DateFrom": [
+   "10 150.0 630.0 282.0 648.0"
+  ],
+  "Pt9Line3_DateTo": [
+   "10 372.0 630.0 504.0 648.0"
+  ],
+  "Pt9Line3_FamilyName": [
+   "10 60.0 666.0 276.0 684.0"
+  ],
+  "Pt9Line3_GivenName": [
+   "10 282.0 666.0 444.0 684.0"
+  ],
+  "Pt9Line3_MiddleName": [
+   "10 450.0 666.0 575.9 684.0"
+  ],
+  "Pt9Line4_Position": [
+   "10 60.0 552.0 576.0 570.0"
+  ],
+  "Pt9Line4_Summary": [
+   "10 60.0 498.0 576.0 534.0"
+  ],
+  "Pt9Line5_DescribeRelationship": [
+   "10 60.0 450.0 576.0 468.0"
+  ],
+  "Pt9Line6a_Title": [
+   "10 78.0 384.0 576.0 402.0"
+  ],
+  "Pt9Line6b": [
+   "10 79.0 349.0 89.0 359.0",
+   "10 79.0 331.0 89.0 341.0",
+   "10 79.0 313.0 89.0 323.0"
+  ],
+  "Pt9Line6b_DetailedDescription": [
+   "10 78.0 276.0 576.0 294.0"
+  ],
+  "Pt9Line6c_Description": [
+   "10 78.0 240.0 576.0 258.0"
+  ],
+  "Pt9Line6d_Description": [
+   "10 78.0 204.0 576.0 222.0"
+  ],
+  "Pt9Line6f_AptSteFlrNumber": [
+   "10 486.0 114.0 576.0 132.0"
+  ],
+  "Pt9Line6f_CityOrTown": [
+   "10 78.0 78.0 420.0 96.0"
+  ],
+  "Pt9Line6f_CompanyName": [
+   "10 78.0 150.0 575.7 168.0"
+  ],
+  "Pt9Line6f_Country": [
+   "10 360.0 42.0 575.9 60.0"
+  ],
+  "Pt9Line6f_PostalCode": [
+   "10 264.0 42.0 354.0 60.0"
+  ],
+  "Pt9Line6f_Province": [
+   "10 78.0 42.0 258.0 60.0"
+  ],
+  "Pt9Line6f_State": [
+   "10 426.0 78.0 481.5 96.0"
+  ],
+  "Pt9Line6f_StreetNumberName": [
+   "10 78.0 114.0 420.0 132.0"
+  ],
+  "Pt9Line6f_Unit": [
+   "10 448.0 118.0 458.0 128.0",
+   "10 430.0 118.0 440.0 128.0",
+   "10 466.0 118.0 476.0 128.0"
+  ],
+  "Pt9Line6f_ZipCode": [
+   "10 486.0 78.0 576.0 96.0"
+  ],
+  "Pt9Line7": [
+   "11 542.2 667.5 551.2 676.5",
+   "11 500.2 667.5 509.2 676.5"
+  ],
+  "Pt9Line7_Checkbox": [
+   "11 80.0 583.5 89.0 592.5",
+   "11 80.0 553.5 89.0 562.5",
+   "11 80.0 523.5 89.0 532.5"
+  ],
+  "Pt9Line7_CheckboxC1": [
+   "11 122.0 493.5 131.0 502.5"
+  ],
+  "Pt9Line7_CheckboxC2": [
+   "11 122.0 463.5 131.0 472.5"
+  ],
+  "Pt9Line7_CheckboxC3": [
+   "11 122.0 433.5 131.0 442.5"
+  ],
+  "Pt9Line7_CheckboxC4": [
+   "11 122.0 403.5 131.0 412.5"
+  ],
+  "Pt9Line8": [
+   "11 500.2 373.5 509.2 382.5",
+   "11 542.2 373.5 551.2 382.5"
+  ],
+  "Pt9Line8a_DateOfMarriage": [
+   "14 144.0 654.0 276.0 672.0"
+  ],
+  "Pt9Line8b_PlaceOfMarriage": [
+   "14 78.0 618.0 576.0 636.0"
+  ],
+  "Pt9Line9": [
+   "11 542.2 343.5 551.2 352.5",
+   "11 500.2 343.5 509.2 352.5"
+  ],
+  "Pt9Lne25_Unit": [
+   "13 418.0 628.0 428.0 638.0",
+   "13 400.3 628.0 410.3 638.0",
+   "13 436.0 628.0 446.0 638.0"
+  ],
+  "Pt9_ARRDSignature": [
+   "12 60.0 216.0 438.0 234.0"
+  ],
+  "Pt9_DateofSignature": [
+   "11 444.1 108.0 576.1 126.0"
+  ],
+  "Pt9_DateofSignatureofARRD": [
+   "12 444.0 216.0 576.0 234.0"
+  ],
+  "Pt9_DaytimePhoneNumber1": [
+   "12 60.0 414.0 300.0 432.0"
+  ],
+  "Pt9_Email": [
+   "12 60.0 378.0 300.0 396.0"
+  ],
+  "Pt9_PetitioningOrgName": [
+   "12 312.0 312.0 570.0 330.0"
+  ],
+  "Pt9_PreparerFaxNumber": [
+   "12 336.0 414.0 576.0 432.0"
+  ],
+  "Pt9_RDFamilyName": [
+   "12 60.0 150.0 276.0 168.0"
+  ],
+  "Pt9_RDGivenName": [
+   "12 282.0 150.0 438.0 168.0"
+  ],
+  "Pt9_RDMiddleName": [
+   "12 444.0 150.0 576.0 168.0"
+  ],
+  "Pt9_RDTitle": [
+   "12 60.0 114.0 347.8 132.0"
+  ],
+  "Pt9_ReligiousDenominationName": [
+   "12 228.0 288.0 474.0 306.0"
+  ],
+  "Pt9_Signature": [
+   "11 60.0 108.0 438.0 126.0"
+  ],
+  "Pt9_StreetNumberName": [
+   "12 60.0 516.0 390.3 534.0"
+  ],
+  "USCISOnlineAcctNumber": [
+   "1 396.0 480.0 570.0 498.0"
+  ]
+ }
+}

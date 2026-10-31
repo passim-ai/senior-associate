@@ -1,0 +1,17 @@
+{
+  "name": "document-automation",
+  "owner": {
+    "name": "Passim AI"
+  },
+  "metadata": {
+    "description": "Senior Associate for Claude Code: USCIS filing packets from a client's documents."
+  },
+  "plugins": [
+    {
+      "name": "senior-associate",
+      "source": "./senior-associate-claude",
+      "description": "Turn a client's documents into a USCIS filing packet: a document review, the forms, a researched cover letter, the assembled packet, and a final review that reads it the way a USCIS officer would. You also get a memo and a client request for anything still missing. Type /matters to open it.",
+      "category": "productivity"
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+ "pdf": "G-1145.pdf",
+ "pdf_sha256": "f06c73937567793cbad9e5c0a5a025ba3823406ebc16b69bb1aee9964cf5b8f8",
+ "fields": {
+  "Email": {
+   "type": "/Tx",
+   "states": []
+  },
+  "FirstName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "LastName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "MiddleName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "MobilePhoneNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "PDF417BarCode1": {
+   "type": "/Tx",
+   "states": []
+  }
+ },
+ "widgets": {
+  "Email": [
+   "1 37.4 86.7 335.2 101.8"
+  ],
+  "FirstName": [
+   "1 218.0 120.0 392.0 135.1"
+  ],
+  "LastName": [
+   "1 37.4 120.0 211.4 135.1"
+  ],
+  "MiddleName": [
+   "1 402.0 118.0 574.0 133.2"
+  ],
+  "MobilePhoneNumber": [
+   "1 345.3 86.7 574.3 101.8"
+  ],
+  "PDF417BarCode1": [
+   "1 192.0 12.0 462.0 30.0"
+  ]
+ }
+}

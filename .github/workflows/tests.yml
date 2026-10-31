@@ -1,0 +1,23 @@
+# Runs the plugin's offline test suites on every push and pull request.
+# The app tests and plugin validation need the Claude CLI, so they run locally (scripts/check.sh) instead.
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: macos-14
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install tools
+        run: brew install uv ghostscript poppler
+      - name: Run the suites
+        working-directory: senior-associate-claude
+        run: scripts/check.sh --quick

@@ -1,0 +1,103 @@
+{
+ "pdf": "G-1650.pdf",
+ "pdf_sha256": "f9761dca890ca5d404c1f4b5494531e329f9d423f004272fe00f167dadaf9fa7",
+ "fields": {
+  "AccountNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "AuthorizedPaymentAmt": {
+   "type": "/Tx",
+   "states": []
+  },
+  "BankName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "BusinessName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "CB_AccountType": {
+   "type": "/Btn",
+   "states": [
+    "B",
+    "P"
+   ]
+  },
+  "CB_CreditCardType": {
+   "type": "/Btn",
+   "states": [
+    "MC",
+    "V"
+   ]
+  },
+  "FamilyName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "GivenName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "MiddleName": {
+   "type": "/Tx",
+   "states": []
+  },
+  "PDF417BarCode1": {
+   "type": "/Tx",
+   "states": []
+  },
+  "RoutingNumber": {
+   "type": "/Tx",
+   "states": []
+  },
+  "SignatureOfApplicant": {
+   "type": "/Tx",
+   "states": []
+  }
+ },
+ "widgets": {
+  "AccountNumber": [
+   "1 360.0 174.0 576.0 192.0"
+  ],
+  "AuthorizedPaymentAmt": [
+   "1 451.8 198.0 528.0 216.0"
+  ],
+  "BankName": [
+   "1 108.0 150.0 576.0 168.0"
+  ],
+  "BusinessName": [
+   "1 102.0 252.0 576.0 270.0"
+  ],
+  "CB_AccountType": [
+   "1 38.8 334.0 48.8 344.0",
+   "1 134.8 334.0 144.8 344.0"
+  ],
+  "CB_CreditCardType": [
+   "1 134.8 202.0 144.8 212.0",
+   "1 38.8 202.0 48.8 212.0"
+  ],
+  "FamilyName": [
+   "1 366.0 384.0 576.0 402.0",
+   "1 366.0 276.0 576.0 294.0"
+  ],
+  "GivenName": [
+   "1 36.0 384.0 198.0 402.0",
+   "1 36.0 276.0 198.0 294.0"
+  ],
+  "MiddleName": [
+   "1 210.0 384.0 354.0 402.0",
+   "1 210.0 276.0 354.0 294.0"
+  ],
+  "PDF417BarCode1": [
+   "1 192.0 12.0 462.0 30.0"
+  ],
+  "RoutingNumber": [
+   "1 108.0 174.0 270.0 192.0"
+  ],
+  "SignatureOfApplicant": [
+   "1 36.0 84.0 576.0 102.0"
+  ]
+ }
+}

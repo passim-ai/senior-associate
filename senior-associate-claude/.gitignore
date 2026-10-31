@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+
+# Logs from local runs
+*.log
+.DS_Store

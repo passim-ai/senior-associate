@@ -1,0 +1,18 @@
+# Published: the marketplace catalog, the senior-associate plugin, and the license files.
+
+# Development only: the eval suite and its fixtures.
+senior-associate-claude/evals/
+
+# An earlier plugin, kept locally, not published.
+document-automation-shareable/
+
+# Screenshots of an older app design.
+senior-associate-claude/docs/screenshots/
+
+# Build and run leftovers.
+node_modules/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.log
+.DS_Store
