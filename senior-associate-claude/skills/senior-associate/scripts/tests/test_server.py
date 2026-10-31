@@ -352,7 +352,7 @@ class CardTests(unittest.TestCase):
         self.assertNotIn("notes", json.dumps(self.card()["open_items"]))  # the history is never sent to the screen
 
         gs = needs["action-gs"]
-        self.assertEqual((gs["who"], gs["ask"]), ("system", "Install Ghostscript for Senior Associate."))
+        self.assertEqual((gs["who"], gs["ask"]), ("system", "Install Ghostscript for Immigration Packet Builder."))
         self.assertEqual(gs["fix"], "Claude can install Ghostscript for you. Then build again.")  # an older Terminal fix gives way
         items = {it["id"]: it for it in self.card()["open_items"]["open"]}
         self.assertEqual(items["doc-i94"]["who"], "client")
@@ -631,13 +631,13 @@ class SetupTests(unittest.TestCase):
                  mock.patch.object(doctor_mod.platform, "system", lambda: "Darwin"):
                 checks = self.checks()
                 gs = checks["ghostscript"]
-                self.assertEqual((gs["ok"], gs["required"], gs["ask"]), (False, True, "Install Ghostscript for Senior Associate."))
+                self.assertEqual((gs["ok"], gs["required"], gs["ask"]), (False, True, "Install Ghostscript for Immigration Packet Builder."))
                 self.assertEqual(gs["fix"], "Claude can install Ghostscript for you.")
                 self.assertNotIn("homebrew", checks)
                 office = checks["libreoffice"]
                 self.assertFalse(office["required"])
                 if not office["ok"]:  # an app in /Applications still counts
-                    self.assertEqual(office["ask"], "Install LibreOffice for Senior Associate.")
+                    self.assertEqual(office["ask"], "Install LibreOffice for Immigration Packet Builder.")
                 for check in checks.values():
                     self.assertNotIn("command", check)
                     self.assertNotRegex(f"{check.get('fix', '')} {check['detail']}", r"Terminal|brew ")
@@ -650,7 +650,7 @@ class SetupTests(unittest.TestCase):
         self.assertTrue(checks["matters_folder"]["ok"])  # not made yet, but it can be
         self.assertEqual((checks["profile"]["ok"], checks["profile"]["required"]), (False, False))
         self.assertFalse(checks["model_letters"]["ok"])
-        self.assertEqual(checks["model_letters"]["ask"], "Use my firm's model letters with Senior Associate.")
+        self.assertEqual(checks["model_letters"]["ask"], "Use my firm's model letters with Immigration Packet Builder.")
         actions.do_save_profile(self.ctx, {k: "x" for k in doctor_mod.PROFILE_NEEDED} | {"subject_to_discipline_order": "no"})
         write(self.ctx.exemplars_dir / "Model.docx", "docx")
         checks = self.checks()
@@ -716,7 +716,7 @@ class ErrorTests(unittest.TestCase):
                          "There's no packet yet. Build it first.")
         os.chmod(self.root, 0o555)
         error = self.cli({"op": "create", "matters_root": root, "name": "Lopez", "matter_type": "i130_i485"})["error"]
-        self.assertTrue(error.startswith("Senior Associate can't save in "), error)
+        self.assertTrue(error.startswith("Immigration Packet Builder can't save in "), error)
         self.assertTrue(error.endswith(common.MATTERS_FOLDER_HOWTO), error)  # the app adds the button that has Claude do it
 
     def test_errors_are_mapped_to_sentences(self) -> None:
@@ -991,8 +991,8 @@ class StatusTests(unittest.TestCase):
         with mock.patch.object(readmodel, "list_row", lambda ctx, m: (_ for _ in ()).throw(KeyError("x")) if m == other else real(ctx, m)):
             rows = {r["name"]: r for r in readmodel.matters_list(self.ctx)}
         self.assertEqual(rows["Roe I-751"]["phase"], "problem")
-        self.assertEqual(rows["Roe I-751"]["next_line"], "Senior Associate can't read this matter. Ask Claude to repair it.")
-        self.assertIn("Repair the Senior Associate matter Roe I-751", rows["Roe I-751"]["ask"])
+        self.assertEqual(rows["Roe I-751"]["next_line"], "Immigration Packet Builder can't read this matter. Ask Claude to repair it.")
+        self.assertIn("Repair the Immigration Packet Builder matter Roe I-751", rows["Roe I-751"]["ask"])
         self.assertEqual(rows["Doe I-130 I-485"]["phase"], "needs_you")
         with mock.patch.object(readmodel, "matter_card", lambda ctx, m: (_ for _ in ()).throw(KeyError("x"))):
             with self.assertRaises(UserError) as caught:
@@ -2016,7 +2016,7 @@ class FinalReviewFixTests(unittest.TestCase):
         row = readmodel.matters_list(self.ctx)[0]
         self.assertEqual((row["phase"], row["label"], row["problem"]), ("problem", "Can't open", True))
         self.assertEqual(row["next_line"], readmodel.DAMAGED_RECORD_LINE)
-        self.assertEqual(row["ask"], "Repair the Senior Associate matter Doe I-130 I-485: its record of the steps can't be read.")
+        self.assertEqual(row["ask"], "Repair the Immigration Packet Builder matter Doe I-130 I-485: its record of the steps can't be read.")
         with self.assertRaises(UserError) as caught:
             self.cli(op="state", matter_path=self.path)
         self.assertIn(row["ask"], str(caught.exception))

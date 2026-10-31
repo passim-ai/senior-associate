@@ -1,6 +1,6 @@
 ---
 name: docs-review
-description: Reviews a client's documents for a USCIS filing. It inventories what each document actually is, builds the evidence checklist for the case type from current official USCIS instructions, and reports what is present, what required items are missing, and what additional evidence would most strengthen the case. Use when an attorney asks what documents a matter has or still needs, wants a missing-documents or client intake checklist, asks for bona fide marriage evidence suggestions, or when the Senior Associate workflow reaches its docs_review stage.
+description: Reviews a client's documents for a USCIS filing. It inventories what each document actually is, builds the evidence checklist for the case type from current official USCIS instructions, and reports what is present, what required items are missing, and what additional evidence would most strengthen the case. Use when an attorney asks what documents a matter has or still needs, wants a missing-documents or client intake checklist, asks for bona fide marriage evidence suggestions, or when the Immigration Packet Builder workflow reaches its docs_review stage.
 ---
 
 # Document review

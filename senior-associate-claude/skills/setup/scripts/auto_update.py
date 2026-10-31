@@ -3,7 +3,7 @@
 # requires-python = ">=3.11"
 # dependencies = []
 # ///
-"""Turns automatic updates for Senior Associate's marketplace on or off, or reports them.
+"""Turns automatic updates for Immigration Packet Builder's marketplace on or off, or reports them.
 
 Claude reads a marketplace's autoUpdate only from its entry in the user's settings.json, so that's the one place this
 writes. Everything else in the file is left as it was.

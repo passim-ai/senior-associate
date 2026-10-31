@@ -189,7 +189,7 @@ test('a protected matter’s header names its forms only, as the list does', OPT
 
 test('Help lists the keys; each problem has its own Done — check again', OPTS(), async ($, on) => {
   const garcia = card('Garcia I-130 I-485', 'needs_you', DOCS)
-  garcia.needs_you = [{ text: 'Install Ghostscript', kind: 'setup', who: 'system', id: 'sys-gs', fix: 'Claude can install Ghostscript for you.', ask: 'Install Ghostscript for Senior Associate.' }]
+  garcia.needs_you = [{ text: 'Install Ghostscript', kind: 'setup', who: 'system', id: 'sys-gs', fix: 'Claude can install Ghostscript for you.', ask: 'Install Ghostscript for Immigration Packet Builder.' }]
   const { ui, tap } = await boot($, on, [garcia])
   expect((await ui.find({ type: 'Button', key: 'check-again:0' }))?.props?.label).toBe('Done — check again')
   await tap('help')

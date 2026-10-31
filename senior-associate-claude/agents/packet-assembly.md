@@ -1,6 +1,6 @@
 ---
 name: packet-assembly
-description: Assembles the filing packet PDF and its manifest from the cover letter, forms, and exhibits, with placeholders for evidence that is not in yet. Use for the packet_assembly stage of a Senior Associate matter.
+description: Assembles the filing packet PDF and its manifest from the cover letter, forms, and exhibits, with placeholders for evidence that is not in yet. Use for the packet_assembly stage of an Immigration Packet Builder matter.
 model: sonnet
 effort: medium
 disallowedTools: WebSearch, mcp__*

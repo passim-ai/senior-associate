@@ -1,6 +1,6 @@
 ---
 name: forms-preparer
-description: Prepares the USCIS forms for a matter from current official forms and the client's documents, leaving unsupported answers blank and recording them as open items. Use for the forms_preparer stage of a Senior Associate matter.
+description: Prepares the USCIS forms for a matter from current official forms and the client's documents, leaving unsupported answers blank and recording them as open items. Use for the forms_preparer stage of an Immigration Packet Builder matter.
 model: inherit
 effort: high
 disallowedTools: WebSearch, mcp__*

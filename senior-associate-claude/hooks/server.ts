@@ -177,7 +177,7 @@ export async function load($: EngineInterface, request: Record<string, unknown>,
 export const DISMISS_PICKER = 'tell application "System Events" to quit'
 
 // Close the picker: a Finder window that opened behind Claude, or that the attorney walked away from, is closed, and
-// the page is given back at once instead of waiting up to ten minutes for it. Only the picker Senior Associate opened
+// the page is given back at once instead of waiting up to ten minutes for it. Only the picker Immigration Packet Builder opened
 // is closed (its own prompt names it).
 export async function closePicker($: EngineInterface) {
   session.flight += 1

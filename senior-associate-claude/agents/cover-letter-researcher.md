@@ -1,6 +1,6 @@
 ---
 name: cover-letter-researcher
-description: Builds the authority pack and support matrix for a USCIS cover letter's legal propositions, using a case-law research connector when one is available. Use for the cover_letter_researcher stage of a Senior Associate matter.
+description: Builds the authority pack and support matrix for a USCIS cover letter's legal propositions, using a case-law research connector when one is available. Use for the cover_letter_researcher stage of an Immigration Packet Builder matter.
 model: inherit
 effort: high
 ---

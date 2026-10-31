@@ -1,6 +1,6 @@
 ---
 name: cover-letter-reviewer
-description: Independently reviews a USCIS cover letter for factual support, legal accuracy, exhibit alignment, and formatting before assembly. Use for the cover_letter_reviewer stage of a Senior Associate matter.
+description: Independently reviews a USCIS cover letter for factual support, legal accuracy, exhibit alignment, and formatting before assembly. Use for the cover_letter_reviewer stage of an Immigration Packet Builder matter.
 model: opus
 effort: high
 ---

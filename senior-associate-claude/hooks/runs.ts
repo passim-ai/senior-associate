@@ -305,7 +305,7 @@ export async function askInChat($: EngineInterface, card: Card, kind: string, pr
   const text = `${runKind(kind).ask(card.name)}\n\n(For Claude) Start the ${AGENT} agent in the background, described as “${description}”, with this brief:\n\n${prompt}`
   if (!(await toChat($, text, false))) {
     await giveBackStart($, card.path, runId)
-    await setNote($, `Claude couldn’t start the ${runKind(kind).noun} from here. In the chat box below, type: ${runKind(kind).ask(card.name).replace(/ with Senior Associate, in the background\./, '')}, then press Enter.`)
+    await setNote($, `Claude couldn’t start the ${runKind(kind).noun} from here. In the chat box below, type: ${runKind(kind).ask(card.name).replace(/ with Immigration Packet Builder, in the background\./, '')}, then press Enter.`)
     return
   }
   const pending: Run = { ...blankRun(card, kind, reply, await nowIso($), opts), status: 'starting', description, ...(runId ? { runId } : {}) }
@@ -440,7 +440,7 @@ export async function announce($: EngineInterface, r: Run, after: Card | null = 
   }
   const text = finishedText(r, c)
   try {
-    const sent = await $.ui.notify(text, { title: 'Senior Associate' })
+    const sent = await $.ui.notify(text, { title: 'Immigration Packet Builder' })
     if (!sent.isSent) $.ui.toast(text, { timeoutMs: 8000 })
   } catch {
     $.ui.toast(text, { timeoutMs: 8000 })

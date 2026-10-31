@@ -1,4 +1,4 @@
-// Senior Associate: the Passim app inside Claude Code.
+// Immigration Packet Builder: the Passim app inside Claude Code.
 //
 // Client documents in, a filing-ready USCIS packet out (or, when documents are
 // missing, a draft packet as far as the record allows plus a memo and a client
@@ -42,7 +42,7 @@ export const register: Register = (on, options) => {
   on('session.start', async ($, e, next) => {
     await $.command.register({
       name: 'matters',
-      description: 'Senior Associate: build USCIS filing packets from a client’s documents. Type /matters pane to open it beside the chat.',
+      description: 'Immigration Packet Builder: build USCIS filing packets from a client’s documents. Type /matters pane to open it beside the chat.',
     })
     await loadPrefs($)
     await rebuildSession($)
@@ -81,7 +81,7 @@ export const register: Register = (on, options) => {
       else if (p) void refresh($)
       else void load($, { op: 'state' })
     }
-    return { text: wantsPane ? 'Senior Associate is open in the side panel.' : 'Senior Associate' }
+    return { text: wantsPane ? 'Immigration Packet Builder is open in the side panel.' : 'Immigration Packet Builder' }
   })
 
   // A request the app left in the chat box, sent: the agent the chat starts carries the app's run id in its brief, so
@@ -157,7 +157,7 @@ async function render($: EngineInterface, e: ResolveInput, site: 'inline' | 'pan
   const els = tableFor($, e, columns)
   if (!els) {
     const { Text } = $.ui.resolve(e)
-    return <Text>Senior Associate opens in the Claude desktop app. Open it there and type /matters.</Text>
+    return <Text>Immigration Packet Builder opens in the Claude desktop app. Open it there and type /matters.</Text>
   }
   return draw($, els, site)
 }

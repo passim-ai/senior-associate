@@ -1,6 +1,6 @@
 ---
 name: cover-letter-writer
-description: Drafts and revises the USCIS cover letter for a matter from the client's documents and the research support pack. Use for the cover_letter_writer_draft and cover_letter_writer_integrate stages of a Senior Associate matter.
+description: Drafts and revises the USCIS cover letter for a matter from the client's documents and the research support pack. Use for the cover_letter_writer_draft and cover_letter_writer_integrate stages of an Immigration Packet Builder matter.
 model: opus
 effort: high
 ---

@@ -19,7 +19,7 @@ from .folders import CHAT_CHANGES_FILE, INSTRUCTIONS_FILE, exemplars_list, read_
 
 # The app runs these in the background, where nobody watches the transcript; the final message is what it shows.
 REPORT_NOTE = (
-    "\n\nYou are running in the background for the Senior Associate app, and the attorney is not watching the transcript. "
+    "\n\nYou are running in the background for the Immigration Packet Builder app, and the attorney is not watching the transcript. "
     "Follow the skill's \"Finish every run\" steps. Put every question for the attorney on the open items, each with a "
     "short `question` and, where you have a view, your `recommendation`: the app shows each one with an answer box. "
     "Your final message is the report the app shows above them: plain language, at most four sentences, naming at most "
@@ -97,7 +97,7 @@ def _is_protected(mt: str, inputs: BriefInputs) -> bool:
 def _protected_line(protected: bool) -> str:
     if protected:
         return (
-            "Confidential matter (8 U.S.C. 1367): follow references/protected-matters.md in the Senior Associate skill "
+            "Confidential matter (8 U.S.C. 1367): follow references/protected-matters.md in the senior-associate skill "
             "for the safe mailing address, the client request, and stage summaries.\n"
         )
     return ""

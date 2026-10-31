@@ -34,7 +34,7 @@ test('the first time: getting set up, the welcome, the first matter, files and a
   expect(await ui.find({ type: 'Text', text: /^Ask Claude to do it sends the request to Claude in the chat\./ })).toBeDefined()
   await tap('ask:libreoffice')
   expect(submitted).toHaveLength(1)
-  expect(submitted[0]).toMatch(/^Install LibreOffice for Senior Associate\.\n\n\(Sent from Senior Associate when I pressed “Ask Claude to do it”\.\)$/)
+  expect(submitted[0]).toMatch(/^Install LibreOffice for Immigration Packet Builder\.\n\n\(Sent from Immigration Packet Builder when I pressed “Ask Claude to do it”\.\)$/)
   expect(copied).toEqual([])
   expect(filled).toEqual([])
   expect(toasts.at(-1)).toMatch(/Claude is on it in the chat/)
@@ -127,7 +127,7 @@ test('the first time: getting set up, the welcome, the first matter, files and a
   await ui.input({ plugin: PLUGIN, key: 'ask', text: 'Does the 2019', kind: 'change' })
   await ui.input({ plugin: PLUGIN, key: 'ask', text: '  Does the 2019 arrest affect eligibility? ', kind: 'submit' })
   await clock.settle()
-  expect(submitted.at(-1)).toBe('Ask Senior Associate about Maria Garcia I-130 I-485: Does the 2019 arrest affect eligibility?')
+  expect(submitted.at(-1)).toBe('Ask Immigration Packet Builder about Maria Garcia I-130 I-485: Does the 2019 arrest affect eligibility?')
   expect(filled).toEqual([])
   expect(await ui.find({ type: 'Text', text: /^✓ Claude is answering in the chat\.$/ })).toBeDefined()
   expect((await ui.find({ type: 'Input', key: 'ask' }))?.text).toBe('')
@@ -135,7 +135,7 @@ test('the first time: getting set up, the welcome, the first matter, files and a
   expect(await ui.find({ type: 'Text', text: /^Does the client qualify, on the documents we have\?$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /weakest point in the cover letter/ })).toBeUndefined()
   await tap('ask-try:0')
-  expect(submitted.at(-1)).toMatch(/^Ask Senior Associate about Maria Garcia I-130 I-485: How do we answer this: “Joint records begin two months before filing\.”$/)
+  expect(submitted.at(-1)).toMatch(/^Ask Immigration Packet Builder about Maria Garcia I-130 I-485: How do we answer this: “Joint records begin two months before filing\.”$/)
   expect(toasts).not.toContain('Type your question in the chat box below.')
   await ui.unmount()
 })
@@ -290,7 +290,7 @@ test('setup before a build: a missing tool holds the build until it is installed
   // When the chat won't take the request (here, dropped), it waits in the chat box for the attorney to send.
   await tap('ask:ghostscript')
   expect(submitted).toHaveLength(1)
-  expect(filled[0]).toMatch(/^Install Ghostscript for Senior Associate\./)
+  expect(filled[0]).toMatch(/^Install Ghostscript for Immigration Packet Builder\./)
   expect(await ui.find({ type: 'Text', text: /The request is in your chat box\. Press Enter to send it to Claude\./ })).toBeDefined()
   expect(await inActions(ui, /Check again/)).toBeDefined()
   expect(await inActions(ui, /Continue anyway/)).toBeDefined()
@@ -395,9 +395,9 @@ test('without uv, the app says so, and Claude installs it', OPTS(), async ($, on
   const submitted: string[] = []
   on('prompt.submit', async (_$, e) => { submitted.push(e.text); return { text: e.text } })
   const { ui, tap } = await mount($, clock)
-  expect(await ui.find({ type: 'Text', text: /^⚠ Senior Associate needs uv, a free helper that runs its tools\. Claude can install it for you; then type \/matters again\.$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^⚠ Immigration Packet Builder needs uv, a free helper that runs its tools\. Claude can install it for you; then type \/matters again\.$/ })).toBeDefined()
   await tap('note-ask')
-  expect(submitted[0]).toMatch(/^Install uv for Senior Associate\./)
+  expect(submitted[0]).toMatch(/^Install uv for Immigration Packet Builder\./)
   await ui.unmount()
 })
 
@@ -504,7 +504,7 @@ test('inline in the conversation: the /matters row draws the app with a tip, and
   let paneUp = false
   const opened: string[] = []
   on('ui.open', async (_$, e) => { opened.push(e.id); paneUp = true; return { value: { isPlaced: true } } })
-  on('ui.panes', async () => ({ value: paneUp ? [{ id: 'senior-associate', title: 'Senior Associate', isShown: true, isFocused: false, isPlaced: true }] : [] }))
+  on('ui.panes', async () => ({ value: paneUp ? [{ id: 'senior-associate', title: 'Immigration Packet Builder', isShown: true, isFocused: false, isPlaced: true }] : [] }))
   const ui = (await $.ui.mount({ ...ROW, props: ROW.props } as never)) as any
   await clock.advance(10)
   await clock.settle()
@@ -516,7 +516,7 @@ test('inline in the conversation: the /matters row draws the app with a tip, and
   await ui.press({ plugin: PLUGIN, key: 'dock' })
   await clock.settle()
   expect(opened).toEqual(['senior-associate'])
-  expect(await ui.find({ type: 'Text', text: /^Senior Associate is open beside the chat\.$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^Immigration Packet Builder is open beside the chat\.$/ })).toBeDefined()
   expect(await ui.find({ type: 'Button', key: 'show-pane' })).toBeDefined()
   await ui.unmount()
 })
@@ -632,13 +632,13 @@ test('ask Claude about an open item or a review note: the chat box gets the matt
   await tap(`open:${garcia.path}`)
   await tap('items')
   await tap('ask-item:decide-i765')
-  expect(filled.at(-1)).toBe('Ask Senior Associate about Garcia I-130 I-485, about “Include an I-765 work permit application with the I-485?”: Help me decide. What are the options, and the risk of each?')
+  expect(filled.at(-1)).toBe('Ask Immigration Packet Builder about Garcia I-130 I-485, about “Include an I-765 work permit application with the I-485?”: Help me decide. What are the options, and the risk of each?')
   expect(await ui.find({ type: 'Text', text: /^⏳ Your question is in the chat box below\. Change it if you like, then press Enter\.$/ })).toBeDefined()
   await tap('ask-item:doc-i94')
-  expect(filled.at(-1)).toBe('Ask Senior Associate about Garcia I-130 I-485, about “Most recent I-94 arrival record”: Why is this needed, and what could stand in for it if the client can’t get it?')
+  expect(filled.at(-1)).toBe('Ask Immigration Packet Builder about Garcia I-130 I-485, about “Most recent I-94 arrival record”: Why is this needed, and what could stand in for it if the client can’t get it?')
   await tap('packet')
   await tap('ask-note:1')
-  expect(filled.at(-1)).toBe('Ask Senior Associate about Garcia I-130 I-485, about “Joint records begin two months before filing.”: Is this right, and how should we fix it?')
+  expect(filled.at(-1)).toBe('Ask Immigration Packet Builder about Garcia I-130 I-485, about “Joint records begin two months before filing.”: Is this right, and how should we fix it?')
   expect(submitted).toEqual([])
   await ui.unmount()
 })
@@ -653,12 +653,12 @@ test('a question the chat won’t take waits in the chat box', OPTS(), async ($,
   await tap(`open:${garcia.path}`)
   await ui.input({ plugin: PLUGIN, key: 'ask', text: '   ', kind: 'submit' })
   await clock.settle()
-  expect(await ui.find({ type: 'Text', text: /^⚠ Type your question first, then press ask\.$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^⚠ Type your question first, then press Ask\.$/ })).toBeDefined()
   expect(submitted).toEqual([])
   await ui.input({ plugin: PLUGIN, key: 'ask', text: 'What should we file?', kind: 'submit' })
   await clock.settle()
-  expect(submitted).toEqual(['Ask Senior Associate about Garcia I-130 I-485: What should we file?'])
-  expect(filled).toEqual(['Ask Senior Associate about Garcia I-130 I-485: What should we file?'])
+  expect(submitted).toEqual(['Ask Immigration Packet Builder about Garcia I-130 I-485: What should we file?'])
+  expect(filled).toEqual(['Ask Immigration Packet Builder about Garcia I-130 I-485: What should we file?'])
   expect(await ui.find({ type: 'Text', text: /^⏳ Your question is in the chat box\. Press Enter to send it to Claude\.$/ })).toBeDefined()
   await ui.unmount()
 })
@@ -669,7 +669,7 @@ test('needs your answer: one box per question, the recommendation fills one, the
     { text: 'I-765 with the I-485', question: 'Include an I-765 work permit application with the I-485?', recommendation: 'Yes, if he wants to work while the I-485 is pending.', detail: 'He has no work authorization now.', kind: 'decision', who: 'attorney', id: 'decide-i765', stage: 'Forms' },
     { text: 'How should Part 8 item 22 be answered, given the 2019 overstay?', kind: 'decision', who: 'attorney', id: 'decide-item-22' },
     { text: 'I-94 arrival record', kind: 'blocker', who: 'client', stage: 'Document review' },
-    { text: 'Ghostscript isn’t installed', kind: 'blocker', who: 'system', fix: 'Claude can install Ghostscript for you. Then build again.', ask: 'Install Ghostscript for Senior Associate.' },
+    { text: 'Ghostscript isn’t installed', kind: 'blocker', who: 'system', fix: 'Claude can install Ghostscript for you. Then build again.', ask: 'Install Ghostscript for Immigration Packet Builder.' },
   ]
   const run = agents(on, 'Updating the packet: Garcia I-130 I-485')
   const { clock, ui, tap, submitted } = await boot($, on, [garcia])
@@ -679,7 +679,7 @@ test('needs your answer: one box per question, the recommendation fills one, the
   // What waits on the Mac is said on the Overview; the questions and what the client owes are on Questions.
   expect(await ui.find({ type: 'Text', text: /^Claude can install Ghostscript for you\. Then build again\.$/ })).toBeDefined()
   await tap('ask-fix:3')
-  expect(submitted[0]).toMatch(/^Install Ghostscript for Senior Associate\./)
+  expect(submitted[0]).toMatch(/^Install Ghostscript for Immigration Packet Builder\./)
   expect(await ui.find({ type: 'Button', key: 'check-again:3' })).toBeDefined()
   await tap('main:items')
   expect(await ui.find({ type: 'Text', text: /^Attorney decisions · 0 of 2 answered$/ })).toBeDefined()
@@ -1101,7 +1101,7 @@ test('a folder made outside the app: choose what is being filed, then Save', OPT
   loose.needs_intake = true
   const { ui, tap, requests } = await boot($, on, [loose])
   expect(await ui.find({ type: 'Text', text: /^What is being filed\?$/ })).toBeDefined()
-  expect(await ui.find({ type: 'Text', text: /made outside Senior Associate/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /made outside Immigration Packet Builder/ })).toBeDefined()
   expect(await inActions(ui, /Build packet/)).toBeUndefined()
   await tap('main:set-intake')
   expect(await ui.find({ type: 'Text', text: /^Choose one below, then press Save\.$/ })).toBeDefined()
@@ -1189,7 +1189,7 @@ test('when the app can’t start Claude, the request goes into the chat box, and
   await tap(`open:${garcia.path}`)
   await tap('main:build')
   expect(filled.length).toBe(1)
-  expect(filled[0]).toMatch(/^Build the packet for Garcia I-130 I-485 with Senior Associate, in the background\.\n\n/)
+  expect(filled[0]).toMatch(/^Build the packet for Garcia I-130 I-485 with Immigration Packet Builder, in the background\.\n\n/)
   expect(filled[0]).toContain(garcia.prompts.build)
   expect(await ui.find({ type: 'Text', text: /^Waiting for you$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^Claude needs your OK to start\. Press Enter to send the request in your chat box\.$/ })).toBeDefined()
@@ -1285,7 +1285,7 @@ test('help: how it works, what each status means, and the way to the setup check
   const { ui, tap, ops } = await boot($, on, [card('Garcia I-130 I-485', 'ready', DOCS)], { profile: {}, open: false }, { prefs: SEEN })
   expect(await ui.find({ type: 'Button', key: 'help', text: 'Help' })).toBeDefined()
   await tap('help')
-  expect(await ui.find({ type: 'Text', text: /^Senior Associate 0\.9\.1$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^Immigration Packet Builder 0\.9\.1$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^What each status means$/ })).toBeDefined()
   // How to go back, redo and change things, in the attorney's own questions.
   expect(await ui.find({ type: 'Text', text: /^How do I…$/ })).toBeDefined()

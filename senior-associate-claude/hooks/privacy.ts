@@ -17,8 +17,8 @@ import { call } from './server'
 import { liveAgents, readRuns } from './state'
 import { nowMs } from './words'
 
-export const BLOCKED = 'Senior Associate blocked this: it contained the client’s details. Phrase the research as a legal question, without names, numbers or other facts that identify the client.'
-export const UNCHECKED = 'Senior Associate couldn’t check this research request against the client’s details. Try again in a moment.'
+export const BLOCKED = 'Immigration Packet Builder blocked this: it contained the client’s details. Phrase the research as a legal question, without names, numbers or other facts that identify the client.'
+export const UNCHECKED = 'Immigration Packet Builder couldn’t check this research request against the client’s details. Try again in a moment.'
 
 // BIA Edge (any MCP server whose name says bia or passim) and the web tools.
 export function isResearch(tool: string): boolean {

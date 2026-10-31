@@ -67,7 +67,7 @@ export async function draw($: EngineInterface, els: Els, site: 'pane' | 'inline'
       })
     }
     return page(
-      [title('Senior Associate', n.text ? 'It couldn’t open this time.' : 'One moment…')],
+      [title('Immigration Packet Builder', n.text ? 'It couldn’t open this time.' : 'One moment…')],
       n.text !== '' ? actions([{ id: 'retry', label: 'Try again', kind: 'primary' }]) : null,
     )
   }
@@ -86,7 +86,7 @@ export async function draw($: EngineInterface, els: Els, site: 'pane' | 'inline'
     if (paneUp) {
       return (
         <Box flexDirection="row" flexWrap="wrap" columnGap="lg" rowGap="xs" alignItems="center" backgroundColor={CARD} borderStyle="round" paddingX="lg" paddingY="sm">
-          <Text>Senior Associate is open beside the chat.</Text>
+          <Text>Immigration Packet Builder is open beside the chat.</Text>
           <Button key="show-pane" label="Show it" onPress={() => perform($, 'dock')} />
         </Box>
       )

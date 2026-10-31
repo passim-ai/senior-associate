@@ -50,7 +50,7 @@ test('after the sample’s review, its page lists what a good review catches; He
 test('Help adds the sample back when it is gone from the list', OPTS(), async ($, on) => {
   const { ui, tap, ops } = await boot($, on, [], { sample: true }, { prefs: SEEN })
   await tap('help')
-  expect(await ui.find({ type: 'Text', text: /^Try Senior Associate on a fictional case$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^Try Immigration Packet Builder on a fictional case$/ })).toBeDefined()
   await tap('add-sample')
   expect(ops).toContain('add_sample')
   expect(await ui.find({ type: 'Text', text: /^This is a sample matter$/ })).toBeDefined()

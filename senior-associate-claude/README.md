@@ -1,8 +1,8 @@
-# Senior Associate
+# Immigration Packet Builder
 
 > Free under the [PolyForm Shield License 1.0.0](LICENSE). A drafting aid, not legal advice: an attorney reviews everything before it is relied on, sent or filed.
 
-Senior Associate turns a client's documents into a USCIS filing packet. It works inside the Claude desktop app: you name the client and the case and add their documents. Claude then reviews them, prepares the forms, writes and researches the cover letter, assembles the packet, and checks it the way a USCIS officer would.
+Immigration Packet Builder turns a client's documents into a USCIS filing packet. It works inside the Claude desktop app: you name the client and the case and add their documents. Claude then reviews them, prepares the forms, writes and researches the cover letter, assembles the packet, and checks it the way a USCIS officer would.
 
 - **If the documents are all there,** you get a packet ready to sign and file.
 - **If something's missing,** you get a **draft packet** built as far as the documents allow, with placeholders where evidence is still to come. You also get a memo that says exactly what's needed before filing, and a plain-English client request you can send.
@@ -15,13 +15,13 @@ Follow the steps on the [repository's front page](../README.md#install): you pas
 
 ## Using it
 
-Type `/matters` in the Code tab. Choose **Open as side panel** to keep Senior Associate beside your chat, or type `/matters pane`.
+Type `/matters` in the Code tab. Choose **Open as side panel** to keep Immigration Packet Builder beside your chat, or type `/matters pane`.
 
 1. **Getting set up.** The first time, a checklist marks each tool ✓ or ✗. For a ✗, press **Ask Claude to do it**: Claude installs it in the chat. Then press **Check again**. You can come back to it any time from **Help › Check my setup**.
 2. **Try the sample matter (optional).** Your list starts with *Sample - Barrientos-Eckhardt*, a fictional I-601A with 14 scanned documents and gaps planted on purpose. Open it from the welcome and press **Review documents first**: in 5–10 minutes Claude lists what's missing, and the matter page then shows what a good review catches, to compare. Archive it when you're done; **Help › Open the sample matter** brings it back.
 3. **Your details.** Add your name, firm, address, bar number and licensing authority once. They go on the G-28, the preparer sections of the forms, and the letter's signature.
 4. **New matter.** Type the client's name, choose what is being filed (I-130/I-485, I-751, N-400, an I-601A or I-601 waiver, an EB-2 national interest waiver, an I-360 VAWA self-petition with or without the I-485, and others, or describe it), say whether it's a new filing or a response, and whether you'll file on paper or online. Mark the client protected under 8 U.S.C. 1367 (VAWA, T or U) when that applies; the VAWA case types are marked for you.
-5. **Add documents.** Use **Add files…** or **Add a folder…**. Senior Associate copies the files into the matter; your originals stay where they were.
+5. **Add documents.** Use **Add files…** or **Add a folder…**. Immigration Packet Builder copies the files into the matter; your originals stay where they were.
 6. **Review documents first** (about 5–10 minutes). It shows what's there, what's missing, and a client request ready to copy into an email.
 7. **Build packet** (about 1–1½ hours). It runs in the background. Keep Claude open, and your Mac awake, until it finishes. You can use Claude for other things meanwhile, and you get a notification when the build is done.
 8. **Read the result.** The matter page shows where things stand and what's left. Your files are listed there under **Files for this matter**, and they're in the matter's folder in Finder:
@@ -42,7 +42,7 @@ Type `/matters` in the Code tab. Choose **Open as side panel** to keep Senior As
    **Help › How do I…** answers these in one line each.
 12. **Keep track.** Each matter has a **Timeline** of what happened: documents added, runs started and finished, items you settled, filing. **Archive** puts a finished matter away (Archived, at the end of the list); sort the list by updated, name, case type or status. In the side panel, **n** starts a new matter, **f** finds one, **1–9** open one, and **b** presses a matter's main button.
 
-You can also ask in the chat: "Build the packet for the Garcia matter", "What documents are we still missing for Lopez?", "Ask Senior Associate about Nguyen N-400: does the 2021 trip break continuous residence?", or "Read the Nguyen packet the way a USCIS officer would."
+You can also ask in the chat: "Build the packet for the Garcia matter", "What documents are we still missing for Lopez?", "Ask Immigration Packet Builder about Nguyen N-400: does the 2021 trip break continuous residence?", or "Read the Nguyen packet the way a USCIS officer would."
 
 ### What each status means
 
@@ -60,11 +60,11 @@ You can also ask in the chat: "Build the packet for the Garcia matter", "What do
 | Draft packet | Built, but some things are needed before filing. | See what's left |
 | Ready to file | Passed the final review, including the officer's review. Nothing needed before filing is open. | Read the memo and the packet; Mark as filed |
 | Filed | You marked it filed. | Nothing (Undo if that was a mistake) |
-| Can't open | Senior Associate can't read the matter's folder. | Press it to have Claude repair it |
+| Can't open | Immigration Packet Builder can't read the matter's folder. | Press it to have Claude repair it |
 
 ## Privacy
 
-Client documents stay in the matter folder on your Mac. Claude reads them to do the work, so their contents go to Claude through your Claude account, as anything you share with Claude does. Senior Associate doesn't encrypt the folder; turn on FileVault.
+Client documents stay in the matter folder on your Mac. Claude reads them to do the work, so their contents go to Claude through your Claude account, as anything you share with Claude does. Immigration Packet Builder doesn't encrypt the folder; turn on FileVault.
 
 - **Each step works from a copy of the client's documents,** never documents you removed or earlier work set aside, and the copies are deleted when the run ends.
 - **Cleaning up never moves or deletes a client's document.** It deletes Claude's scratch files, the step copies, and the page images and OCR text the reviews make. Memos, forms, research, the packet and the text Claude read from each document stay. The **Clean up working files** button does the same at any time.

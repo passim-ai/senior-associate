@@ -127,14 +127,14 @@ def _create_sample(ctx: Context) -> tuple[Path, str]:
     m = samples.manifest(ctx)
     docs = samples.documents(ctx)
     if not m or not docs:
-        raise UserError("The sample matter's files are missing from this install. Ask Claude to update Senior Associate.")
+        raise UserError("The sample matter's files are missing from this install. Ask Claude to update Immigration Packet Builder.")
     payload = do_create(ctx, str(m["name"]), str(m["matter_type"]), str(m.get("filing_posture") or ""),
                         filing_method=m.get("filing_method"))
     matter = Path(payload["selected"])
     try:
         add_files(matter, docs)
         samples.mark_matter(matter)
-        add_event(matter, "sample", "Sample matter added: fictional documents to try Senior Associate with.", now=ctx.now())
+        add_event(matter, "sample", "Sample matter added: fictional documents to try Immigration Packet Builder with.", now=ctx.now())
     except BaseException:
         shutil.rmtree(matter, ignore_errors=True)
         raise

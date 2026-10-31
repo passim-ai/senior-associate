@@ -34,7 +34,7 @@ export async function welcomeScreen($: EngineInterface, x: Ctx): Promise<JSX.Ele
       <Box key="first" flexDirection="column" gap="sm">
         {eyebrow('Your first matter')}
         <Text size="title" weight="semibold" color={HEAD}>A clear path from documents to review.</Text>
-        <Text color={MUTED}>Senior Associate builds USCIS filing packets from a client’s documents, here in Claude. Nothing is filed or sent: you get a draft to read.</Text>
+        <Text color={MUTED}>Immigration Packet Builder turns a client’s documents into a USCIS filing packet, here in Claude. Nothing is filed or sent: you get a draft to read.</Text>
       </Box>,
       <Box key="first-steps" flexDirection={narrow ? 'column' : 'row'} columnGap="xl" rowGap="md" alignItems="flex-start">
         {step('1', 'Add the documents', 'Pick files one at a time, or a whole folder. Claude works from copies; your originals stay where they are.')}

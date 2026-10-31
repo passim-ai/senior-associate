@@ -90,7 +90,7 @@ test('plain text for an email: headings, bold, code and links become plain words
 })
 
 test('friendly errors: the host’s own in plain words, the server’s sentences kept, anything of a program’s never shown', () => {
-  expect(friendly('spawn EACCES')).toMatch(/^Senior Associate can’t save in your Matters folder\./)
+  expect(friendly('spawn EACCES')).toMatch(/^Immigration Packet Builder can’t save in your Matters folder\./)
   expect(friendly('The process timed out after 600000 ms')).toBe('That took too long and was stopped. Try again.')
   expect(friendly("Garcia I-130 isn't in your Matters folder anymore. It may have been moved or renamed in Finder.")).toMatch(/^Garcia I-130 isn't in your Matters folder anymore\./)
   expect(friendly('Claude is already working on this matter. Try again when it finishes.')).toBe('Claude is already working on this matter. Try again when it finishes.')

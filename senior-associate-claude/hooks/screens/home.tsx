@@ -75,7 +75,7 @@ export async function homeScreen($: EngineInterface, x: Ctx): Promise<JSX.Elemen
     : null
   const setupWarning = requiredMissing(st).length
     ? <Box key="setup-warn" flexDirection="row" columnGap="sm" rowGap="xs" flexWrap="wrap" alignItems="center">
-        <Text color={WARN}>{`⚠ Senior Associate still needs ${requiredMissing(st).map(m => m.label).join(', ')} on this Mac.`}</Text>
+        <Text color={WARN}>{`⚠ Immigration Packet Builder still needs ${requiredMissing(st).map(m => m.label).join(', ')} on this Mac.`}</Text>
         {button('setup-link', 'Check my setup', () => { void perform($, 'setup') }, 'link')}
       </Box>
     : null

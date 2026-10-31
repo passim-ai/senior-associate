@@ -163,7 +163,7 @@ export function makeKit($: EngineInterface, els: Els, site: 'pane' | 'inline', v
     <Box key="lockup" flexDirection="row" alignItems="center" gap="md" flexShrink={0}>
       {els.svg(WORDMARK, 'Passim', markWidth, Math.round(markWidth * WORDMARK_RATIO))}
       {isDesktop ? upright('lockup-line') : null}
-      <Text size="footnote" weight="semibold" color={MUTED}>Senior Associate</Text>
+      <Text size="footnote" weight="semibold" color={MUTED}>Immigration Packet Builder</Text>
     </Box>
   )
   const header = (

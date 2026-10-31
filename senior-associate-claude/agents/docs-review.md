@@ -1,6 +1,6 @@
 ---
 name: docs-review
-description: Reviews a client's documents for a USCIS filing and reports what is present, what is missing, and what would strengthen the case. Use for the docs_review stage of a Senior Associate matter.
+description: Reviews a client's documents for a USCIS filing and reports what is present, what is missing, and what would strengthen the case. Use for the docs_review stage of an Immigration Packet Builder matter.
 model: opus
 effort: high
 disallowedTools: WebSearch, mcp__*

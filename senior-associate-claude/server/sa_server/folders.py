@@ -178,8 +178,8 @@ class DamagedRecord(UserError):
     the runtime refuses to work on it too, so the app says so, with the request that has Claude repair it."""
 
     def __init__(self, matter: Path) -> None:
-        self.ask = f"Repair the Senior Associate matter {matter.name}: its record of the steps can't be read."
-        super().__init__(f"Claude's record of the steps for {matter.name} can't be read, so Senior Associate can't show "
+        self.ask = f"Repair the Immigration Packet Builder matter {matter.name}: its record of the steps can't be read."
+        super().__init__(f"Claude's record of the steps for {matter.name} can't be read, so Immigration Packet Builder can't show "
                          f"it. Ask Claude to repair it: \"{self.ask}\"")
 
 

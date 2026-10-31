@@ -45,7 +45,7 @@ GENERATED_MARKERS = {"working", "vault", "deliverables", "shareable", "workflow"
 WHY_EXPORT = "Export it as a PDF and add that."
 WHY_ALIAS = "It's a Finder alias, not the document. Add the original file."
 WHY_PROGRAM = "It's an app or a program file, not a document."
-WHY_UNREADABLE = "Senior Associate couldn't read it. Check that it isn't locked or still downloading, then add it again."
+WHY_UNREADABLE = "Immigration Packet Builder couldn't read it. Check that it isn't locked or still downloading, then add it again."
 
 
 def _picker_failed(stderr: str, what: str) -> UserError:
@@ -293,7 +293,7 @@ def folder_problem(ctx: Context, matter: Path, folder: Path) -> str | None:
 
 
 def _looks_generated(folder: Path) -> bool:
-    """A top-level output/ holding an earlier run's work (Senior Associate's or another workflow's)."""
+    """A top-level output/ holding an earlier run's work (Immigration Packet Builder's or another workflow's)."""
     try:
         return any(child.is_dir() and child.name.casefold() in GENERATED_MARKERS for child in folder.iterdir())
     except OSError:

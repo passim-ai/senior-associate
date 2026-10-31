@@ -1,6 +1,6 @@
 ---
 name: forms-preparer
-description: Prepares the USCIS forms for an immigration matter from the current official editions and the client's documents. It builds a fact table with a source for every answer, fills the forms with the bundled tools, renders filing copies, and audits them, leaving any answer the record doesn't support blank and listing it as an open item. Use when an attorney asks to prepare, fill, or update USCIS forms (G-28, I-130, I-130A, I-485, I-864, I-765, I-131, I-751, N-400, and others), or when the Senior Associate workflow reaches its forms_preparer stage.
+description: Prepares the USCIS forms for an immigration matter from the current official editions and the client's documents. It builds a fact table with a source for every answer, fills the forms with the bundled tools, renders filing copies, and audits them, leaving any answer the record doesn't support blank and listing it as an open item. Use when an attorney asks to prepare, fill, or update USCIS forms (G-28, I-130, I-130A, I-485, I-864, I-765, I-131, I-751, N-400, and others), or when the Immigration Packet Builder workflow reaches its forms_preparer stage.
 ---
 
 # Forms preparer

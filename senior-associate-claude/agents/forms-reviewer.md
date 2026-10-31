@@ -1,6 +1,6 @@
 ---
 name: forms-reviewer
-description: Independently checks prepared USCIS forms against the client's documents and current instructions before assembly. Use for the forms_reviewer stage of a Senior Associate matter.
+description: Independently checks prepared USCIS forms against the client's documents and current instructions before assembly. Use for the forms_reviewer stage of an Immigration Packet Builder matter.
 model: opus
 effort: high
 disallowedTools: WebSearch, mcp__*

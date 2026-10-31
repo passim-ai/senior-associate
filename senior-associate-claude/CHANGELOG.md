@@ -1,6 +1,10 @@
-# What's new in Senior Associate
+# What's new in Immigration Packet Builder
 
-Your version appears at the foot of every Senior Associate screen ("Help · Senior Associate 1.1.0"). After an update, quit Claude with ⌘Q and reopen it.
+Your version appears at the foot of every Immigration Packet Builder screen ("Help · Immigration Packet Builder 1.2.0"). After an update, quit Claude with ⌘Q and reopen it.
+
+## 1.2.0 (October 2026)
+
+**Senior Associate is now Immigration Packet Builder.** Only the name changed. You still open it with `/matters`; the install name (`senior-associate`) and the GitHub address stay the same, so it keeps updating as before.
 
 ## 1.1.0 (October 2026)
 

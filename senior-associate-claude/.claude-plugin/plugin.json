@@ -1,7 +1,7 @@
 {
   "name": "senior-associate",
-  "displayName": "Senior Associate",
-  "version": "1.1.0",
+  "displayName": "Immigration Packet Builder",
+  "version": "1.2.0",
   "description": "Turn a client's documents into a USCIS filing packet: a document review, the forms, a researched cover letter, the assembled packet, and a final review that reads it the way a USCIS officer would. You also get a memo and a client request for anything still missing. Type /matters to open it.",
   "author": {
     "name": "Passim AI"
@@ -18,7 +18,7 @@
     "matters_root": {
       "type": "directory",
       "title": "Matters folder",
-      "description": "Where Senior Associate keeps one folder per client matter. Use a new or empty folder, such as ~/Matters — not your existing client-files folder, or every folder in it would show up as a matter.",
+      "description": "Where Immigration Packet Builder keeps one folder per client matter. Use a new or empty folder, such as ~/Matters — not your existing client-files folder, or every folder in it would show up as a matter.",
       "default": "~/Matters"
     },
     "exemplars_dir": {

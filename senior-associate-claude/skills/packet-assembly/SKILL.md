@@ -1,6 +1,6 @@
 ---
 name: packet-assembly
-description: Assembles the USCIS filing packet into one ordered, bookmarked PDF (payment forms on top of a paper filing, the cover letter, the forms, an exhibit index, then each exhibit behind its separator page, with clearly marked placeholders for evidence still to come), and for an online filing the upload files, and writes a manifest mapping every page to its source. Use when an attorney asks to assemble, build, or rebuild a filing packet, or when the Senior Associate workflow reaches its packet_assembly stage.
+description: Assembles the USCIS filing packet into one ordered, bookmarked PDF (payment forms on top of a paper filing, the cover letter, the forms, an exhibit index, then each exhibit behind its separator page, with clearly marked placeholders for evidence still to come), and for an online filing the upload files, and writes a manifest mapping every page to its source. Use when an attorney asks to assemble, build, or rebuild a filing packet, or when the Immigration Packet Builder workflow reaches its packet_assembly stage.
 ---
 
 # Packet assembly

@@ -1,6 +1,6 @@
 ---
 name: final-review
-description: The last review of an assembled USCIS filing packet, done in one pass. It runs the pre-filing QA check (current forms, facts against the client's documents, completeness, letter and exhibit alignment, filing logistics) and reads the case as a strict USCIS officer would, naming the strongest RFE, NOID, or denial theory with its cure and owner. Use when an attorney asks to check a packet before filing, wants an officer's review or a stress test, asks how USCIS would see a packet or where its weakest point is, or when the Senior Associate workflow reaches its final_review stage. When it re-reviews after fixes, it checks only the earlier findings and what changed; when the attorney asks for a fresh or full review, it reviews everything.
+description: The last review of an assembled USCIS filing packet, done in one pass. It runs the pre-filing QA check (current forms, facts against the client's documents, completeness, letter and exhibit alignment, filing logistics) and reads the case as a strict USCIS officer would, naming the strongest RFE, NOID, or denial theory with its cure and owner. Use when an attorney asks to check a packet before filing, wants an officer's review or a stress test, asks how USCIS would see a packet or where its weakest point is, or when the Immigration Packet Builder workflow reaches its final_review stage. When it re-reviews after fixes, it checks only the earlier findings and what changed; when the attorney asks for a fresh or full review, it reviews everything.
 ---
 
 # Final review

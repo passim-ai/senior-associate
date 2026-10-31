@@ -107,7 +107,7 @@ export function card(name: string, phase: string, docs: string[], o: { stage?: (
     timeline: [] as { at: string; kind: string; text: string; actor: string }[],
     // The stand-in's own briefs, the ones its start_run fills in and hands back; never sent on the card.
     prompts: {
-      build: `Build the packet for this matter with the Senior Associate skill.\nMatter folder: ${ROOT}/${name}`,
+      build: `Build the packet for this matter with the Immigration Packet Builder skill.\nMatter folder: ${ROOT}/${name}`,
       update: 'Update the packet.',
       continue: 'Continue.',
       review_docs: 'Review documents.',
@@ -258,12 +258,12 @@ export const answer = (value: unknown, exitCode = 0) => ({
 
 // The server's doctor rows, as it writes them.
 export const GOOD_CHECKS = [
-  { id: 'uv', label: 'uv', ok: true, required: true, level: 'required', detail: 'Runs Senior Associate’s tools.' },
+  { id: 'uv', label: 'uv', ok: true, required: true, level: 'required', detail: 'Runs Immigration Packet Builder’s tools.' },
   { id: 'ghostscript', label: 'Ghostscript', ok: true, required: true, level: 'required', detail: 'Prints the filled USCIS forms.' },
   { id: 'profile', label: 'Your details', ok: false, required: false, level: 'recommended', detail: 'Your name, firm and bar number for the G-28 and the letter.', fix: 'Add your details. It takes about 2 minutes, once.' },
-  { id: 'libreoffice', label: 'LibreOffice', ok: false, required: false, level: 'optional', detail: 'Optional. Makes the cover letter’s PDF match Word exactly; without it the PDF is made another way.', fix: 'Claude can install LibreOffice for you.', ask: 'Install LibreOffice for Senior Associate.' },
+  { id: 'libreoffice', label: 'LibreOffice', ok: false, required: false, level: 'optional', detail: 'Optional. Makes the cover letter’s PDF match Word exactly; without it the PDF is made another way.', fix: 'Claude can install LibreOffice for you.', ask: 'Install LibreOffice for Immigration Packet Builder.' },
 ]
-export const NO_GS = GOOD_CHECKS.map(c => (c.id === 'ghostscript' ? { ...c, ok: false, detail: 'Prints the filled USCIS forms. A build can’t finish the forms without it.', fix: 'Claude can install Ghostscript for you.', ask: 'Install Ghostscript for Senior Associate.' } : c))
+export const NO_GS = GOOD_CHECKS.map(c => (c.id === 'ghostscript' ? { ...c, ok: false, detail: 'Prints the filled USCIS forms. A build can’t finish the forms without it.', fix: 'Claude can install Ghostscript for you.', ask: 'Install Ghostscript for Immigration Packet Builder.' } : c))
 
 export type Options = { checks?: unknown[]; profile?: Record<string, string>; catalog?: typeof CATALOG; dropSubmit?: string; picking?: Promise<void>
   /** The private terms privacy_terms gives for every matter (asked afresh each time when a function). */
@@ -503,7 +503,7 @@ export function agents(on: On, description: string, id = 'agent-1') {
 }
 
 export const PANE = { plugin: PLUGIN, surface: 'desktop', component: 'Pane', requestId: 'senior-associate', props: { bodyColumns: 80 } } as const
-export const ROW = { plugin: PLUGIN, surface: 'desktop', component: 'CommandOutput', requestId: 'msg-1', props: { command: 'matters', args: '', text: 'Senior Associate', isErrored: false } } as const
+export const ROW = { plugin: PLUGIN, surface: 'desktop', component: 'CommandOutput', requestId: 'msg-1', props: { command: 'matters', args: '', text: 'Immigration Packet Builder', isErrored: false } } as const
 export const SEEN = { onboarded: true, lastMatter: '', setupSeen: true, inlineUses: 5, pickerSeen: true }
 export const ANA = { attorney_name: 'Ana Ruiz', bar_number: '24012345' }
 export const DOCS = ['Passport.pdf', 'Marriage certificate.pdf']

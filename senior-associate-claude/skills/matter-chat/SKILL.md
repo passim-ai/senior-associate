@@ -1,6 +1,6 @@
 ---
 name: matter-chat
-description: Talks a matter through with the attorney in chat. It answers questions from the client's documents and the work done so far, researches the law with the BIA Edge connector, and makes the changes the attorney asks for (letter, forms, open items, memo, instructions), keeping the packet in step. Use when a message starts "Ask Senior Associate about <matter>", when the attorney asks about a client's case, eligibility, a risk, an open item or a review note, wants case law on a client's facts, or asks for a specific change to a matter's work.
+description: Talks a matter through with the attorney in chat. It answers questions from the client's documents and the work done so far, researches the law with the BIA Edge connector, and makes the changes the attorney asks for (letter, forms, open items, memo, instructions), keeping the packet in step. Use when a message starts "Ask Immigration Packet Builder about <matter>", when the attorney asks about a client's case, eligibility, a risk, an open item or a review note, wants case law on a client's facts, or asks for a specific change to a matter's work.
 ---
 
 # Matter chat
@@ -11,7 +11,7 @@ Layout, file names, and open-item rules are in `${CLAUDE_PLUGIN_ROOT}/skills/sen
 
 ## Find the matter
 
-The app sends "Ask Senior Associate about <matter name>: <question>". The matter is the folder of that name in the matters folder (`${user_config.matters_root}`); if the message names no matter, ask which one. `uv run --script "${CLAUDE_PLUGIN_ROOT}/skills/senior-associate/scripts/run_matter_workflow.py" status "<matter>"` gives its case type and posture, each step's status, its settings (protected, filing method, client language), and the packet's state; the open items are in `output/deliverables/open-items.json`, and the review notes in the findings files below.
+The app sends "Ask Immigration Packet Builder about <matter name>: <question>". The matter is the folder of that name in the matters folder (`${user_config.matters_root}`); if the message names no matter, ask which one. `uv run --script "${CLAUDE_PLUGIN_ROOT}/skills/senior-associate/scripts/run_matter_workflow.py" status "<matter>"` gives its case type and posture, each step's status, its settings (protected, filing method, client language), and the packet's state; the open items are in `output/deliverables/open-items.json`, and the review notes in the findings files below.
 
 In a long conversation, run `status` again before you change anything, because a build may have moved on.
 

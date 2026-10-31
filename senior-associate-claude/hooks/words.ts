@@ -122,15 +122,15 @@ export function plainText(md: string): string {
 
 // Claude changes plugin options for the attorney (its setup skill), so a message about another Matters folder carries
 // the request that has Claude do it.
-export const MATTERS_ASK = 'Change my Senior Associate Matters folder.'
+export const MATTERS_ASK = 'Change my Immigration Packet Builder Matters folder.'
 export const NEW_FOLDER = 'Claude can set up a different Matters folder for you.'
-export const UV_ASK = 'Install uv for Senior Associate.'
-export const UPDATE_ASK = 'Update Senior Associate to the newest version.'
+export const UV_ASK = 'Install uv for Immigration Packet Builder.'
+export const UPDATE_ASK = 'Update Immigration Packet Builder to the newest version.'
 
 // The server words its own errors (server/sa_server/errors.py). What can still arrive raw is the host's or a process's
 // own message when the server couldn't run at all: a permission refused, a timeout.
 const FRIENDLY: [RegExp, string][] = [
-  [/permission ?error|permission denied|EACCES|operation not permitted|read-only file system/i, `Senior Associate can’t save in your Matters folder. ${NEW_FOLDER}`],
+  [/permission ?error|permission denied|EACCES|operation not permitted|read-only file system/i, `Immigration Packet Builder can’t save in your Matters folder. ${NEW_FOLDER}`],
   [/timed? ?out|ETIMEDOUT/i, 'That took too long and was stopped. Try again.'],
 ]
 
@@ -150,4 +150,4 @@ export const STILL_WORKING = 'Still finishing your last action. Try again in a m
 export const ASK_LABEL = 'Ask Claude to do it'
 
 // Everything the app does locally runs through uv; without it, say so plainly instead of failing obscurely.
-export const NO_UV = 'Senior Associate needs uv, a free helper that runs its tools. Claude can install it for you; then type /matters again.'
+export const NO_UV = 'Immigration Packet Builder needs uv, a free helper that runs its tools. Claude can install it for you; then type /matters again.'

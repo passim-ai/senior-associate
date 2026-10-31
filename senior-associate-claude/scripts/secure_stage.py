@@ -240,7 +240,7 @@ def create_stage_workspace(
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Create stage-scoped Senior Associate workspaces.")
+    parser = argparse.ArgumentParser(description="Create stage-scoped Immigration Packet Builder workspaces.")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     create_parser = subparsers.add_parser("create")

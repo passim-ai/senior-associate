@@ -1,6 +1,6 @@
 ---
 name: forms-reviewer
-description: Independently reviews prepared USCIS forms before they go into the packet. It rebuilds the facts from the client's documents, checks every answer and the stored field values against them and against the current instructions, confirms the filing copies render correctly, and reports findings with an owner for each. Use when an attorney wants prepared forms checked, or when the Senior Associate workflow reaches its forms_reviewer stage.
+description: Independently reviews prepared USCIS forms before they go into the packet. It rebuilds the facts from the client's documents, checks every answer and the stored field values against them and against the current instructions, confirms the filing copies render correctly, and reports findings with an owner for each. Use when an attorney wants prepared forms checked, or when the Immigration Packet Builder workflow reaches its forms_reviewer stage.
 ---
 
 # Forms reviewer

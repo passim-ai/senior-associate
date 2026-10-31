@@ -12,7 +12,7 @@ cat > "$DEV/.claude-plugin/plugin.json" <<'JSON'
 {
   "name": "senior-associate-dev",
   "version": "0.1.0",
-  "description": "Senior Associate UI, development mirror (hot-reloaded)",
+  "description": "Immigration Packet Builder UI, development mirror (hot-reloaded)",
   "types": "./types/index.d.ts"
 }
 JSON

@@ -170,7 +170,7 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
   } else if (c.needs_intake && state !== 'stopped') {
     title = 'What is being filed?'
     border = missingCase ? WARN : ACCENT
-    lines.push(<Text key="intake">This folder was made outside Senior Associate, so Claude doesn’t know the case yet. Choose it, then press Save.</Text>)
+    lines.push(<Text key="intake">This folder was made outside Immigration Packet Builder, so Claude doesn’t know the case yet. Choose it, then press Save.</Text>)
     lines.push(...caseChooser(d, open, missingCase ? 'Choose one below, then press Save.' : '', { submitLabel: 'Save', onSubmit: () => { void perform($, 'set-intake') } }))
     lines.push(
       <Box key="intake-postures" flexDirection="column" gap="sm">

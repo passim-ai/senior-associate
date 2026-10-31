@@ -4,7 +4,7 @@
     "name": "Passim AI"
   },
   "metadata": {
-    "description": "Senior Associate for Claude Code: USCIS filing packets from a client's documents."
+    "description": "Immigration Packet Builder for Claude Code: USCIS filing packets from a client's documents."
   },
   "plugins": [
     {

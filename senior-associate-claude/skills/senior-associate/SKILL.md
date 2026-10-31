@@ -1,6 +1,6 @@
 ---
 name: senior-associate
-description: Builds a complete USCIS filing packet from a client's documents. It reviews the documents, prepares the forms, drafts and researches the cover letter, assembles the packet, and gives it a final review that includes reading it the way a USCIS officer would, then hands the attorney a memo, a client request, and a list of open items. Use when an attorney asks to build, prepare, continue, or finish a packet for a matter (for example "Build the packet for the Garcia matter" or "put together this I-130/I-485 packet"), or when the Senior Associate app starts or continues a run.
+description: Builds a complete USCIS filing packet from a client's documents. It reviews the documents, prepares the forms, drafts and researches the cover letter, assembles the packet, and gives it a final review that includes reading it the way a USCIS officer would, then hands the attorney a memo, a client request, and a list of open items. Use when an attorney asks to build, prepare, continue, or finish a packet for a matter (for example "Build the packet for the Garcia matter" or "put together this I-130/I-485 packet"), or when the Immigration Packet Builder app starts or continues a run.
 ---
 
 # Senior Associate

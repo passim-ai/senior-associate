@@ -143,7 +143,7 @@ def add_intake_arguments(parser: argparse.ArgumentParser, *, required: bool = Tr
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Persist and manage Senior Associate workflow state inside a matter folder."
+        description="Persist and manage Immigration Packet Builder workflow state inside a matter folder."
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 

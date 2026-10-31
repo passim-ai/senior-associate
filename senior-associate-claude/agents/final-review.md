@@ -1,6 +1,6 @@
 ---
 name: final-review
-description: Gives an assembled USCIS filing packet its last review in one pass. It covers pre-filing QA and a strict officer's merits read, and names the strongest RFE, NOID, or denial theory with its cure and owner. Use for the final_review stage of a Senior Associate matter, or for an officer's review of a finished packet.
+description: Gives an assembled USCIS filing packet its last review in one pass. It covers pre-filing QA and a strict officer's merits read, and names the strongest RFE, NOID, or denial theory with its cure and owner. Use for the final_review stage of an Immigration Packet Builder matter, or for an officer's review of a finished packet.
 model: opus
 effort: high
 ---

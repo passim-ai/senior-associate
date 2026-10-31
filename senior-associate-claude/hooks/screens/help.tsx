@@ -22,7 +22,7 @@ export async function helpScreen($: EngineInterface, x: Ctx): Promise<JSX.Elemen
     </Box>
   )
   return subpage(
-    { title: 'Help', subtitle: version ? `Senior Associate ${version}` : 'Senior Associate', back: { id: 'back-help', label: 'Back' }, here: 'Help', foot: 'Back' },
+    { title: 'Help', subtitle: version ? `Immigration Packet Builder ${version}` : 'Immigration Packet Builder', back: { id: 'back-help', label: 'Back' }, here: 'Help', foot: 'Back' },
     card('How it works', howItWorks),
     card('What each status means', [
       meaning('new', 'Add the client’s documents.'),
@@ -41,7 +41,7 @@ export async function helpScreen($: EngineInterface, x: Ctx): Promise<JSX.Elemen
     card('How do I…', [
       howTo('h1', 'Add documents after Claude has reviewed or built', 'On the matter’s Overview, More you can do › Add documents… (or the Documents tab). Then press Review the documents again before a build, or Update the packet after one.'),
       howTo('h2', 'Have Claude look at the documents again', 'Before a build: Review the documents again, on the matter page. After a build: add the files, then Update the packet, or Tell Claude what to change. (Redo from here on Document review rebuilds everything, about 1½ hours.)'),
-      howTo('h0', 'Ask about a case, research a point, or have one thing changed', 'On the matter page, Ask Claude about this matter: type it and press ask. Claude answers in the chat, looks up the law in BIA Edge, and makes the change you ask for; then Update the packet has the reviews check it.'),
+      howTo('h0', 'Ask about a case, research a point, or have one thing changed', 'On the matter page, Ask Claude about this matter: type it and press Ask. Claude answers in the chat, looks up the law in BIA Edge, and makes the change you ask for; then Update the packet has the reviews check it.'),
       howTo('h3', 'Fix something in the draft', 'Ask Claude about this matter for one change, made in the chat. Or, on the matter page, Tell Claude what to change: Claude redoes the steps your change affects, in the background.'),
       howTo('h3b', 'Tell Claude how to handle the matter before it builds', 'On the matter page, Attorney instructions: what to lead with, what to leave out. Claude follows them in every step, in the build and every run after it.'),
       howTo('h4', 'Redo one part, such as the forms or the letter', 'Open the Packet tab, choose the step, and press Redo from here. Claude redoes it and every step after it; the steps before it are kept.'),
@@ -51,7 +51,7 @@ export async function helpScreen($: EngineInterface, x: Ctx): Promise<JSX.Elemen
       howTo('h8', 'Stop Claude', 'While Claude works, press Stop on the matter page. Everything finished is kept, and Continue building picks up there.'),
       howTo('h9', 'Undo Mark as filed', 'Open the matter and press Undo.'),
       <Box key="h10" flexDirection="column" gap="xs">
-        <Text weight="semibold" color={HEAD}>Try Senior Associate on a fictional case</Text>
+        <Text weight="semibold" color={HEAD}>Try Immigration Packet Builder on a fictional case</Text>
         <Text dimColor size="footnote">The sample matter is an I-601A built from made-up documents, with gaps a good review should catch. Archive it when you’re done; this brings it back.</Text>
         {lone('add-sample', button('add-sample', 'Open the sample matter', () => { void perform($, 'add-sample') }, 'secondary'))}
       </Box>,
@@ -74,7 +74,7 @@ export async function helpScreen($: EngineInterface, x: Ctx): Promise<JSX.Elemen
         {links('help-ask-matters-row', [button('help-ask-matters', ASK_LABEL, () => { void askClaude($, MATTERS_ASK) }, 'link')])}
       </Box>,
       <Box key="g6" flexDirection="column" gap="xs">
-        <Text>To get the newest version of Senior Associate, Claude can update it for you.</Text>
+        <Text>To get the newest version of Immigration Packet Builder, Claude can update it for you.</Text>
         {links('help-ask-update-row', [button('help-ask-update', ASK_LABEL, () => { void askClaude($, UPDATE_ASK) }, 'link')])}
       </Box>,
       links('help-links', [link('help-setup', 'Check my setup', () => { void perform($, 'setup') }, true)]),

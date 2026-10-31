@@ -268,7 +268,7 @@ test('research by Claude’s agents is refused when it holds the client’s deta
   await tap('main:build')
   const search = (query: string, agentId?: string) => ($ as never as { tool: { call: (e: unknown) => Promise<{ deny?: string; isError?: boolean; text?: string }> } }).tool.call({ tool: 'WebSearch', query, ...(agentId ? { agentId } : {}) })
   const named = await search('Is Ana Example eligible for a 212(i) waiver?', 'agent-2')
-  expect(JSON.stringify(named)).toContain('Senior Associate blocked this: it contained the client’s details.')
+  expect(JSON.stringify(named)).toContain('Immigration Packet Builder blocked this: it contained the client’s details.')
   const numbered = await search('A-123-456-789 prior removal', 'agent-1')
   expect(JSON.stringify(numbered)).toContain('blocked')
   const legal = await search('Is a 212(i) waiver available after a false claim to citizenship?', 'agent-2')
@@ -602,14 +602,14 @@ test('a start sent from the chat box is matched to its matter by the run id in i
   let box = ''
   let fromChat = false
   on('agent.spawn', async () => (fromChat ? { model: 'opus', agentId: 'agent-9' } : { deny: 'auto mode' }))
-  on('agent.list', async () => ({ value: fromChat ? [{ id: 'agent-9', description: 'Senior Associate build', type: 'senior-associate:senior-associate', status: 'running' as const }] : [] }))
+  on('agent.list', async () => ({ value: fromChat ? [{ id: 'agent-9', description: 'Immigration Packet Builder build', type: 'senior-associate:senior-associate', status: 'running' as const }] : [] }))
   on('prompt.fill', async (_$, e) => { box = e.text; return { isFilled: true } })
   on('prompt.read', async () => ({ value: { text: box, cursor: box.length } }))
   const { clock, ui, tap, requests } = await boot($, on, [garcia, lopez])
   await tap('main:build')
   // The chat starts the agent with the brief from the box, under a description of its own.
   fromChat = true
-  await ($ as never as { agent: { spawn: (e: unknown) => Promise<unknown> } }).agent.spawn({ prompt: box.split('with this brief:\n\n')[1], description: 'Senior Associate build', subagentType: 'senior-associate:senior-associate' })
+  await ($ as never as { agent: { spawn: (e: unknown) => Promise<unknown> } }).agent.spawn({ prompt: box.split('with this brief:\n\n')[1], description: 'Immigration Packet Builder build', subagentType: 'senior-associate:senior-associate' })
   await clock.settle()
   expect(await ui.find({ type: 'Text', text: /^Keep Claude open until it finishes\./ })).toBeDefined()
   expect(await ui.find({ type: 'Button', key: 'watch' })).toBeDefined()
@@ -628,7 +628,7 @@ test('research by a run the app lost track of is still checked, by the network g
   world(on, [garcia], { prefs: { ...SEEN } }, { profile: ANA, terms: ['Ana Example'], unattended: [garcia.path] })
   await clock.settle()
   const search = (query: string) => ($ as never as { tool: { call: (e: unknown) => Promise<unknown> } }).tool.call({ tool: 'WebSearch', query, agentId: 'agent-orch' })
-  expect(JSON.stringify(await search('Ana Example waiver'))).toContain('Senior Associate blocked this')
+  expect(JSON.stringify(await search('Ana Example waiver'))).toContain('Immigration Packet Builder blocked this')
 })
 
 test('a start sent from the chat box: once its agent appears, Claude is at work in the app’s own run', OPTS(), async ($, on) => {
@@ -690,7 +690,7 @@ test('research from a run started in the chat, before /matters was opened, is ch
   // No terms yet (the folder was just made): nothing to match, and nothing kept, so the next call asks again.
   expect(JSON.stringify(await search('Ana Example waiver'))).not.toContain('blocked')
   terms = ['Ana Example', 'Garcia']
-  expect(JSON.stringify(await search('Ana Example waiver'))).toContain('Senior Associate blocked this')
+  expect(JSON.stringify(await search('Ana Example waiver'))).toContain('Immigration Packet Builder blocked this')
   expect(JSON.stringify(await search('Is Garcia’s 2019 arrest a bar?'))).toContain('blocked')
   expect(JSON.stringify(await search('Matter of Garcia, 16 I&N Dec. 653 (BIA 1978): what does it hold on good faith?'))).not.toContain('blocked')
 })
@@ -702,7 +702,7 @@ test('research from a matter’s own agent is refused, in plain words, when its 
   const { ui, tap } = await boot($, on, [garcia], { termsFail: true })
   await tap('main:build')
   const res = await ($ as never as { tool: { call: (e: unknown) => Promise<unknown> } }).tool.call({ tool: 'WebSearch', query: 'good faith marriage evidence', agentId: 'agent-1' })
-  expect(JSON.stringify(res)).toContain('Senior Associate couldn’t check this research request against the client’s details. Try again in a moment.')
+  expect(JSON.stringify(res)).toContain('Immigration Packet Builder couldn’t check this research request against the client’s details. Try again in a moment.')
   await ui.unmount()
 })
 

@@ -76,7 +76,7 @@ def write_json_atomic(path: Path, data: Any) -> None:
 
 # Claude changes plugin options for the attorney (the setup skill), so every message about another Matters folder
 # carries the request that has Claude do it. The app shows it as a button.
-MATTERS_FOLDER_ASK = "Change my Senior Associate Matters folder."
+MATTERS_FOLDER_ASK = "Change my Immigration Packet Builder Matters folder."
 MATTERS_FOLDER_HOWTO = "Claude can set up a different Matters folder for you."
 
 

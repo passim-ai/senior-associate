@@ -17,14 +17,14 @@ export const AGENT = 'senior-associate:senior-associate' // the orchestrator the
 // the first line of what goes in the chat box.
 type RunKind = { doing: string; noun: string; done: string; button: string; ask: (name: string) => string }
 const KINDS: Record<string, RunKind> = {
-  build: { doing: 'Building the packet', noun: 'build', done: 'Packet build', button: 'Build packet', ask: n => `Build the packet for ${n} with Senior Associate, in the background.` },
-  update: { doing: 'Updating the packet', noun: 'update', done: 'Packet update', button: 'Update the packet', ask: n => `Update the packet for ${n} with Senior Associate, in the background.` },
-  continue: { doing: 'Building the packet', noun: 'build', done: 'Packet build', button: 'Continue building', ask: n => `Continue building the packet for ${n} with Senior Associate, in the background.` },
-  review_docs: { doing: 'Reviewing the documents', noun: 'document review', done: 'Document review', button: 'Review documents first', ask: n => `Review ${n}’s documents with Senior Associate, in the background. Don’t build the packet yet.` },
-  review_again: { doing: 'Reviewing the documents again', noun: 'document review', done: 'Document review', button: 'Review the documents again', ask: n => `Review ${n}’s documents again with Senior Associate, in the background. Don’t build the packet.` },
-  redo: { doing: 'Redoing steps', noun: 'redo', done: 'Redo', button: 'Redo from here', ask: n => `Redo part of the packet for ${n} with Senior Associate, in the background.` },
-  stress_test: { doing: 'Running the officer’s review', noun: 'officer’s review', done: 'Officer’s review', button: 'Re-check as a USCIS officer would', ask: n => `Give the ${n} packet the officer’s review with Senior Associate, in the background.` },
-  closeout: { doing: 'Cleaning up working files', noun: 'clean-up', done: 'Clean-up', button: 'Clean up working files', ask: n => `Clean up Claude’s working files for ${n} with Senior Associate, in the background.` },
+  build: { doing: 'Building the packet', noun: 'build', done: 'Packet build', button: 'Build packet', ask: n => `Build the packet for ${n} with Immigration Packet Builder, in the background.` },
+  update: { doing: 'Updating the packet', noun: 'update', done: 'Packet update', button: 'Update the packet', ask: n => `Update the packet for ${n} with Immigration Packet Builder, in the background.` },
+  continue: { doing: 'Building the packet', noun: 'build', done: 'Packet build', button: 'Continue building', ask: n => `Continue building the packet for ${n} with Immigration Packet Builder, in the background.` },
+  review_docs: { doing: 'Reviewing the documents', noun: 'document review', done: 'Document review', button: 'Review documents first', ask: n => `Review ${n}’s documents with Immigration Packet Builder, in the background. Don’t build the packet yet.` },
+  review_again: { doing: 'Reviewing the documents again', noun: 'document review', done: 'Document review', button: 'Review the documents again', ask: n => `Review ${n}’s documents again with Immigration Packet Builder, in the background. Don’t build the packet.` },
+  redo: { doing: 'Redoing steps', noun: 'redo', done: 'Redo', button: 'Redo from here', ask: n => `Redo part of the packet for ${n} with Immigration Packet Builder, in the background.` },
+  stress_test: { doing: 'Running the officer’s review', noun: 'officer’s review', done: 'Officer’s review', button: 'Re-check as a USCIS officer would', ask: n => `Give the ${n} packet the officer’s review with Immigration Packet Builder, in the background.` },
+  closeout: { doing: 'Cleaning up working files', noun: 'clean-up', done: 'Clean-up', button: 'Clean up working files', ask: n => `Clean up Claude’s working files for ${n} with Immigration Packet Builder, in the background.` },
 }
 export const runKind = (kind: string): RunKind => KINDS[kind] ?? KINDS.build!
 // The steps that review another's work; redone, they review afresh and in full.

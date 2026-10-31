@@ -1,10 +1,10 @@
-# Senior Associate: the experience, screen by screen
+# Immigration Packet Builder: the experience, screen by screen
 
 The person: an immigration attorney who has never used Claude. They installed the plugin because it promised one thing: client documents in, a filing packet out, and an honest list of whatever is still missing. They don't know what a slash command, a side panel, or a session is. Every screen has to answer three questions without them asking: where am I, what should I do now, and what will happen when I do it.
 
 The frame is the Claude desktop app's Code tab. The app draws with Claude's own elements, so it inherits Claude's font, cursor, focus ring, keyboard and screen-reader behaviour, and its colours: every text, card, line and button follows the app's light or dark theme, so the panel reads in either. Passim shows in its wordmark at the top left and in its orange, kept to bars, the tab underline and the step track. Cards are the app's raised surface inside its faint border, with thin rules between sections. Headings are Claude's font, semibold. Buttons are Claude's own, drawn natively, the whole button the press: the main one is the app's main button (dark in a light theme, light in a dark one), its companion outlined, and links plain text. A button shows only its words, so its words say what it does ("Open", "View ›", "Mark done"). A text field has its label above it and takes the width it is given. Nothing is drawn as a terminal.
 
-Every screen has the same header: Passim's wordmark, a thin rule, "Senior Associate", and at the right **Matters**, **Your details**, **Setup** and **Help** (and **Open as side panel** in the conversation). In the side panel the header stacks: the lockup, then the four places in a row. Under it, where you are ("Matters › Garcia I-130 I-485"), the screen's title, and on a matter its tabs.
+Every screen has the same header: Passim's wordmark, a thin rule, "Immigration Packet Builder", and at the right **Matters**, **Your details**, **Setup** and **Help** (and **Open as side panel** in the conversation). In the side panel the header stacks: the lockup, then the four places in a row. Under it, where you are ("Matters › Garcia I-130 I-485"), the screen's title, and on a matter its tabs.
 
 ## Principles
 
@@ -102,7 +102,7 @@ The first time the app opens on an empty Matters folder, the server adds *Sample
 
 - It doesn't take the welcome's place: the sample alone on the list still shows the welcome, whose **See how it works** offers **Open the sample matter** ("A fictional I-601A case to try first"), and it never opens by itself.
 - Its Overview has a card under the next step, **This is a sample matter**: what it is, then "Press Review documents first…". Once the document review has passed, the card lists **What a good review catches** (the eight planted gaps) and says to compare them with Questions. Then a line on what a full build costs and that it can be archived.
-- **Help › How do I… › Try Senior Associate on a fictional case**, **Open the sample matter**: opens it, takes it out of the archive, or adds it again when its folder is gone.
+- **Help › How do I… › Try Immigration Packet Builder on a fictional case**, **Open the sample matter**: opens it, takes it out of the archive, or adds it again when its folder is gone.
 
 ## Your details
 
@@ -153,7 +153,7 @@ The **Overview**, from the top:
 
 A column on every Overview: "A question, some research, or a change you want made. Claude reads this matter's documents and work, looks up the law in BIA Edge, and makes the changes you ask for. It answers in the chat." While Claude works: "Ask anything while Claude works. Changes you ask for wait until it finishes, or go into your instructions for the steps it hasn't reached." Without BIA Edge connected: "Connect BIA Edge in Claude's Connectors so Claude can cite case law."
 
-- One box, two lines, with **ask** (placeholder "e.g. Does the 2019 arrest affect eligibility?" before a build, "e.g. How strong is our bona fide marriage evidence?" after). The question goes to the chat as the attorney's own words, "Ask Senior Associate about Garcia I-130 I-485: …", which the plugin's matter-chat skill answers. The page says "✓ Claude is answering in the chat." and the box comes back empty. When the chat won't take it, the question waits in the chat box: "Your question is in the chat box. Press Enter to send it to Claude." Pressed with nothing typed: "Type your question first, then press ask." Asked while an error shows, the question carries the error as the app got it.
+- One box, two lines, with **Ask** (placeholder "e.g. Does the 2019 arrest affect eligibility?" before a build, "e.g. How strong is our bona fide marriage evidence?" after). The question goes to the chat as the attorney's own words, "Ask Immigration Packet Builder about Garcia I-130 I-485: …", which the plugin's matter-chat skill answers. The page says "✓ Claude is answering in the chat." and the box comes back empty. When the chat won't take it, the question waits in the chat box: "Your question is in the chat box. Press Enter to send it to Claude." Pressed with nothing typed: "Type your question first, then press Ask." Asked while an error shows, the question carries the error as the app got it.
 - **Or ask:** up to three questions from where the matter stands, each a press that sends it: what to file (before the case type is chosen); the officer's strongest objection ("How do we answer this: "Joint records begin two months before filing.""); a decision waiting ("Help me decide: Include an I-765…?"); before a build, "Does the client qualify, on the documents we have?", "What could stand in for the documents still missing?" and "What would an officer question first in this case?"; after one, "What would an officer question first in this packet?" and "What's the weakest point in the cover letter, and how do we shore it up?".
 - Claude can change the work in chat: the letter, a form, the open items, the memo, the client request, and the standing instructions (a standing instruction appears in the box below). It records each change, and research it verified carries into the next build. After a build, a change made in chat is a change since the build, on the main card like new files: "Since the packet was built, you made a change in chat (Cover letter: leads with the joint lease). Update the packet to have the reviews check it.", with **Update the packet: re-checks what you changed in chat**. With more than one, the ask card lists them under "Changed in chat since Claude last checked the packet:".
 - What goes into research is the attorney's call: Claude words queries as legal propositions unless the attorney asks it to include the client's facts, and asks for no further confirmation. Claude's own agents, at work on a matter, never send its client's names or identifiers to BIA Edge or a web search: such a call is refused, and the agent rephrases it as a legal question. A precedent that shares the client's surname ("Matter of Garcia") is a citation and goes through. When the app can't check a request against the client's details, the request waits ("Try again in a moment") rather than going out unchecked.
@@ -203,9 +203,9 @@ With new files, files taken out or changes in chat since the build, the heading 
 
 ### Starting a build
 
-Build starts the app's own background agent on the matter: the Senior Associate orchestrator the plugin ships. Nothing is typed into the conversation.
+Build starts the app's own background agent on the matter: the Immigration Packet Builder orchestrator the plugin ships. Nothing is typed into the conversation.
 
-When the attorney's permission settings don't let the app start Claude itself (Auto mode, for example), the request goes into the chat box: "Build the packet for Garcia I-130 I-485 with Senior Associate, in the background.", a blank line, then the brief. The note says "Claude needs your OK to start. Press Enter to send the request in your chat box." A **Waiting for you** card shows meanwhile (with Cancel), and the page switches to Claude is working by itself once the agent appears: the app knows it by the run id in its brief, whatever the chat calls it. The request holds the matter for 10 minutes; not sent by then, it lets go, takes the request out of the chat box, and the page says "The start in your chat box wasn't sent. Press Build packet to try again." When the box can't be cleared, it says so: "…It's still in your chat box: delete it there rather than send it." A request sent after all, whose run Claude has taken up, is never let go of: the matter shows Claude is working until that run finishes. If even that fails: "Claude couldn't start the build from here. In the chat box below, type: Build the packet for Garcia I-130 I-485, then press Enter."
+When the attorney's permission settings don't let the app start Claude itself (Auto mode, for example), the request goes into the chat box: "Build the packet for Garcia I-130 I-485 with Immigration Packet Builder, in the background.", a blank line, then the brief. The note says "Claude needs your OK to start. Press Enter to send the request in your chat box." A **Waiting for you** card shows meanwhile (with Cancel), and the page switches to Claude is working by itself once the agent appears: the app knows it by the run id in its brief, whatever the chat calls it. The request holds the matter for 10 minutes; not sent by then, it lets go, takes the request out of the chat box, and the page says "The start in your chat box wasn't sent. Press Build packet to try again." When the box can't be cleared, it says so: "…It's still in your chat box: delete it there rather than send it." A request sent after all, whose run Claude has taken up, is never let go of: the matter shows Claude is working until that run finishes. If even that fails: "Claude couldn't start the build from here. In the chat box below, type: Build the packet for Garcia I-130 I-485, then press Enter."
 
 ### While Claude works
 
@@ -266,7 +266,7 @@ Then the other open items, grouped by who acts: **From the client**, **For you t
 - risks: **Accept this risk**, which resolves it
 - items about Your details link there.
 - an item Claude listed without an id can't be marked here: the press says so, and to ask Claude to do it.
-- every item: **Ask Claude about this**, which puts the matter, the item and a first question in the chat box for the attorney to change or send ("Ask Senior Associate about Garcia I-130 I-485, about "Include an I-765…?": Help me decide. What are the options, and the risk of each?"), with "Your question is in the chat box below. Change it if you like, then press Enter." Nothing is sent.
+- every item: **Ask Claude about this**, which puts the matter, the item and a first question in the chat box for the attorney to change or send ("Ask Immigration Packet Builder about Garcia I-130 I-485, about "Include an I-765…?": Help me decide. What are the options, and the risk of each?"), with "Your question is in the chat box below. Change it if you like, then press Enter." Nothing is sent.
 
 Each press is named for its item ("Mark done: Sign the G-28", "Save answer: Include an I-765…?"), so a screen reader tells them apart. A list Claude wrote that can't be read says so ("Claude's list of open items can't be read"), here and on the Overview, with **Ask Claude to do it** to rewrite it, never as no list yet. Then **Copy the client request** (plain text: no Markdown symbols, numbering and bullets kept), **Copy it in Spanish** for each other language it was written in, **Show the client request**, and **Resolved (3) ›**, which lists what's settled, each with how it was resolved and **Reopen** ("Back on the list. Claude takes it up again on the next update."). Mark done confirms on the page and says where Reopen is. At the foot, under a rule, **Ready to use your answers?** "Saved answers are worked in the next time you update the packet." with **Update the packet with saved answers** (before a build, **Build packet**: "Your saved answers go with the build").
 
@@ -294,7 +294,7 @@ First **Files for this matter**, once there are any (below). Then **Steps**: "3 
 
 ## Help
 
-**Help** in the header of every screen; the page's line says the version ("Senior Associate 1.1.0").
+**Help** in the header of every screen; the page's line says the version ("Immigration Packet Builder 1.2.0").
 
 - How it works, in four steps.
 - **How do I…**: ask about a case, research a point, or have one thing changed; add documents after a review or a build; have Claude look at the documents again; fix something in the draft; redo one part; change the case type or posture; take out a document; undo Mark done; stop Claude; undo Mark as filed. Each is the question in bold and the presses, in one line.
@@ -307,7 +307,7 @@ First **Files for this matter**, once there are any (below). Then **Steps**: "3 
 
 A note appears at the top of the page, under the title (and a matter's tabs), on a card with a bar at its left edge (green when it confirms, amber when it warns, the accent while something waits), with a "⚠" or "⏳" prefix and **Dismiss**. It clears on every navigation and after any successful action. Errors are friendly sentences, whether the server phrased them or the app's fallback did; anything of a program's (an error's name, a file path, a code) is never shown. While a Finder picker is open the note says so with **Close the picker**, which closes it and gives the page back at once. When the quiet refresh fails twice in a row, the note says why ("…isn't in your Matters folder anymore", with **Go back to Matters**) instead of the page going silent.
 
-- "Senior Associate can't save in <folder>. Choose another matters folder."
+- "Immigration Packet Builder can't save in <folder>. Choose another matters folder."
 - "Allow Claude to open the file picker: System Settings › Privacy & Security › Automation › Claude › turn on System Events, then try again."
 - "<name> isn't in your Matters folder anymore. It may have been moved or renamed in Finder."
 - "There's no packet yet. Build it first."
@@ -318,7 +318,7 @@ The matter's **Timeline** tab: what happened on the matter, newest first, groupe
 
 ## Inline /matters and the side panel
 
-Both placements (the row under `/matters`, and the side panel from **Open as side panel** or `/matters pane`) draw the same screen from the same state. When the side panel is already open, the inline row shows only "Senior Associate is open beside the chat." with **Show it**. The first two inline uses add "Tip: Open as side panel keeps this beside your chat while Claude works." Outside the desktop app: "Senior Associate opens in the Claude desktop app."
+Both placements (the row under `/matters`, and the side panel from **Open as side panel** or `/matters pane`) draw the same screen from the same state. When the side panel is already open, the inline row shows only "Immigration Packet Builder is open beside the chat." with **Show it**. The first two inline uses add "Tip: Open as side panel keeps this beside your chat while Claude works." Outside the desktop app: "Immigration Packet Builder opens in the Claude desktop app."
 
 ## Rules that hold everywhere
 

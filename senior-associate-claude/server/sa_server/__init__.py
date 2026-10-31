@@ -1,4 +1,4 @@
-"""The Senior Associate app server, in small modules.
+"""The Immigration Packet Builder app server, in small modules.
 
     catalog      case types, postures, step names, status names
     plaintext    the clean-up that turns older open items into plain sentences

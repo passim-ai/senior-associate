@@ -1,6 +1,6 @@
 ---
 name: coverletter
-description: Writes, researches, and reviews the cover letter for a USCIS filing, from the client's documents, the prepared forms, and verified legal authority. The letter states the relief, the legal basis, and the exhibit that proves each element. Use when an attorney asks to draft, revise, strengthen, or check a cover letter, waiver letter, RFE or NOID response letter, or interview supplement, or when the Senior Associate workflow reaches one of its cover letter stages.
+description: Writes, researches, and reviews the cover letter for a USCIS filing, from the client's documents, the prepared forms, and verified legal authority. The letter states the relief, the legal basis, and the exhibit that proves each element. Use when an attorney asks to draft, revise, strengthen, or check a cover letter, waiver letter, RFE or NOID response letter, or interview supplement, or when the Immigration Packet Builder workflow reaches one of its cover letter stages.
 ---
 
 # Cover letter

@@ -45,7 +45,7 @@ def _tool_check(id_: str, label: str, names: tuple[str, ...], *, required: bool,
         check["fix"] = f"Install {label} for your system, then restart Claude."
         return check
     check["fix"] = f"Claude can install {label} for you."
-    check["ask"] = f"Install {label} for Senior Associate."
+    check["ask"] = f"Install {label} for Immigration Packet Builder."
     return check
 
 
@@ -68,9 +68,9 @@ def _matters_folder_check(ctx: Context) -> dict[str, Any]:
         ok = bool(parent and parent.is_dir() and os.access(parent, os.W_OK | os.X_OK))
     if ok:
         made = "" if root.is_dir() else " It's created when you start your first matter."
-        check.update(ok=True, detail=f"Senior Associate keeps one folder per client matter in {show_path(root)}.{made}")
+        check.update(ok=True, detail=f"Immigration Packet Builder keeps one folder per client matter in {show_path(root)}.{made}")
     else:
-        check.update(ok=False, detail=f"Senior Associate can't save in {show_path(root)}.",
+        check.update(ok=False, detail=f"Immigration Packet Builder can't save in {show_path(root)}.",
                      fix=MATTERS_FOLDER_HOWTO, ask=MATTERS_FOLDER_ASK)
     return check
 
@@ -101,7 +101,7 @@ def _model_letters_check(ctx: Context) -> dict[str, Any]:
     else:
         check["detail"] = "No model letters yet, so Claude uses its standard letter format."
         check["fix"] = "To follow your firm's style, Claude can use a folder of your cover letters (.docx)."
-        check["ask"] = "Use my firm's model letters with Senior Associate."
+        check["ask"] = "Use my firm's model letters with Immigration Packet Builder."
     return check
 
 
@@ -119,7 +119,7 @@ def doctor(ctx: Context) -> dict[str, Any]:
                     missing="Optional. Helps Claude read the text in PDFs more quickly."),
     ]
     checks: list[dict[str, Any]] = [{"id": "uv", "label": "uv", "ok": True, "required": True, "level": "required",
-                                     "detail": "Runs Senior Associate's tools."}]
+                                     "detail": "Runs Immigration Packet Builder's tools."}]
     checks.append(tools[0])
     checks.append(_matters_folder_check(ctx))
     checks.append(_profile_check(ctx))

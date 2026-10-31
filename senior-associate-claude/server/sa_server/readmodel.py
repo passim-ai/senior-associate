@@ -227,10 +227,10 @@ def review_notes(findings: list[dict[str, Any]]) -> list[dict[str, Any]]:
 # A setup problem on the attorney's Mac, recognized by what it names: the fix to show and the request that has Claude
 # do it (the setup skill installs the tool, and Homebrew first if it's missing).
 SYSTEM_FIXES = [
-    (re.compile(r"ghostscript|\bgs\b", re.I), "Claude can install Ghostscript for you. Then build again.", "Install Ghostscript for Senior Associate."),
-    (re.compile(r"libreoffice|soffice", re.I), "Claude can install LibreOffice for you.", "Install LibreOffice for Senior Associate."),
-    (re.compile(r"poppler|pdftotext", re.I), "Claude can install Poppler for you.", "Install Poppler for Senior Associate."),
-    (re.compile(r"\buv\b"), "Claude can install uv for you.", "Install uv for Senior Associate."),
+    (re.compile(r"ghostscript|\bgs\b", re.I), "Claude can install Ghostscript for you. Then build again.", "Install Ghostscript for Immigration Packet Builder."),
+    (re.compile(r"libreoffice|soffice", re.I), "Claude can install LibreOffice for you.", "Install LibreOffice for Immigration Packet Builder."),
+    (re.compile(r"poppler|pdftotext", re.I), "Claude can install Poppler for you.", "Install Poppler for Immigration Packet Builder."),
+    (re.compile(r"\buv\b"), "Claude can install uv for you.", "Install uv for Immigration Packet Builder."),
 ]
 # A fix written for Terminal, as older runs wrote them, gives way to the request.
 TERMINAL_FIX = re.compile(r"\bTerminal\b|\bbrew\b|\bcommand below\b", re.I)
@@ -243,7 +243,7 @@ def _fix_for(text: str, given_fix: Any = None, given_command: Any = None) -> dic
             out = {"fix": fix, "ask": ask}
             break
     if isinstance(given_command, str) and given_command.strip() and "ask" not in out:
-        out["ask"] = f"Do this setup step for Senior Associate on this Mac: {given_command.strip()}"
+        out["ask"] = f"Do this setup step for Immigration Packet Builder on this Mac: {given_command.strip()}"
     if isinstance(given_fix, str) and given_fix.strip() and not ("ask" in out and TERMINAL_FIX.search(given_fix)):
         out["fix"] = strip_machinery(given_fix)
     if "fix" not in out:
@@ -788,7 +788,7 @@ def _newest_time(files: list[Path]) -> str:
     return _iso(max(times)) if times else ""
 
 
-REPAIR_LINE = "Senior Associate can't read this matter. Ask Claude to repair it."
+REPAIR_LINE = "Immigration Packet Builder can't read this matter. Ask Claude to repair it."
 DAMAGED_RECORD_LINE = "Claude's record of this matter's steps can't be read. Ask Claude to repair it."
 OUTSIDE_LINE = "This matter's folder is a link to a folder outside your Matters folder. Move the folder itself into your Matters folder."
 
@@ -827,7 +827,7 @@ def matters_list(ctx: Context, include_archived: bool = True) -> list[dict[str, 
             row = problem_row(child, DAMAGED_RECORD_LINE, exc.ask)
         except Exception as exc:
             log(f"list row failed for matter {matter_tag(child)}: {type(exc).__name__}")
-            row = problem_row(child, REPAIR_LINE, f"Repair the Senior Associate matter {child.name}: its files can't be read.")
+            row = problem_row(child, REPAIR_LINE, f"Repair the Immigration Packet Builder matter {child.name}: its files can't be read.")
         if include_archived or not row["archived"]:
             rows.append(row)
     return rows
@@ -864,5 +864,5 @@ def card_or_problem(ctx: Context, matter: Path) -> dict[str, Any]:
         raise
     except Exception as exc:
         log(f"card failed for matter {matter_tag(matter)}: {type(exc).__name__}")
-        raise UserError(f"Senior Associate can't read {matter.name}. Ask Claude to repair it: \"Repair the Senior "
+        raise UserError(f"Immigration Packet Builder can't read {matter.name}. Ask Claude to repair it: \"Repair the Senior "
                         f"Associate matter {matter.name}: its files can't be read.\"") from exc

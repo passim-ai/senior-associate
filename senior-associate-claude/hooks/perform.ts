@@ -150,7 +150,7 @@ export async function copyMemo($: EngineInterface, surface?: string) {
 // A setup task goes to Claude in the chat, as if the attorney had typed it. Claude's setup skill does it there, asking
 // before each command, so nobody opens Terminal. If the chat won't take it, the request waits in the chat box.
 export async function askClaude($: EngineInterface, ask: string) {
-  const went = await toChat($, `${ask}\n\n(Sent from Senior Associate when I pressed “${ASK_LABEL}”.)`, true)
+  const went = await toChat($, `${ask}\n\n(Sent from Immigration Packet Builder when I pressed “${ASK_LABEL}”.)`, true)
   if (went === 'sent') {
     await setNote($, '')
     $.ui.toast('Claude is on it in the chat. It asks before each step: choose Allow.')
@@ -161,14 +161,14 @@ export async function askClaude($: EngineInterface, ask: string) {
 // ---------- asking Claude about a matter ----------
 
 // The opening the matter-chat skill answers to. It names the matter, so Claude finds its folder and where it stands.
-export const askOpening = (c: Card) => `Ask Senior Associate about ${c.name}`
+export const askOpening = (c: Card) => `Ask Immigration Packet Builder about ${c.name}`
 
 // A question from the matter's ask box, or a suggestion pressed, goes to Claude in the chat as the attorney's own words.
 // If the chat won't take it, it waits in the chat box for Enter.
 export async function sendQuestion($: EngineInterface, c: Card, question: string) {
   const asked = question.trim()
   if (!asked) {
-    await setNote($, 'Type your question first, then press ask.')
+    await setNote($, 'Type your question first, then press Ask.')
     return
   }
   // Asked while an error shows, the question carries the error as the app got it, so Claude can see what went wrong.
@@ -210,7 +210,7 @@ export async function goHome($: EngineInterface) {
 }
 
 export async function openPane($: EngineInterface) {
-  const opened = await $.ui.open({ id: PANE, title: 'Senior Associate', focus: true })
+  const opened = await $.ui.open({ id: PANE, title: 'Immigration Packet Builder', focus: true })
   if (!opened.isPlaced) await setNote($, 'The side panel couldn’t open here. Make the Claude window wider, then press Open as side panel again.')
   else await updateDocked($, k => (k ?? 0) + 1)
 }

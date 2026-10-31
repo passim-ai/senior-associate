@@ -2,7 +2,7 @@
 
 Every skill in this plugin reads and writes the same matter folder layout. That's what lets one stage hand work to the next, the workflow runtime check that a stage really produced what it claims, and the attorney's dashboard show progress.
 
-`<plugin root>` below is the plugin's install folder (`${CLAUDE_PLUGIN_ROOT}`; a Senior Associate brief states it). `<run id>` in a command is the run id in your brief; asked outside the workflow, with no run id, leave `--run-id` out.
+`<plugin root>` below is the plugin's install folder (`${CLAUDE_PLUGIN_ROOT}`; an Immigration Packet Builder brief states it). `<run id>` in a command is the run id in your brief; asked outside the workflow, with no run id, leave `--run-id` out.
 
 Two references beside this file hold rules only some matters need: `protected-matters.md` when the matter is protected (see "VAWA and other protected cases" below), and `filing.md` for how each form goes to USCIS, the fees and payment, and the packet's order.
 
