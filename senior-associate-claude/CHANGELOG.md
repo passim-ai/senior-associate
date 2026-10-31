@@ -1,6 +1,15 @@
 # What's new in Senior Associate
 
-Your version appears at the foot of every Senior Associate screen ("Help · Senior Associate 1.0.0"). After an update, quit Claude with ⌘Q and reopen it.
+Your version appears at the foot of every Senior Associate screen ("Help · Senior Associate 1.1.0"). After an update, quit Claude with ⌘Q and reopen it.
+
+## 1.1.0 (October 2026)
+
+**A redesigned app.** Every screen has the same header, with Passim's wordmark and Matters, Your details, Setup and Help, and a way back at the top left. It follows Claude's light or dark theme, and every button is Claude's own, clickable all over.
+
+**A matter is now tabs:** Overview, Documents, Questions, Packet, Memo & request, Timeline.
+- **Overview** leads with the next step and its main action, then the numbers (documents, steps done, what's needed before filing), what needs your attention beside the box for asking Claude, and folded sections for your instructions, more you can do, and the matter's details.
+- **Questions** holds Claude's questions, each with a suggested approach and a box for your answer, then **Update the packet with saved answers**.
+- **Memo & request** shows the attorney memo and the client request right in the app, with Copy beside each.
 
 ## 1.0.0 (October 2026)
 
