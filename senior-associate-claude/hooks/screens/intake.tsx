@@ -4,7 +4,7 @@ import type { Card } from '../../types'
 import type { Ctx } from '../kit'
 import { chosenCase, metaChanged } from '../matter'
 import { typed, updateDraft } from '../state'
-import { AMBER } from '../theme'
+import { WARN } from '../theme'
 import { nowMs } from '../words'
 import { matterStatus, isBusy } from '../status'
 
@@ -29,8 +29,8 @@ export async function intakeScreen($: EngineInterface, x: Ctx, c: Card): Promise
       <Text key="name" dimColor>{`The matter keeps its name, ${c.name}.`}</Text>,
     ]),
     card('What is being filed?', caseChooser(d, open, missingCase ? 'Choose one below, then press the button.' : '', {
-      submitLabel: 'use', onSubmit: value => { void updateDraft($, dd => ({ ...dd, other: value })) },
-    }), missingCase ? AMBER : undefined, 'card-case'),
+      submitLabel: 'Use', onSubmit: value => { void updateDraft($, dd => ({ ...dd, other: value })) },
+    }), missingCase ? WARN : undefined, 'card-case'),
     // Protected by its case type: a protected catalog entry, or (the server says) the case as it is recorded now.
     card('How it is filed', filingChoices(d, Boolean(types.find(t => t.id === d.typeId)?.protected) || (sameCase && c.meta.protected_reason === 'case_type')), undefined, 'card-filing'),
     card('New filing or a response?', [postureChips(d)]),

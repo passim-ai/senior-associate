@@ -1,24 +1,24 @@
 // Help.
 import type { EngineInterface } from 'claude-code'
 import type { Ctx } from '../kit'
-import { PHASE_FILL, PHASE_LABEL } from '../status'
+import { PHASE_LABEL, PHASE_TONE } from '../status'
 
 import { askClaude, perform } from '../perform'
 import { ASK_LABEL, MATTERS_ASK, NEW_FOLDER, UPDATE_ASK } from '../words'
-import { NAVY } from '../theme'
+import { HEAD } from '../theme'
 
 export async function helpScreen($: EngineInterface, x: Ctx): Promise<JSX.Element> {
   const { Box, Text, pill, card, button, lone, link, links, version, folder, howItWorks, subpage } = x
   const howTo = (key: string, q: string, a: string) => (
     <Box key={key} flexDirection="column" gap="xs">
-      <Text weight="semibold" color={NAVY}>{q}</Text>
+      <Text weight="semibold" color={HEAD}>{q}</Text>
       <Text dimColor size="footnote">{a}</Text>
     </Box>
   )
   const meaning = (phase: string, text: string) => (
     <Box key={`means-${phase}`} flexDirection="row" gap="md" alignItems="flex-start">
-      {pill(PHASE_LABEL[phase]!, PHASE_FILL[phase]!, `pill-${phase}`)}
-      <Box flexDirection="column" flexShrink={1}><Text size="footnote">{text}</Text></Box>
+      {pill(PHASE_LABEL[phase]!, PHASE_TONE[phase]!, `pill-${phase}`)}
+      <Box flexDirection="column" flexShrink={1} minWidth={0}><Text size="footnote">{text}</Text></Box>
     </Box>
   )
   return subpage(
@@ -51,9 +51,9 @@ export async function helpScreen($: EngineInterface, x: Ctx): Promise<JSX.Elemen
       howTo('h8', 'Stop Claude', 'While Claude works, press Stop on the matter page. Everything finished is kept, and Continue building picks up there.'),
       howTo('h9', 'Undo Mark as filed', 'Open the matter and press Undo.'),
       <Box key="h10" flexDirection="column" gap="xs">
-        <Text weight="semibold" color={NAVY}>Try Senior Associate on a fictional case</Text>
+        <Text weight="semibold" color={HEAD}>Try Senior Associate on a fictional case</Text>
         <Text dimColor size="footnote">The sample matter is an I-601A built from made-up documents, with gaps a good review should catch. Archive it when you’re done; this brings it back.</Text>
-        {lone('add-sample', button('add-sample', 'Open the sample matter', () => { void perform($, 'add-sample') }, 'secondary', { small: true }))}
+        {lone('add-sample', button('add-sample', 'Open the sample matter', () => { void perform($, 'add-sample') }, 'secondary'))}
       </Box>,
     ]),
     card('Keyboard', [

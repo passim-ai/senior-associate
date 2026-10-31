@@ -23,7 +23,7 @@ import { ensurePoll } from './runs'
 import { load, refresh } from './server'
 import { PANE, readAnswers, readBusy, readCaseMissing, readConfirm, readDocked, readDraft, readExpanded, readFilter, readGate, readNote, readPayload, readPrefs, readRedoAt, readRuns, readLaunching, readSetup, readSort, readView, session } from './state'
 import { clockNow } from './words'
-import { INK, LINE, NAVY, PAPER } from './theme'
+import { CARD } from './theme'
 
 export async function draw($: EngineInterface, els: Els, site: 'pane' | 'inline'): Promise<JSX.Element> {
   const { Box, Text, Button } = els
@@ -85,9 +85,9 @@ export async function draw($: EngineInterface, els: Els, site: 'pane' | 'inline'
     }
     if (paneUp) {
       return (
-        <Box flexDirection="row" flexWrap="wrap" columnGap="lg" alignItems="center" backgroundColor={PAPER} borderStyle="round" borderColor={LINE} paddingX="lg" paddingY="sm">
-          <Text color={INK}>Senior Associate is open beside the chat.</Text>
-          <Button key="show-pane" plain onPress={() => perform($, 'dock')}><Text weight="medium" color={NAVY}>Show it</Text></Button>
+        <Box flexDirection="row" flexWrap="wrap" columnGap="lg" rowGap="xs" alignItems="center" backgroundColor={CARD} borderStyle="round" paddingX="lg" paddingY="sm">
+          <Text>Senior Associate is open beside the chat.</Text>
+          <Button key="show-pane" label="Show it" onPress={() => perform($, 'dock')} />
         </Box>
       )
     }

@@ -8,7 +8,7 @@ import { PANE, updateFilter } from '../state'
 import { GROUP_TITLE, matterStatus } from '../status'
 import type { Group, MatterStatus } from '../status'
 import { nowMs, plural, when } from '../words'
-import { AMBER, MUTED, NAVY } from '../theme'
+import { WARN, MUTED, HEAD } from '../theme'
 
 // The list's orders, by the words its chooser shows. Rows stay in their status groups; the order is within each.
 export const SORTS: { id: string; label: string }[] = [
@@ -54,15 +54,14 @@ export async function homeScreen($: EngineInterface, x: Ctx): Promise<JSX.Elemen
     numberKey += 1
     // A matter the server can't read: what happened, and Claude to repair it, instead of a page that can't open.
     if (m.problem) {
-      return row(`m-${m.path}`, m.ask ? `ask-row:${m.path}` : `open:${m.path}`, m.name, [m.next_line, m.ask ? `Press to have Claude repair it.` : ''].filter(Boolean).join(' '), null, { label: s.label, fill: s.fill })
+      return row(`m-${m.path}`, m.ask ? `ask-row:${m.path}` : `open:${m.path}`, m.name, [m.next_line, m.ask ? `Press to have Claude repair it.` : ''].filter(Boolean).join(' '), { label: s.label, tone: s.tone }, undefined, m.ask ? 'Repair' : 'Open')
     }
     return row(
       `m-${m.path}`,
       `open:${m.path}`,
       m.name,
       [m.case_line, nextStep(m, s), m.updated_at ? `updated ${when(m.updated_at)}` : ''].filter(Boolean).join(' · '),
-      null,
-      { label: s.label, fill: s.fill },
+      { label: s.label, tone: s.tone },
       site === 'pane' && numberKey <= 9 ? String(numberKey) : undefined,
     )
   }
@@ -76,7 +75,7 @@ export async function homeScreen($: EngineInterface, x: Ctx): Promise<JSX.Elemen
     : null
   const setupWarning = requiredMissing(st).length
     ? <Box key="setup-warn" flexDirection="row" columnGap="sm" rowGap="xs" flexWrap="wrap" alignItems="center">
-        <Text color={AMBER}>{`⚠ Senior Associate still needs ${requiredMissing(st).map(m => m.label).join(', ')} on this Mac.`}</Text>
+        <Text color={WARN}>{`⚠ Senior Associate still needs ${requiredMissing(st).map(m => m.label).join(', ')} on this Mac.`}</Text>
         {button('setup-link', 'Check my setup', () => { void perform($, 'setup') }, 'link')}
       </Box>
     : null
@@ -113,14 +112,14 @@ export async function homeScreen($: EngineInterface, x: Ctx): Promise<JSX.Elemen
     if (g === 'filed') {
       return (
         <Box key={`grp-${g}`} flexDirection="column" gap="sm">
-          {lone('filed-group', button('filed-group', `${GROUP_TITLE[g]} (${rows.length}) ${filedOpen ? '⌄' : '›'}`, () => { void perform($, 'filed-group') }, 'link', { name: `Filed, ${rows.length}, ${filedOpen || needle ? 'shown' : 'folded'}` }))}
+          {lone('filed-group', button('filed-group', `${GROUP_TITLE[g]} (${rows.length}) ${filedOpen ? '⌄' : '›'}`, () => { void perform($, 'filed-group') }, 'link'))}
           {filedOpen || needle ? rows.map(rowFor) : null}
         </Box>
       )
     }
     return (
       <Box key={`grp-${g}`} flexDirection="column" gap="sm">
-        <Text size="heading" weight="semibold" color={NAVY}>{GROUP_TITLE[g]}</Text>
+        <Text size="heading" weight="semibold" color={HEAD}>{GROUP_TITLE[g]}</Text>
         {rows.map(rowFor)}
       </Box>
     )
@@ -133,7 +132,7 @@ export async function homeScreen($: EngineInterface, x: Ctx): Promise<JSX.Elemen
       lastRow
         ? card('Pick up where you left off', [
             <Box key="last" flexDirection="column" gap="xs">
-              <Text size="heading" weight="semibold" color={NAVY}>{lastRow.m.name}</Text>
+              <Text size="heading" weight="semibold" color={HEAD}>{lastRow.m.name}</Text>
               <Text color={MUTED} size="footnote">{[lastRow.s.label, nextStep(lastRow.m, lastRow.s), lastRow.m.updated_at ? `updated ${when(lastRow.m.updated_at)}` : ''].filter(Boolean).join(' · ')}</Text>
             </Box>,
             lone('last-open', button(`main:open:${lastRow.m.path}`, `Open ${lastRow.m.name}`, () => { void perform($, `open:${lastRow.m.path}`) }, 'primary')),
@@ -143,8 +142,8 @@ export async function homeScreen($: EngineInterface, x: Ctx): Promise<JSX.Elemen
       detailsLink,
       live.length > MANY
         ? <Box key="find" flexDirection="column" gap="xs">
-            {field(<Input key="search" label="Find a matter" placeholder="A client’s name or a case type" submitLabel="find" value={q || undefined} onInput={value => { void updateFilter($, () => value) }} onSubmit={value => { void updateFilter($, () => value) }} />)}
-            {site === 'pane' ? lone('find-key', button('find-key', 'Press f to find a matter', () => { void $.ui.focus({ requestId: PANE, key: 'search' }).catch(() => undefined) }, 'quiet', { name: 'Find a matter (f)', hotkey: 'f', small: true })) : null}
+            {field('Find a matter', l => <Input key="search" label={l} placeholder="A client’s name or a case type" value={q || undefined} onInput={value => { void updateFilter($, () => value) }} onSubmit={value => { void updateFilter($, () => value) }} />)}
+            {site === 'pane' ? lone('find-key', button('find-key', 'Press f to find a matter', () => { void $.ui.focus({ requestId: PANE, key: 'search' }).catch(() => undefined) }, 'quiet', { hotkey: 'f' })) : null}
           </Box>
         : null,
       live.length > 1
@@ -158,7 +157,7 @@ export async function homeScreen($: EngineInterface, x: Ctx): Promise<JSX.Elemen
         {GROUP_ORDER.map(group)}
         {shownArchived.length
           ? <Box key="grp-archived" flexDirection="column" gap="sm">
-              {lone('archived-group', button('archived-group', `Archived (${shownArchived.length}) ${archivedOpen ? '⌄' : '›'}`, () => { void perform($, 'archived-group') }, 'link', { name: `Archived, ${shownArchived.length}, ${archivedOpen || needle ? 'shown' : 'folded'}` }))}
+              {lone('archived-group', button('archived-group', `Archived (${shownArchived.length}) ${archivedOpen ? '⌄' : '›'}`, () => { void perform($, 'archived-group') }, 'link'))}
               {archivedOpen || needle ? shownArchived.map(rowFor) : null}
             </Box>
           : null}

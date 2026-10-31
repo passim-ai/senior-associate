@@ -46,7 +46,7 @@ test('the first time: getting set up, the welcome, the first matter, files and a
   // The welcome: three steps, the times, that nothing is filed or sent; Your details first while they're missing.
   expect(await ui.find({ type: 'Text', text: /Client documents in/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^YOUR FIRST MATTER$/ })).toBeDefined()
-  expect(await ui.find({ type: 'Text', text: /^Add your details$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Button', text: /^Add your details$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^Name the client and the case$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /about 1–1½ hours, in the background/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /Nothing is filed or sent/ })).toBeDefined()
@@ -92,21 +92,21 @@ test('the first time: getting set up, the welcome, the first matter, files and a
   expect(await inActions(ui, /About 1–1½ hours · runs in the background/)).toBeDefined()
   expect(await inActions(ui, /About 5–10 minutes · see what’s missing first/)).toBeDefined()
   // The numbers, and the matter's details folded under them.
-  expect(await ui.find({ type: 'Button', key: 'metric-docs' })).toMatchObject({ props: { label: 'Documents: 2' } })
+  expect(await ui.find({ type: 'Button', key: 'metric-docs' })).toMatchObject({ props: { label: 'Documents ›' } })
   await unfold(ui, tap, 'sec-details')
   expect(await ui.find({ type: 'Text', text: /^2 files/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^Not started · 10 steps/ })).toBeDefined()
 
   // Documents: a folder can be added from here; the copy is said out loud, and the list groups by folder.
   await tap('docs')
-  expect(await ui.find({ type: 'Text', text: /^Documents$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Button', text: /^Documents$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /your originals stay where they are/ })).toBeDefined()
   await tap('main:add-folder')
   expect(ops).toContain('add_folder')
   expect(await ui.find({ type: 'Text', text: /^✓ Added 2 files\.$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /4 files in the matter folder/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^Tax returns · 1$/ })).toBeDefined()
-  expect(await ui.find({ type: 'Text', text: /^2025 return.pdf$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Button', text: /^2025 return.pdf$/ })).toBeDefined()
   await tap('nav-matter')
 
   // Packet: the steps, the review notes in plain words, and the way back at the foot.
@@ -132,7 +132,7 @@ test('the first time: getting set up, the welcome, the first matter, files and a
   expect(await ui.find({ type: 'Text', text: /^✓ Claude is answering in the chat\.$/ })).toBeDefined()
   expect((await ui.find({ type: 'Input', key: 'ask' }))?.text).toBe('')
   // Before a build, the suggestions are about the case itself; one press sends one.
-  expect(await ui.find({ type: 'Text', text: /^Does the client qualify, on the documents we have\?  ›$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^Does the client qualify, on the documents we have\?$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /weakest point in the cover letter/ })).toBeUndefined()
   await tap('ask-try:0')
   expect(submitted.at(-1)).toMatch(/^Ask Senior Associate about Maria Garcia I-130 I-485: How do we answer this: “Joint records begin two months before filing\.”$/)
@@ -532,11 +532,11 @@ test('a draft packet: what is needed before filing, who owes it, what is left wi
   expect(await inActions(ui, /2 needed before filing/)).toBeDefined()
   expect(await ui.find({ type: 'Button', key: 'open-packet' })).toBeDefined()
   // The numbers, and what needs attention, each with the way to it.
-  expect(await ui.find({ type: 'Button', key: 'metric-needed' })).toMatchObject({ props: { label: 'Needed before filing: 2' } })
+  expect(await ui.find({ type: 'Button', key: 'metric-needed' })).toMatchObject({ props: { label: 'Needed before filing ›' } })
   expect(await ui.find({ type: 'Text', text: /^Needs attention$/ })).toBeDefined()
   expect(await ui.find({ type: 'Button', key: 'view:doc-i94' })).toBeDefined()
   // Everything else that can be done now, each with what it does, folded until asked for.
-  expect(await ui.find({ type: 'Text', text: /^▸ More you can do$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Button', text: /^▸ More you can do$/ })).toBeDefined()
   expect(await ui.find({ type: 'Button', key: 'do-change' })).toBeUndefined()
   await unfold(ui, tap, 'sec-more')
   for (const key of ['do-add-files', 'do-change', 'do-steps', 'do-stress', 'do-intake', 'do-mark-filed']) expect(await ui.find({ type: 'Button', key })).toBeDefined()
@@ -564,7 +564,7 @@ test('a draft packet: what is needed before filing, who owes it, what is left wi
   // Show the client request reads it right here, the way the memo is read; no other app opens.
   const opens = requests.filter(r => r.op === 'open_output').length
   await tap('show-request')
-  expect(await ui.find({ type: 'Button', key: 'request' })).toMatchObject({ props: { label: 'Client request, shown' } })
+  expect(await ui.find({ type: 'Button', key: 'request' })).toMatchObject({ props: { label: 'Client request', variant: 'primary' } })
   expect(await ui.find({ type: 'Text', text: /Your most recent I-94/ })).toBeDefined()
   expect(requests.filter(r => r.op === 'open_output').length).toBe(opens)
   await tap('main:copy-request')
@@ -612,9 +612,9 @@ test('changes made in chat after a build: the matter says the reviews haven’t 
   expect(await ui.find({ type: 'Text', text: /^Since the packet was built, you made a change in chat \(Cover letter: leads with the joint lease\)\. Update the packet to have the reviews check it\.$/ })).toBeDefined()
   expect(await inActions(ui, /Re-checks what you changed in chat/)).toBeDefined()
   // After a build, the suggestions turn to the officer's objection, the decision waiting, and the packet.
-  expect(await ui.find({ type: 'Text', text: /^How do we answer this: “Joint records begin two months before filing\.”  ›$/ })).toBeDefined()
-  expect(await ui.find({ type: 'Text', text: /^Help me decide: Include an I-765 work permit application with the I-485\?  ›$/ })).toBeDefined()
-  expect(await ui.find({ type: 'Text', text: /^What would an officer question first in this packet\?  ›$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^How do we answer this: “Joint records begin two months before filing\.”$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^Help me decide: Include an I-765 work permit application with the I-485\?$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^What would an officer question first in this packet\?$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /Does the client qualify/ })).toBeUndefined()
   await tap('main:update')
   expect(run.spawned.length).toBe(1)
@@ -782,9 +782,9 @@ test('additional attorney instructions: saved on the matter, cleared, and saved 
   const lee = card('Lee I-130 I-485', 'ready', DOCS)
   const run = agents(on, 'Building the packet: Lee I-130 I-485')
   const { clock, ui, tap, ops, requests } = await boot($, on, [lee])
-  expect(await ui.find({ type: 'Text', text: /^▸ Attorney instructions$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Button', text: /^▸ Attorney instructions$/ })).toBeDefined()
   await unfold(ui, tap, 'sec-instructions')
-  expect(await ui.find({ type: 'Text', text: /^▾ Attorney instructions$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Button', text: /^▾ Attorney instructions$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /Claude reads these before every step, in the build and every update after it\.$/ })).toBeDefined()
 
   // Saved: into the matter, and the page says when Claude follows them.
@@ -834,8 +834,8 @@ test('documents reviewed, then the client sends more: add documents, review them
   const { ui, tap, matters } = await boot($, on, [kim])
   // With nothing new, the build comes first, and adding more and looking again is under More you can do, each said plainly.
   await unfold(ui, tap, 'sec-more')
-  expect(await ui.find({ type: 'Text', text: /^▾ More you can do$/ })).toBeDefined()
-  expect(await ui.find({ type: 'Text', text: /^Add documents…$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Button', text: /^▾ More you can do$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Button', text: /^Add documents… ›$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^What the client sent, or anything left out\. Then Review the documents again shows what’s still missing\.$/ })).toBeDefined()
   expect(await ui.find({ type: 'Button', key: 'do-review-again' })).toBeDefined()
   expect(await ui.find({ type: 'Button', key: 'do-change' })).toBeUndefined() // nothing is built yet
@@ -1036,7 +1036,7 @@ test('what’s left: Resolved shows what’s settled, and Reopen puts an item ba
   const garcia = card('Garcia I-130 I-485', 'draft', DOCS)
   const { ui, tap, requests } = await boot($, on, [garcia])
   await tap('items')
-  expect(await ui.find({ type: 'Text', text: /^Resolved \(1\) ›$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Button', text: /^Resolved \(1\) ›$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^Passport photos$/ })).toBeUndefined()
   await tap('resolved-group')
   expect(await ui.find({ type: 'Text', text: /^Passport photos$/ })).toBeDefined()
@@ -1168,9 +1168,9 @@ test('a long document list: how many are shown, folders with their counts, and S
   await tap('docs')
   expect(await ui.find({ type: 'Text', text: /^450 files · showing the 30 most recent$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^Photos · 250$/ })).toBeDefined()
-  expect((await ui.findAll({ type: 'Text', text: /^IMG_/ })).length).toBe(8)
+  expect((await ui.findAll({ type: 'Button', text: /^IMG_/ })).length).toBe(8)
   await tap('more:Photos')
-  expect((await ui.findAll({ type: 'Text', text: /^IMG_/ })).length).toBe(15)
+  expect((await ui.findAll({ type: 'Button', text: /^IMG_/ })).length).toBe(15)
   expect(await ui.find({ type: 'Text', text: /…and 235 older in Finder/ })).toBeDefined()
   expect(await ui.find({ type: 'Button', key: 'open-folder' })).toBeDefined()
   await ui.unmount()
@@ -1222,7 +1222,7 @@ test('when the chat box can’t be filled either, the page says what to type', O
 test('your details: Enter saves and stays, Save goes back to where you came from', OPTS(), async ($, on) => {
   const garcia = card('Garcia I-130 I-485', 'ready', DOCS)
   const { clock, ui, tap, requests, toasts } = await boot($, on, [garcia], { profile: {}, open: false }, { prefs: SEEN })
-  expect(await ui.find({ type: 'Text', text: /^Add your details$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Button', text: /^Add your details$/ })).toBeDefined()
   await tap('profile')
   expect(await ui.find({ type: 'Text', text: /^Saved on this Mac, in your Matters folder\.$/ })).toBeDefined()
   await ui.input({ plugin: PLUGIN, key: 'profile-attorney_name', text: 'Ana Ruiz' })
@@ -1238,7 +1238,7 @@ test('your details: Enter saves and stays, Save goes back to where you came from
   const saved = requests.filter(r => r.op === 'save_profile').at(-1)
   expect(saved?.profile).toMatchObject({ attorney_name: 'Ana Ruiz', bar_number: '24012345' })
   expect(await ui.find({ type: 'Text', text: /^Matters$/ })).toBeDefined()
-  expect(await ui.find({ type: 'Text', text: /^Your details$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Button', text: /^Your details$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^✓ Your details are saved\. Every build from now on uses them\.$/ })).toBeDefined()
   await ui.unmount()
 })
@@ -1323,8 +1323,8 @@ test('new matter: the VAWA cases are listed, and the folder name never says VAWA
   // Both VAWA cases are offered, each with its label and hint.
   expect(await ui.find({ type: 'Button', key: 'type:i360_vawa' })).toBeDefined()
   expect(await ui.find({ type: 'Button', key: 'type:i360_i485_vawa' })).toBeDefined()
-  expect(await ui.find({ type: 'Text', text: /^I-360 VAWA self-petition$/ })).toBeDefined()
-  expect(await ui.find({ type: 'Text', text: /^I-360 \/ I-485 VAWA self-petition and adjustment$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Button', text: /^○ I-360 VAWA self-petition$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Button', text: /^○ I-360 \/ I-485 VAWA self-petition and adjustment$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /Self-petition and adjustment filed together/ })).toBeDefined()
 
   // The folder name a VAWA matter gets is the client's name and form numbers only.

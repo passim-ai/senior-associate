@@ -1,13 +1,13 @@
 // The frame every screen is drawn in, and the pieces they share: the header, the title, the matter's tabs, cards and
 // rules, buttons and links, the message of the moment, and the main actions.
 //
-// Passim paper (theme.ts): the page paints its own warm paper and every text on it is drawn in a paper colour, never
-// the host's, so it reads the same in a light or a dark theme. Text is the kit's own (paperText), which draws INK
-// unless told otherwise and turns dimColor and the host's theme keys into paper colours. Buttons are the host's plain
-// Buttons, drawn inside a Box that paints them (primary: navy with white text; secondary: a line border with navy
-// text), so they keep the host's focus ring, keyboard and screen-reader behaviour. Text fields and pickers keep the
-// host's own styling; each sits in a well painted in the host's own background colour, so its label and text read in
-// either theme.
+// The desktop draws each Button natively, in the app's colours, and shows only its label: a Button's children and any
+// paint around it don't reach the screen. So every press here is a host Button and nothing else, its label the words
+// it shows: primary (the app's main button), secondary (outlined), a link (plain) or quiet (plain and dim). Text and
+// surfaces are the app's theme keys (theme.ts), so the panel reads in a light or a dark theme. Two more rules of the
+// desktop's layout shape the pieces below: a Box with a border gets padding unless it sets its own, so a rule is a
+// bordered Box with no height and no padding; and a text in a row can be squeezed into a sliver, so whatever sits
+// beside something else may shrink (minWidth 0) and the row wraps.
 import type { Elements, EngineInterface, ResolveInput } from 'claude-code'
 import type { Card, Draft, Note, Payload, Prefs, Run, Setup, View } from '../types'
 import { WORDMARK, WORDMARK_RATIO } from './brand'
@@ -15,11 +15,11 @@ import { COMMON_TYPES } from './matter'
 import { askClaude, perform } from './perform'
 import { session, setNote, typed } from './state'
 import { matterStatus } from './status'
-import { ACCENT, ACCENT_LIGHT, ACCENT_TEXT, AMBER, GREEN, HOVER, INK, LINE, MUTED, NAVY, NAVY_HOVER, PAPER, SURFACE, THEME_TEXT, WHITE, onFill } from './theme'
+import { ACCENT, ACCENT_TEXT, CARD, HEAD, MUTED, OK, TONE, WARN } from './theme'
+import type { Tone } from './theme'
 import { ASK_LABEL, nowMs } from './words'
 
 type Table = Elements['desktop']
-type TextProps = Parameters<Table['Text']>[0]
 
 export type Els = Pick<Table, 'Box' | 'Text' | 'Button' | 'Input'> & {
   isDesktop: boolean
@@ -28,22 +28,13 @@ export type Els = Pick<Table, 'Box' | 'Text' | 'Button' | 'Input'> & {
   svg: (source: string, alt: string, width?: number, height?: number) => JSX.Element | null
 }
 
-// One main action of a screen, or its companion: a primary (navy) and a secondary (outlined) button, each with a line
-// under it on what it does ("About 1–1½ hours · runs in the background").
+// One main action of a screen, or its companion: a primary and a secondary button, each with a line under it on what
+// it does ("About 1–1½ hours · runs in the background").
 export type ActionButton = { id: string; label: string; kind: 'primary' | 'secondary'; detail?: string; hotkey?: string }
 
 // Below this many columns the panel is drawn narrow. The desktop reports the side panel's width in cells of its code
 // font (about 8 pixels each), so this is about 560 pixels.
 export const NARROW_COLUMNS = 72
-
-// Text drawn on the paper: INK unless a colour is given; dimColor is MUTED; a host theme key is its paper colour.
-function paperText(Base: Table['Text']): Table['Text'] {
-  return (props: TextProps) => {
-    const { color, dimColor, ...rest } = props as TextProps & { color?: string }
-    const named = typeof color === 'string' && !color.startsWith('#') ? THEME_TEXT[color] ?? INK : color
-    return Base({ ...rest, color: named ?? (dimColor ? MUTED : INK) } as TextProps)
-  }
-}
 
 // The element table for the surface the app is drawn on; null where it cannot be drawn. `columns` is how wide the
 // site is, in cells, where the surface said.
@@ -53,7 +44,7 @@ export function tableFor($: EngineInterface, e: ResolveInput, columns?: number):
     const t = $.ui.resolve({ ...e, surface: 'desktop' as const })
     const { Svg } = t
     return {
-      Box: t.Box, Text: paperText(t.Text), Button: t.Button, Input: t.Input,
+      Box: t.Box, Text: t.Text, Button: t.Button, Input: t.Input,
       isDesktop: true,
       narrow,
       svg: (source, alt, width, height) => <Svg source={source} alt={alt} width={width} height={height} />,
@@ -61,7 +52,7 @@ export function tableFor($: EngineInterface, e: ResolveInput, columns?: number):
   }
   if (e.surface === 'terminal') {
     const t = $.ui.resolve({ ...e, surface: 'terminal' as const })
-    return { Box: t.Box, Text: paperText(t.Text as Table['Text']), Button: t.Button, Input: t.Input, isDesktop: false, narrow, svg: () => null }
+    return { Box: t.Box, Text: t.Text as Table['Text'], Button: t.Button, Input: t.Input, isDesktop: false, narrow, svg: () => null }
   }
   return null
 }
@@ -87,24 +78,26 @@ export function questionCount(c: Card): number {
 }
 
 export function makeKit($: EngineInterface, els: Els, site: 'pane' | 'inline', v: View, p: Payload | null, n: Note, b: boolean, allRuns: Record<string, Run>, st: Setup | null) {
-  const { Box, Text, Button, Input, narrow } = els
+  const { Box, Text, Button, Input, isDesktop, narrow } = els
 
   // ----- rules, labels and chips -----
 
-  // A thin rule across the page, in LINE: a Box with a border and no height.
-  const rule = (key: string, color = LINE) => <Box key={key} height={0} borderStyle="single" borderColor={color} />
+  // A thin line: a bordered Box with no height and no padding (across a column), or no width (down a row). With no
+  // colour it is the app's faint border.
+  const rule = (key: string, color?: string) => <Box key={key} height={0} padding={0} borderStyle="single" borderColor={color} />
+  const upright = (key: string) => <Box key={key} width={0} height={1} padding={0} borderStyle="single" />
 
   // A small label above a heading: "NEXT STEP", "YOUR FIRST MATTER".
   const eyebrow = (text: string, key = 'eyebrow') => <Text key={key} size="caption" weight="semibold" color={ACCENT_TEXT}>{text.toUpperCase()}</Text>
 
-  // A heading inside a page: navy, semibold.
-  const heading = (text: string, key?: string, size: 'heading' | 'body' = 'heading') => <Text key={key ?? `h-${text}`} size={size} weight="semibold" color={NAVY}>{text}</Text>
+  // A heading inside a page.
+  const heading = (text: string, key?: string, size: 'heading' | 'body' = 'heading') => <Text key={key ?? `h-${text}`} size={size} weight="semibold" color={HEAD}>{text}</Text>
 
-  // A chip: a status, a count. Its text is the one colour that reads on its fill.
-  const pill = (label: string, fill: string, key = 'pill') => (
+  // A chip: a status, a count, outlined and lettered in its tone's colour.
+  const pill = (label: string, tone: Tone, key = 'pill') => (
     <Box key={key} flexDirection="row" flexShrink={0}>
-      <Box backgroundColor={fill} paddingX="sm" borderStyle="round" borderColor={fill === SURFACE ? LINE : fill}>
-        <Text color={onFill(fill)} weight="semibold" size="caption">{label}</Text>
+      <Box borderStyle="round" borderColor={TONE[tone]} paddingX="sm" paddingY={0}>
+        <Text color={TONE[tone]} weight="semibold" size="caption">{label}</Text>
       </Box>
     </Box>
   )
@@ -112,29 +105,13 @@ export function makeKit($: EngineInterface, els: Els, site: 'pane' | 'inline', v
   // ----- buttons -----
 
   type Look = 'primary' | 'secondary' | 'link' | 'quiet'
-  // A press, in one of four looks. Primary and secondary are a plain Button inside a Box that paints it; a link is navy
-  // text; a quiet one is muted text. `name` is the accessible name where the words alone would be ambiguous.
-  const button = (key: string, label: string, onPress: (press: { surface?: string }) => void, look: Look = 'link', o: { name?: string; hotkey?: string; autoFocus?: boolean; small?: boolean } = {}) => {
+  // A press, in one of four looks: the app's main button, its outlined one, plain text (a link), or plain dim text.
+  const button = (key: string, label: string, onPress: (press: { surface?: string }) => void, look: Look = 'link', o: { hotkey?: string; autoFocus?: boolean } = {}) => {
     const press = (e: unknown) => onPress(e as { surface?: string })
-    const size = o.small ? 'footnote' as const : undefined
-    if (look === 'link' || look === 'quiet') {
-      return (
-        <Button key={key} plain label={o.name} hotkey={o.hotkey} autoFocus={o.autoFocus ? true : undefined} onPress={press}>
-          <Text color={look === 'link' ? NAVY : MUTED} weight={look === 'link' ? 'medium' : 'regular'} size={size}>{label}</Text>
-        </Button>
-      )
-    }
-    const waiting = b && look === 'primary'
-    const fill = look === 'primary' ? (waiting ? LINE : NAVY) : SURFACE
-    return (
-      <Box key={`bx:${key}`} flexDirection="row" backgroundColor={fill} borderStyle="round" borderColor={look === 'primary' ? fill : LINE}
-        paddingX={o.small ? 'md' : 'lg'} paddingY={o.small ? 'xs' : 'sm'}
-        hover={look === 'primary' ? (waiting ? undefined : { backgroundColor: NAVY_HOVER, borderColor: NAVY_HOVER }) : { backgroundColor: HOVER, borderColor: MUTED }}>
-        <Button key={key} plain variant={look} label={o.name ?? label} hotkey={o.hotkey} dimColor={waiting ? true : undefined} autoFocus={o.autoFocus ? true : undefined} onPress={press}>
-          <Text color={look === 'primary' ? (waiting ? MUTED : WHITE) : NAVY} weight="semibold" size={size ?? 'footnote'}>{label}</Text>
-        </Button>
-      </Box>
-    )
+    const plain = look === 'link' || look === 'quiet' ? true : undefined
+    // While a press is on its way, the main button dims.
+    const dim = look === 'quiet' || (b && look === 'primary') ? true : undefined
+    return <Button key={key} label={label} plain={plain} variant={look === 'primary' || look === 'secondary' ? look : undefined} dimColor={dim} hotkey={o.hotkey} autoFocus={o.autoFocus ? true : undefined} onPress={press} />
   }
   // A button on a line of its own, not stretched across the page.
   const lone = (key: string, el: JSX.Element) => <Box key={`lone:${key}`} flexDirection="row">{el}</Box>
@@ -142,57 +119,56 @@ export function makeKit($: EngineInterface, els: Els, site: 'pane' | 'inline', v
   // The main action(s) of a screen: primary first. `main` marks the matter page's card, whose first action the b key
   // presses and where the focus starts.
   const actions = (buttons: ActionButton[], main = false) => (
-    <Box key="actions" flexDirection="row" flexWrap="wrap" columnGap="md" rowGap="md" alignItems="flex-start">
+    <Box key="actions" flexDirection="row" flexWrap="wrap" columnGap="lg" rowGap="md" alignItems="flex-start">
       {buttons.map((a, i) => (
-        <Box key={`action-${a.id}`} flexDirection="column" gap="xs" flexShrink={1}>
-          <Box flexDirection="row">
-            {button(`main:${a.id}`, a.label, () => { void perform($, a.id) }, a.kind, { hotkey: a.hotkey ?? (main && i === 0 ? 'b' : undefined), autoFocus: main && i === 0 })}
-          </Box>
+        <Box key={`action-${a.id}`} flexDirection="column" gap="xs" flexShrink={1} minWidth={0}>
+          {lone(`action-${a.id}`, button(`main:${a.id}`, a.label, () => { void perform($, a.id) }, a.kind, { hotkey: a.hotkey ?? (main && i === 0 ? 'b' : undefined), autoFocus: main && i === 0 }))}
           {a.detail ? <Text color={MUTED} size="caption">{a.detail}</Text> : null}
         </Box>
       ))}
     </Box>
   )
 
-  // A text press. `name` is its accessible name where the label alone would be ambiguous among several on a screen
-  // ("Mark done" beside each item reads "Mark done: Sign the G-28").
-  const link = (key: string, label: string, onPress: (press: { surface?: string }) => void, strong = false, name?: string) =>
-    button(key, label, onPress, strong ? 'link' : 'quiet', { name })
+  // A text press: plain, or dim when it's one of the lesser ones.
+  const link = (key: string, label: string, onPress: (press: { surface?: string }) => void, strong = false) =>
+    button(key, label, onPress, strong ? 'link' : 'quiet')
   const links = (key: string, items: (JSX.Element | null | false)[]) => {
     const shown = items.filter(Boolean)
-    return shown.length ? <Box key={key} flexDirection="row" flexWrap="wrap" columnGap="lg" rowGap="xs" alignItems="center">{shown}</Box> : null
+    return shown.length ? <Box key={key} flexDirection="row" flexWrap="wrap" columnGap="md" rowGap="xs" alignItems="center">{shown}</Box> : null
   }
+
+  // Something you can be on (a tab, a place in the header): the label in full where you are and dim elsewhere, with
+  // the accent under the one you're on.
+  const place = (key: string, label: string, id: string, here: boolean) => (
+    <Box key={`place:${key}`} flexDirection="column" gap="xs">
+      <Button key={key} label={label} plain dimColor={here ? undefined : true} onPress={() => { void perform($, id) }} />
+      {here ? rule(`place-line:${key}`, ACCENT) : null}
+    </Box>
+  )
 
   // ----- the header: Passim's lockup, and the places every screen can go -----
 
   const matterViews: View[] = ['matter', 'documents', 'packet', 'items', 'memo', 'request', 'redo', 'intake', 'timeline']
-  const navItem = (key: string, label: string, id: string, selected: boolean) => (
-    <Box key={`navbx:${key}`} flexDirection="row" backgroundColor={selected ? HOVER : SURFACE} borderStyle="round" borderColor={selected ? HOVER : SURFACE} paddingX="sm" hover={{ backgroundColor: HOVER, borderColor: HOVER }}>
-      <Button key={key} plain label={selected ? `${label}, current` : label} onPress={() => { void perform($, id) }}>
-        <Text size="footnote" weight={selected ? 'semibold' : 'medium'} color={selected ? NAVY : MUTED}>{label}</Text>
-      </Button>
-    </Box>
-  )
   const nav = (
-    <Box key="nav" flexDirection="row" flexWrap="wrap" columnGap={narrow ? 'xs' : 'sm'} rowGap="xs" alignItems="center" justifyContent={narrow ? 'space-between' : 'flex-end'} flexGrow={narrow ? 1 : 0}>
-      {navItem('nav-all', 'Matters', 'all', v === 'home' || v === 'new' || v === 'welcome' || matterViews.includes(v))}
-      {navItem('profile', 'Your details', 'profile', v === 'profile')}
-      {navItem('nav-setup', 'Setup', 'setup', v === 'setup')}
-      {navItem('help', 'Help', 'help', v === 'help')}
-      {site === 'inline' ? navItem('dock', 'Open as side panel', 'dock', false) : null}
+    <Box key="nav" flexDirection="row" flexWrap="wrap" columnGap="md" rowGap="xs" alignItems="flex-start">
+      {place('nav-all', 'Matters', 'all', v === 'home' || v === 'new' || v === 'welcome' || matterViews.includes(v))}
+      {place('profile', 'Your details', 'profile', v === 'profile')}
+      {place('nav-setup', 'Setup', 'setup', v === 'setup')}
+      {place('help', 'Help', 'help', v === 'help')}
+      {site === 'inline' ? place('dock', 'Open as side panel', 'dock', false) : null}
     </Box>
   )
-  const markWidth = narrow ? 100 : 118
+  const markWidth = narrow ? 92 : 108
   const lockup = (
     <Box key="lockup" flexDirection="row" alignItems="center" gap="md" flexShrink={0}>
       {els.svg(WORDMARK, 'Passim', markWidth, Math.round(markWidth * WORDMARK_RATIO))}
-      <Box width={0} height={1} borderStyle="single" borderColor={LINE} />
-      <Text size="footnote" weight="semibold" color={NAVY}>Senior Associate</Text>
+      {isDesktop ? upright('lockup-line') : null}
+      <Text size="footnote" weight="semibold" color={MUTED}>Senior Associate</Text>
     </Box>
   )
   const header = (
     <Box key="header" flexDirection="column">
-      <Box flexDirection={narrow ? 'column' : 'row'} flexWrap="wrap" justifyContent="space-between" alignItems={narrow ? 'flex-start' : 'center'} rowGap="sm" columnGap="lg" backgroundColor={SURFACE} paddingX={narrow ? 'lg' : 'xl'} paddingY="md">
+      <Box flexDirection="row" flexWrap="wrap" justifyContent="space-between" alignItems="center" rowGap="sm" columnGap="lg" paddingX={narrow ? 'lg' : 'xl'} paddingY="md">
         {lockup}
         {nav}
       </Box>
@@ -202,11 +178,11 @@ export function makeKit($: EngineInterface, els: Els, site: 'pane' | 'inline', v
 
   // ----- the title of a screen, and where it sits -----
 
-  // The page's title: the name in navy, a line under it, and what sits at its right (a status, New matter).
+  // The page's title, a line under it, and what sits at its right (a status, New matter).
   const title = (text: string, sub?: string | null, right?: JSX.Element | null) => (
-    <Box key="title" flexDirection="row" flexWrap="wrap" justifyContent="space-between" alignItems="center" columnGap="lg" rowGap="sm">
-      <Box flexDirection="column" gap="xs" flexShrink={1}>
-        <Text size="title" weight="semibold" color={NAVY}>{text}</Text>
+    <Box key="title" flexDirection="row" flexWrap="wrap" justifyContent="space-between" alignItems="flex-start" columnGap="lg" rowGap="sm">
+      <Box flexDirection="column" gap="xs" flexShrink={1} minWidth={0}>
+        <Text size="title" weight="semibold" color={HEAD}>{text}</Text>
         {sub ? <Text color={MUTED}>{sub}</Text> : null}
       </Box>
       {right ?? null}
@@ -214,42 +190,30 @@ export function makeKit($: EngineInterface, els: Els, site: 'pane' | 'inline', v
   )
 
   // Where you are: "Matters › Garcia I-130 I-485", each place before the last a press.
-  const crumbs = (items: ({ key: string; label: string; id: string; name?: string } | string)[]) => (
+  const crumbs = (items: ({ key: string; label: string; id: string } | string)[]) => (
     <Box key="crumbs" flexDirection="row" flexWrap="wrap" alignItems="center" columnGap="xs">
       {items.flatMap((it, i) => [
         i > 0 ? <Text key={`sep-${i}`} size="footnote" color={MUTED}>›</Text> : null,
         typeof it === 'string'
           ? <Text key={`here-${i}`} size="footnote" color={MUTED}>{it}</Text>
-          : <Button key={it.key} plain label={it.name} onPress={() => { void perform($, it.id) }}><Text size="footnote" weight="medium" color={NAVY}>{it.label}</Text></Button>,
+          : <Button key={it.key} label={it.label} plain onPress={() => { void perform($, it.id) }} />,
       ])}
     </Box>
   )
 
-  // The pill on a matter's screens: the same word the matter page and the list use.
+  // The chip on a matter's screens: the same word the matter page and the list use.
   const pillOf = (c: Card) => {
     const s = matterStatus(c, allRuns[c.path], nowMs())
-    return { label: s.label, fill: s.fill }
+    return { label: s.label, tone: s.tone }
   }
 
-  // The matter's tabs: the one open in navy over an accent underline, Questions with how many are open.
+  // The matter's tabs, Questions with how many are open, and a line under them all.
   const tabs = (c: Card, active: Tab) => {
     const count = questionCount(c)
     return (
-      <Box key="tabs" flexDirection="column">
-        <Box flexDirection="row" flexWrap="wrap" columnGap={narrow ? 'lg' : 'xl'} rowGap="sm">
-          {TABS.map(t => {
-            const on = t.tab === active
-            return (
-              <Box key={`tab:${t.key}`} flexDirection="column" gap="xs">
-                <Button key={t.key} plain label={`${t.label}${t.tab === 'items' && count ? `, ${count} open` : ''}${on ? ', current' : ''}`} onPress={() => { void perform($, t.id) }}>
-                  <Text size="footnote" weight="semibold" color={on ? NAVY : MUTED}>{t.label}</Text>
-                  {t.tab === 'items' && count ? <Text size="caption" color={MUTED}>{' '}</Text> : null}
-                  {t.tab === 'items' && count ? <Text size="caption" weight="semibold" color={ACCENT_TEXT} backgroundColor={ACCENT_LIGHT}>{` ${count} `}</Text> : null}
-                </Button>
-                {rule(`tab-line:${t.key}`, on ? ACCENT : PAPER)}
-              </Box>
-            )
-          })}
+      <Box key="tabs" flexDirection="column" gap="xs">
+        <Box flexDirection="row" flexWrap="wrap" columnGap={narrow ? 'sm' : 'md'} rowGap="sm" alignItems="flex-start">
+          {TABS.map(t => place(t.key, t.tab === 'items' && count ? `${t.label} · ${count}` : t.label, t.id, t.tab === active))}
         </Box>
         {rule('tabs-rule')}
       </Box>
@@ -258,20 +222,20 @@ export function makeKit($: EngineInterface, els: Els, site: 'pane' | 'inline', v
 
   // ----- containers -----
 
-  // A card on the paper: SURFACE with a LINE border; a border colour marks one that needs attention.
+  // A card: the app's raised surface inside its faint border; a border colour marks one that needs attention.
   const card = (heading: string | null, children: Kids, borderColor?: string, key?: string) => (
-    <Box key={key ?? `card-${heading ?? 'plain'}`} flexDirection="column" backgroundColor={SURFACE} borderStyle="round" borderColor={borderColor ?? LINE} paddingX={narrow ? 'lg' : 'xl'} paddingY="lg" gap="md">
-      {heading ? <Text size="heading" weight="semibold" color={NAVY}>{heading}</Text> : null}
+    <Box key={key ?? `card-${heading ?? 'plain'}`} flexDirection="column" backgroundColor={CARD} borderStyle="round" borderColor={borderColor} paddingX={narrow ? 'lg' : 'xl'} paddingY="lg" gap="md">
+      {heading ? <Text size="heading" weight="semibold" color={HEAD}>{heading}</Text> : null}
       {children}
     </Box>
   )
 
-  // A section on the paper itself, with no card: its heading, then its content.
+  // A section on the page itself, with no card: its heading, then its content.
   const section = (heading: string | null, children: Kids, key?: string, right?: JSX.Element | null) => (
     <Box key={key ?? `sec-${heading ?? 'plain'}`} flexDirection="column" gap="md">
       {heading
         ? <Box flexDirection="row" flexWrap="wrap" justifyContent="space-between" alignItems="center" columnGap="md" rowGap="xs">
-            <Text size="heading" weight="semibold" color={NAVY}>{heading}</Text>
+            <Text size="heading" weight="semibold" color={HEAD}>{heading}</Text>
             {right ?? null}
           </Box>
         : null}
@@ -279,11 +243,11 @@ export function makeKit($: EngineInterface, els: Els, site: 'pane' | 'inline', v
     </Box>
   )
 
-  // A card with the accent bar down its left edge: the matter's next step, a suggested approach.
-  const barCard = (key: string, bar: string, children: Kids, fill = SURFACE) => (
-    <Box key={key} flexDirection="row" backgroundColor={fill}>
+  // A card with a coloured bar down its left edge: the matter's next step, the message of the moment.
+  const barCard = (key: string, bar: string, children: Kids, pad: 'lg' | 'sm' = 'lg') => (
+    <Box key={key} flexDirection="row" backgroundColor={CARD} borderStyle="round" padding={0} overflow="hidden">
       <Box backgroundColor={bar} paddingLeft="xs" />
-      <Box flexDirection="column" flexGrow={1} flexShrink={1} paddingX={narrow ? 'lg' : 'xl'} paddingY="lg" gap="md">
+      <Box flexDirection="column" flexGrow={1} flexShrink={1} minWidth={0} paddingX={narrow || pad === 'sm' ? 'lg' : 'xl'} paddingY={pad} gap={pad === 'sm' ? 'sm' : 'md'}>
         {children}
       </Box>
     </Box>
@@ -293,7 +257,7 @@ export function makeKit($: EngineInterface, els: Els, site: 'pane' | 'inline', v
   const columns = (key: string, cols: Kids) => (
     <Box key={key} flexDirection={narrow ? 'column' : 'row'} flexWrap="wrap" columnGap="xl" rowGap="lg" alignItems="flex-start">
       {cols.filter(Boolean).map((col, i) => (
-        <Box key={`${key}-col-${i}`} flexDirection="column" flexGrow={1} flexShrink={1} width={narrow ? '100%' : `${Math.floor(94 / Math.max(1, cols.filter(Boolean).length))}%`}>
+        <Box key={`${key}-col-${i}`} flexDirection="column" flexGrow={1} flexShrink={1} minWidth={0} width={narrow ? '100%' : `${Math.floor(94 / Math.max(1, cols.filter(Boolean).length))}%`}>
           {col}
         </Box>
       ))}
@@ -303,31 +267,25 @@ export function makeKit($: EngineInterface, els: Els, site: 'pane' | 'inline', v
   // A section folded under its title: ▸ closed, ▾ open. `id` is what the press toggles (the expanded list's key).
   const disclosure = (id: string, label: string, hint: string, isOpen: boolean, children: Kids) => (
     <Box key={`disc-${id}`} flexDirection="column" gap="md">
-      <Box flexDirection="row" flexWrap="wrap" columnGap="md" alignItems="center">
-        <Button key={id} plain label={`${label}, ${isOpen ? 'open' : 'folded'}`} onPress={() => { void perform($, id) }}>
-          <Text weight="semibold" color={NAVY}>{`${isOpen ? '▾' : '▸'} ${label}`}</Text>
-        </Button>
+      <Box flexDirection="row" flexWrap="wrap" columnGap="sm" alignItems="center">
+        <Button key={id} label={`${isOpen ? '▾' : '▸'} ${label}`} plain onPress={() => { void perform($, id) }} />
         {hint ? <Text size="footnote" color={MUTED}>{hint}</Text> : null}
       </Box>
       {isOpen ? <Box flexDirection="column" gap="md" paddingLeft="lg">{children}</Box> : null}
     </Box>
   )
 
-  // A row into a matter on the list: the name is the press, the status chip at its right, the detail under it.
-  // Its accessible name carries the status the chip shows.
-  const row = (key: string, id: string, main: string, detail: string, below?: JSX.Element | null, badge?: { label: string; fill: string }, hotkey?: string) => (
-    <Box key={key} flexDirection="column" backgroundColor={SURFACE} borderStyle="round" borderColor={LINE} paddingX="lg" paddingY="md" gap="xs" hover={{ borderColor: ACCENT }}>
-      <Box flexDirection="row" flexWrap="wrap" justifyContent="space-between" alignItems="center" columnGap="md" rowGap="xs">
-        <Box flexDirection="row" flexShrink={1}>
-          <Button key={id} plain hotkey={hotkey} label={badge ? `${main}, ${badge.label}` : main} onPress={() => perform($, id)}>
-            <Text size="heading" weight="semibold" color={NAVY}>{main}</Text>
-            <Text color={MUTED}>{'  ›'}</Text>
-          </Button>
+  // A matter on the list: its name and status chip, what's next under them, and Open at the right (below, when narrow).
+  const row = (key: string, id: string, main: string, detail: string, badge?: { label: string; tone: Tone }, hotkey?: string, press = 'Open') => (
+    <Box key={key} flexDirection="row" flexWrap="wrap" justifyContent="space-between" alignItems="center" columnGap="lg" rowGap="sm" backgroundColor={CARD} borderStyle="round" paddingX="lg" paddingY="md">
+      <Box flexDirection="column" gap="xs" flexGrow={1} flexShrink={1} minWidth={0}>
+        <Box flexDirection="row" flexWrap="wrap" columnGap="sm" rowGap="xs" alignItems="center">
+          <Text size="heading" weight="semibold" color={HEAD}>{main}</Text>
+          {badge ? pill(badge.label, badge.tone, `${key}-pill`) : null}
         </Box>
-        {badge ? pill(badge.label, badge.fill, `${key}-pill`) : null}
+        {detail ? <Text color={MUTED} size="footnote">{detail}</Text> : null}
       </Box>
-      {detail ? <Text color={MUTED} size="footnote">{detail}</Text> : null}
-      {below ?? null}
+      <Button key={id} label={press} hotkey={hotkey} onPress={() => perform($, id)} />
     </Box>
   )
 
@@ -335,49 +293,48 @@ export function makeKit($: EngineInterface, els: Els, site: 'pane' | 'inline', v
   const numbered = (num: string, heading: string, text: string) => (
     <Box key={`step-${num}`} flexDirection="row" gap="md" alignItems="flex-start">
       <Box flexDirection="row" flexShrink={0}><Text size="heading" weight="semibold" color={ACCENT_TEXT} tabular>{num.padStart(2, '0')}</Text></Box>
-      <Box flexDirection="column" flexGrow={1} flexShrink={1} gap="xs">
-        <Text weight="semibold" color={NAVY}>{heading}</Text>
-        <Text color={INK} size="footnote">{text}</Text>
+      <Box flexDirection="column" flexGrow={1} flexShrink={1} minWidth={0} gap="xs">
+        <Text weight="semibold" color={HEAD}>{heading}</Text>
+        <Text size="footnote">{text}</Text>
       </Box>
     </Box>
   )
 
-  // A text field or picker of the host's, in a well painted in the host's own background colour, so the label and the
-  // text the host draws in its own colours read in either theme.
-  const field = (input: JSX.Element, key?: string) => (
-    <Box key={key} flexDirection="column" backgroundColor="inverseText" borderStyle="round" borderColor={LINE} paddingX="sm" paddingY="xs">
-      {input}
+  // A text field with its label. The desktop draws an Input's own label beside the field, squeezing it in a narrow
+  // panel, so there the label goes above and the field takes the full width; the terminal draws it with the field.
+  const field = (label: string, input: (label?: string) => JSX.Element, key?: string) => (
+    <Box key={key ?? `field-${label}`} flexDirection="column" gap="xs">
+      {isDesktop ? <Text size="footnote" weight="medium">{label}</Text> : null}
+      {input(isDesktop ? undefined : label)}
     </Box>
   )
 
   // Under the box whose save was just pressed, so the press visibly lands; gone once its text changes or the screen does.
   const savedMark = (key: string, unchanged: boolean) =>
-    session.savedField === key && unchanged ? <Box key={`saved:${key}`} flexDirection="row"><Text color={GREEN} weight="medium">✓ Saved</Text></Box> : null
+    session.savedField === key && unchanged ? <Box key={`saved:${key}`} flexDirection="row"><Text color={OK} weight="medium">✓ Saved</Text></Box> : null
 
   // The message of the moment, at the top of the page where the eye is, until it's dismissed or the screen changes.
-  const toneColor = n.tone === 'wait' ? NAVY : n.tone === 'ok' ? GREEN : AMBER
-  const status = n.text ? (
-    <Box key="note" flexDirection="row" backgroundColor={SURFACE} borderStyle="round" borderColor={LINE}>
-      <Box backgroundColor={toneColor} paddingLeft="xs" />
-      <Box flexDirection="row" flexGrow={1} flexShrink={1} paddingX="lg" paddingY="sm" gap="md" alignItems="flex-start" justifyContent="space-between">
-        <Box flexDirection="column" flexShrink={1} flexGrow={1} gap="xs">
-          {n.tone === 'ok'
-            ? <Text color={GREEN} weight="semibold">{`✓ ${n.text}`}</Text>
-            : <Text color={n.tone === 'wait' ? NAVY : INK}>{`${n.tone === 'wait' ? '⏳' : '⚠'} ${n.text}`}</Text>}
-          {n.ask ? links('note-asks', [button('note-ask', ASK_LABEL, () => { void askClaude($, n.ask!) }, 'link')]) : null}
-          {n.press ? links('note-presses', [button(`note-press:${n.press.id}`, n.press.label, () => { void perform($, n.press!.id) }, 'link')]) : null}
-        </Box>
-        {button('dismiss-note', 'Dismiss', () => { void setNote($, '') }, 'quiet', { small: true })}
-      </Box>
-    </Box>
-  ) : null
+  const toneBar = n.tone === 'wait' ? TONE.info : n.tone === 'ok' ? TONE.ok : TONE.warn
+  const status = n.text
+    ? barCard('note', n.tone === 'wait' ? ACCENT : n.tone === 'ok' ? '#3E8E4F' : '#C9A13B', [
+        <Box key="note-line" flexDirection="row" flexWrap="wrap" columnGap="md" rowGap="xs" alignItems="flex-start" justifyContent="space-between">
+          <Box flexDirection="column" flexGrow={1} flexShrink={1} minWidth={0} gap="xs">
+            <Text color={n.tone === 'wait' ? undefined : toneBar} weight={n.tone === 'ok' ? 'semibold' : 'regular'}>{`${n.tone === 'ok' ? '✓' : n.tone === 'wait' ? '⏳' : '⚠'} ${n.text}`}</Text>
+            {links('note-acts', [
+              n.ask ? button('note-ask', ASK_LABEL, () => { void askClaude($, n.ask!) }, 'link') : null,
+              n.press ? button(`note-press:${n.press.id}`, n.press.label, () => { void perform($, n.press!.id) }, 'link') : null,
+            ])}
+          </Box>
+          {button('dismiss-note', 'Dismiss', () => { void setNote($, '') }, 'quiet')}
+        </Box>,
+      ], 'sm')
+    : null
 
   const version = p?.version || st?.version || ''
 
-  // A screen: the header, then its head (where you are, the title, the tabs), the message of the moment, and its body,
-  // on the paper from edge to edge.
+  // A screen: the header, then its head (where you are, the title, the tabs), the message of the moment, and its body.
   const page = (head: Kids, ...children: Kids) => (
-    <Box flexDirection="column" backgroundColor={PAPER} minHeight="100%" flexGrow={1}>
+    <Box flexDirection="column" flexGrow={1}>
       {header}
       <Box key="content" flexDirection="column" paddingX={narrow ? 'lg' : 'xl'} paddingTop="lg" paddingBottom="xl" gap="lg">
         {head}
@@ -394,12 +351,12 @@ export function makeKit($: EngineInterface, els: Els, site: 'pane' | 'inline', v
   )
 
   // A screen reached from another: where you are and the way back, the title, the body.
-  const subpage = (o: { title: string; subtitle?: string; status?: { label: string; fill: string }; back: { id: string; label: string }; here: string; foot?: string | null }, ...children: Kids) =>
+  const subpage = (o: { title: string; subtitle?: string; status?: { label: string; tone: Tone }; back: { id: string; label: string }; here: string; foot?: string | null }, ...children: Kids) =>
     page(
       [
         // The header's Matters is nav-all; the crumb back to Matters is a press of its own.
-        crumbs([{ key: o.back.id === 'all' ? 'crumb-all' : `nav-${o.back.id}`, label: o.back.label, id: o.back.id, name: `Back to ${o.back.label}` }, o.here]),
-        title(o.title, o.subtitle, o.status ? pill(o.status.label, o.status.fill, 'title-pill') : null),
+        crumbs([{ key: o.back.id === 'all' ? 'crumb-all' : `nav-${o.back.id}`, label: o.back.label, id: o.back.id }, o.here]),
+        title(o.title, o.subtitle, o.status ? pill(o.status.label, o.status.tone, 'title-pill') : null),
       ],
       body(...children),
     )
@@ -409,8 +366,8 @@ export function makeKit($: EngineInterface, els: Els, site: 'pane' | 'inline', v
     const s = pillOf(c)
     return page(
       [
-        crumbs([{ key: 'crumb-all', label: 'Matters', id: 'all', name: 'Back to Matters' }, c.name]),
-        title(c.name, [c.case_line, c.intake.filing_posture_label].filter(Boolean).join(' · '), pill(s.label, s.fill, 'title-pill')),
+        crumbs([{ key: 'crumb-all', label: 'Matters', id: 'all' }, c.name]),
+        title(c.name, [c.case_line, c.intake.filing_posture_label].filter(Boolean).join(' · '), pill(s.label, s.tone, 'title-pill')),
         tabs(c, tab),
       ],
       body(...children),
@@ -418,41 +375,27 @@ export function makeKit($: EngineInterface, els: Els, site: 'pane' | 'inline', v
   }
 
   // A press that waits on "Yes" first, asked on the page: what happens, the press that does it, and the way out.
-  const confirmBox = (key: string, text: string, yes: { id: string; label: string; name?: string }, keep: string) => (
-    <Box key={`${key}-ask`} flexDirection="row" backgroundColor={SURFACE} borderStyle="round" borderColor={LINE}>
-      <Box backgroundColor={AMBER} paddingLeft="xs" />
-      <Box flexDirection="column" flexGrow={1} flexShrink={1} gap="sm" paddingX="lg" paddingY="sm">
-        <Text>{text}</Text>
-        <Box flexDirection="row" flexWrap="wrap" columnGap="lg" rowGap="xs" alignItems="center">
-          {button(yes.id, yes.label, () => { void perform($, yes.id) }, 'secondary', { name: yes.name, small: true })}
-          {button(`${key}-keep`, keep, () => { void perform($, 'confirm-no') }, 'quiet')}
-        </Box>
-      </Box>
-    </Box>
-  )
+  const confirmBox = (key: string, text: string, yes: { id: string; label: string }, keep: string) =>
+    barCard(`${key}-ask`, '#C9A13B', [
+      <Text key="ask-text">{text}</Text>,
+      <Box key="ask-acts" flexDirection="row" flexWrap="wrap" columnGap="md" rowGap="xs" alignItems="center">
+        {button(yes.id, yes.label, () => { void perform($, yes.id) }, 'secondary')}
+        {button(`${key}-keep`, keep, () => { void perform($, 'confirm-no') }, 'quiet')}
+      </Box>,
+    ], 'sm')
 
-  // A choice in a list: one line, the whole of it the press. The chosen one is marked ● in navy and in weight, and its
-  // accessible name says it is selected.
+  // A choice in a list: ● the chosen one, ○ the others, each the whole press, with a hint under it.
   const choice = (key: string, id: string, label: string, hint: string, chosen: boolean) => (
-    <Box key={key} flexDirection="row">
-      <Button key={id} plain label={chosen ? `${label}, selected` : label} onPress={() => perform($, id)}>
-        <Text color={chosen ? ACCENT_TEXT : MUTED}>{chosen ? '● ' : '○ '}</Text>
-        <Text weight={chosen ? 'semibold' : 'regular'} color={chosen ? NAVY : INK}>{label}</Text>
-        {hint ? <Text color={MUTED}>{`  ${hint}`}</Text> : null}
-      </Button>
+    <Box key={key} flexDirection="column">
+      {lone(id, <Button key={id} label={`${chosen ? '●' : '○'} ${label}`} plain dimColor={chosen ? undefined : true} onPress={() => perform($, id)} />)}
+      {hint ? <Box flexDirection="column" paddingLeft="lg"><Text color={MUTED} size="footnote">{hint}</Text></Box> : null}
     </Box>
   )
 
-  // Several short choices on one line (New filing or a response?), each marked and named the same way.
+  // Several short choices on one line (New filing or a response?): the chosen one the app's main button.
   const chips = (key: string, options: { id: string; label: string; chosen: boolean }[]) => (
     <Box key={key} flexDirection="row" flexWrap="wrap" columnGap="sm" rowGap="xs">
-      {options.map(o => (
-        <Box key={`chipbx:${o.id}`} flexDirection="row" backgroundColor={o.chosen ? NAVY : SURFACE} borderStyle="round" borderColor={o.chosen ? NAVY : LINE} paddingX="md" hover={o.chosen ? undefined : { borderColor: MUTED }}>
-          <Button key={o.id} plain label={o.chosen ? `${o.label}, selected` : o.label} onPress={() => perform($, o.id)}>
-            <Text size="footnote" weight={o.chosen ? 'semibold' : 'medium'} color={o.chosen ? WHITE : NAVY}>{o.chosen ? `● ${o.label}` : `○ ${o.label}`}</Text>
-          </Button>
-        </Box>
-      ))}
+      {options.map(o => <Button key={o.id} label={o.label} variant={o.chosen ? 'primary' : undefined} onPress={() => perform($, o.id)} />)}
     </Box>
   )
 
@@ -464,12 +407,12 @@ export function makeKit($: EngineInterface, els: Els, site: 'pane' | 'inline', v
     const showAll = open.includes('more-types') || types.slice(COMMON_TYPES).some(t => t.id === d.typeId)
     const shown = showAll ? types : types.slice(0, COMMON_TYPES)
     return [
-      missing ? <Text key="case-missing" color={AMBER} weight="medium">{missing}</Text> : null,
+      missing ? <Text key="case-missing" color={WARN} weight="medium">{missing}</Text> : null,
       ...shown.map(t => choice(`type-${t.id}`, `type:${t.id}`, t.label, t.hint ?? '', d.typeId === t.id)),
       types.length > shown.length ? lone('more-types', button('more-types', `More case types (${types.length - shown.length}) ›`, () => { void perform($, 'more-types') }, 'link')) : null,
       choice('type-other', 'type:other', 'Something else', 'Describe it in a few words', d.typeId === 'other'),
       d.typeId === 'other'
-        ? field(<Input key="other" label="What is being filed, in your words" placeholder="e.g. I-485 based on asylee status" submitLabel={other.submitLabel} value={typed.other || undefined} onInput={value => { typed.other = value }} onSubmit={value => { typed.other = value; other.onSubmit(value) }} />, 'field-other')
+        ? field('What is being filed, in your words', l => <Input key="other" label={l} placeholder="e.g. I-485 based on asylee status" submitLabel={other.submitLabel} value={typed.other || undefined} onInput={value => { typed.other = value }} onSubmit={value => { typed.other = value; other.onSubmit(value) }} />, 'field-other')
         : null,
     ]
   }
@@ -481,7 +424,7 @@ export function makeKit($: EngineInterface, els: Els, site: 'pane' | 'inline', v
   // protected by its type, so that choice is shown made and can't be undone here.
   const filingChoices = (d: Draft, byCase: boolean) => [
     <Box key="method" flexDirection="column" gap="sm">
-      <Text weight="semibold" color={NAVY} size="footnote">How will it be filed?</Text>
+      <Text weight="semibold" color={HEAD} size="footnote">How will it be filed?</Text>
       {chips('methods', [
         { id: 'method:paper', label: 'On paper, by mail', chosen: (d.method ?? 'paper') === 'paper' },
         { id: 'method:online', label: 'Online, in a USCIS account', chosen: d.method === 'online' },
@@ -489,7 +432,9 @@ export function makeKit($: EngineInterface, els: Els, site: 'pane' | 'inline', v
     </Box>,
     byCase
       ? <Text key="protect-case">{'● This client is protected under 8 U.S.C. 1367 (VAWA, T or U). Their name and documents stay out of anything Claude looks up, and the forms use the safe mailing address.'}</Text>
-      : choice('protect', 'protect:toggle', 'This client is protected under 8 U.S.C. 1367 (VAWA, T or U)', 'Keeps their name and documents out of anything Claude looks up', Boolean(d.protect)),
+      : <Box key="protect" flexDirection="column" gap="xs">
+          {choice('protect-choice', 'protect:toggle', 'Protected client (8 U.S.C. 1367: VAWA, T or U)', 'Keeps their name and documents out of anything Claude looks up, and uses the safe mailing address.', Boolean(d.protect))}
+        </Box>,
   ]
 
   const howItWorks = [

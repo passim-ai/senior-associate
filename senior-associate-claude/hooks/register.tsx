@@ -11,8 +11,8 @@
 // (Overview, Documents, Questions, Packet, Memo & request, Timeline), Help.
 //
 // Everything is the host's own elements (its font, cursor, hover and press
-// behaviour), drawn on Passim paper: the panel paints its own warm paper and
-// every text on it is in a paper colour of its own (theme.ts, kit.tsx).
+// behaviour), in the app's own colours, so it reads in a light or a dark
+// theme, with Passim's wordmark and orange (theme.ts, kit.tsx).
 //
 // The work itself (build, update, review, the officer's review, clean up)
 // runs as the plugin's own background agent, spawned from a button press and

@@ -45,7 +45,7 @@ export async function requestScreen($: EngineInterface, x: Ctx, c: Card): Promis
       ]),
       typingOther
         ? <Box key="lang-other-box" flexDirection="column">
-            {field(<Input key="lang-other-input" label="Another language" placeholder="e.g. Tagalog" submitLabel="use" value={typed.language || (other ? language : undefined)} onInput={val => { typed.language = val }} onSubmit={val => { void perform($, `lang:${val.trim()}`) }} />)}
+            {field('Another language', l => <Input key="lang-other-input" label={l} placeholder="e.g. Tagalog" submitLabel="Use" value={typed.language || (other ? language : undefined)} onInput={val => { typed.language = val }} onSubmit={val => { void perform($, `lang:${val.trim()}`) }} />)}
           </Box>
         : null,
     ], undefined, 'card-language'),

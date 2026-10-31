@@ -41,7 +41,7 @@ export async function timelineScreen($: EngineInterface, x: Ctx, c: Card): Promi
       ...d.events.map((e, i) => (
         <Box key={`ev-${d.day}-${i}`} flexDirection="row" gap="md" alignItems="flex-start">
           <Text color={ACCENT_TEXT} weight="bold">•</Text>
-          <Box flexDirection="column" flexShrink={1} gap="xs">
+          <Box flexDirection="column" flexShrink={1} minWidth={0} gap="xs">
             <Text>{WHO[e.actor] ? `${WHO[e.actor]}: ${e.text}` : e.text}</Text>
             <Text dimColor size="caption" tabular>{clock(e.at)}</Text>
           </Box>

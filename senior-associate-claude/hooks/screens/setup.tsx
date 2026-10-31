@@ -4,7 +4,7 @@ import type { Check } from '../../types'
 import type { Ctx } from '../kit'
 import { requiredMissing } from '../matter'
 import { askClaude, perform } from '../perform'
-import { ERROR_TEXT, NAVY, OK_TEXT, QUIET_TEXT, WARN_TEXT } from '../theme'
+import { ERROR, HEAD, MUTED, OK, WARN } from '../theme'
 import { ASK_LABEL, MATTERS_ASK, NEW_FOLDER } from '../words'
 
 export async function setupScreen($: EngineInterface, x: Ctx): Promise<JSX.Element> {
@@ -17,7 +17,7 @@ export async function setupScreen($: EngineInterface, x: Ctx): Promise<JSX.Eleme
     const ch = !raw.ok && !raw.ask && /matters/i.test(raw.id) ? { ...raw, ask: MATTERS_ASK, fix: raw.fix ?? NEW_FOLDER } : raw
     const optional = ch.level ? ch.level === 'optional' : !ch.required && !recommended(ch)
     const mark = ch.ok ? '✓' : optional ? '○' : '✗'
-    const color = ch.ok ? OK_TEXT : optional ? QUIET_TEXT : ch.required ? ERROR_TEXT : WARN_TEXT
+    const color = ch.ok ? OK : optional ? MUTED : ch.required ? ERROR : WARN
     const label = optional && !/optional/i.test(`${ch.label} ${ch.detail}`) ? `${ch.label} (optional)` : ch.label
     const detail = ch.detail ? ch.detail.charAt(0).toUpperCase() + ch.detail.slice(1) : ''
     const fix = !ch.ok && ch.fix && ch.fix !== ch.detail ? ch.fix : ''
@@ -26,8 +26,8 @@ export async function setupScreen($: EngineInterface, x: Ctx): Promise<JSX.Eleme
         {i ? rule(`check-rule-${ch.id}`) : null}
         <Box flexDirection="row" gap="md" alignItems="flex-start">
           <Text color={color} weight="bold">{mark}</Text>
-          <Box flexDirection="column" flexGrow={1} flexShrink={1} gap="xs">
-            <Text weight="semibold" color={NAVY}>{label}</Text>
+          <Box flexDirection="column" flexGrow={1} flexShrink={1} minWidth={0} gap="xs">
+            <Text weight="semibold" color={HEAD}>{label}</Text>
             {detail ? <Text size="footnote">{detail}</Text> : null}
             {fix ? <Text dimColor size="footnote">{fix}</Text> : null}
             {links(`check-acts-${ch.id}`, [

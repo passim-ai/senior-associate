@@ -4,7 +4,7 @@
 // keyboard or a screen reader couldn't reach, and research that could carry a client's name.
 import type { On } from 'claude-code'
 import { expect, test } from 'claude-code/testing'
-import { ANA, DOCS, OPTS, PLUGIN, ROOT, SEEN, act, agents, boot, card, inActions, metaOf, mount, open, unfold, world } from './world'
+import { ANA, DOCS, OPTS, PLUGIN, ROOT, SEEN, act, agents, boot, card, inActions, metaOf, mount, offTheme, open, unfold, world } from './world'
 import type { Matter } from './world'
 
 
@@ -278,27 +278,12 @@ test('research by Claude’s agents is refused when it holds the client’s deta
   await ui.unmount()
 })
 
-test('the page paints its own paper, and every text on it has a colour of its own, on every screen of a matter and the list', OPTS(), async ($, on) => {
+test('every screen draws in the app’s theme, light or dark: no fixed text colour, no fill behind words, every press a labelled host button', OPTS(), async ($, on) => {
   const draft = card('Garcia I-130 I-485', 'draft', DOCS, { fresh: ['Passport.pdf'] })
   draft.needs_you = [{ text: 'Include an I-765?', question: 'Include an I-765?', kind: 'decision', who: 'attorney', id: 'decide-i765' }]
   const { clock, ui, tap } = await boot($, on, [draft, card('Lopez N-400', 'complete', DOCS)], { checks: undefined })
-  // What the host would colour itself, and so turn light on the paper in a dark theme: a Text with no colour of its
-  // own, a Button whose label the host draws, and Markdown.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const offenders = (el: any, out: string[] = []): string[] => {
-    if (!el || typeof el !== 'object') return out
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const own = (el.children ?? []).filter((c: any) => typeof c === 'string').join('')
-    if (el.type === 'Text' && !(typeof el.props?.color === 'string' && el.props.color.startsWith('#'))) out.push(String(el.text ?? JSON.stringify(el.children)))
-    if (el.type === 'Button' && (!(el.children ?? []).length || own.trim())) out.push(`button ${el.props?.key}`)
-    if (el.type === 'Markdown') out.push('markdown')
-    for (const child of el.children ?? []) offenders(child, out)
-    return out
-  }
   const check = async (where: string) => {
-    const root = await ui.drawn()
-    expect([where, root.props?.backgroundColor]).toEqual([where, '#F7F5F1'])
-    expect([where, ...offenders(root)]).toEqual([where])
+    expect([where, ...offTheme(await ui.drawn())]).toEqual([where])
   }
   await check('matter')
   for (const section of ['sec-instructions', 'sec-more', 'sec-details']) await tap(section)
@@ -327,22 +312,32 @@ test('the page paints its own paper, and every text on it has a colour of its ow
   await ui.unmount()
 })
 
-test('every box has a label, and presses repeated down a list are named for their item', OPTS(), async ($, on) => {
+test('every box has its label above it, and each press says in words what it does', OPTS(), async ($, on) => {
   const draft = card('Garcia I-130 I-485', 'needs_you', DOCS)
   draft.needs_you = [{ text: 'Include an I-765?', question: 'Include an I-765?', kind: 'decision', who: 'attorney', id: 'decide-i765' }]
   const { clock, ui, tap } = await boot($, on, [draft])
+  // The desktop draws an Input's own label beside the field; here each field is the second child of a Box whose first
+  // is its label.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const inputs = async () => (await ui.findAll({ type: 'Input' })).filter((i: any) => !i.props?.label).map((i: any) => i.key)
-  expect(await inputs()).toEqual([])
+  const unlabelled = (el: any, out: string[] = []): string[] => {
+    if (!el || typeof el !== 'object') return out
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(el.children ?? []).forEach((c: any, i: number) => {
+      if (c?.type === 'Input' && !(i === 1 && el.children[0]?.type === 'Text')) out.push(c.key)
+    })
+    for (const child of el.children ?? []) unlabelled(child, out)
+    return out
+  }
+  expect(unlabelled(await ui.drawn())).toEqual([])
   await ui.press({ plugin: PLUGIN, key: 'items' }).catch(() => act(ui, 'items'))
   await clock.settle()
-  expect(await inputs()).toEqual([])
-  expect((await ui.find({ type: 'Button', key: 'done:act-sign' }))?.props?.label).toBe('Mark done: Sign the G-28')
-  expect((await ui.find({ type: 'Button', key: 'save-answer:decide-i765' }))?.props?.label).toBe('Save answer: Include an I-765?')
-  expect((await ui.find({ type: 'Button', key: 'ask-item:decide-i765' }))?.props?.label).toBe('Ask Claude about: Include an I-765?')
+  expect(unlabelled(await ui.drawn())).toEqual([])
+  expect((await ui.find({ type: 'Button', key: 'done:act-sign' }))?.props?.label).toBe('Mark done')
+  expect((await ui.find({ type: 'Button', key: 'save-answer:decide-i765' }))?.props?.label).toBe('Save answer')
+  expect((await ui.find({ type: 'Button', key: 'ask-item:decide-i765' }))?.props?.label).toBe('Ask Claude about this')
   await tap('nav-matter')
   await tap('docs')
-  expect((await ui.find({ type: 'Button', key: 'remove:Passport.pdf' }))?.props?.label).toBe('Remove Passport.pdf')
+  expect((await ui.find({ type: 'Button', key: 'remove:Passport.pdf' }))?.props?.label).toBe('Remove')
   await ui.unmount()
 })
 
@@ -350,10 +345,10 @@ test('choices say which is selected: the case types, the posture, and how it is 
   const { ui, tap } = await boot($, on, [], { open: false }, { prefs: SEEN })
   await tap('main:new')
   await tap('type:n400')
-  expect((await ui.find({ type: 'Button', key: 'type:n400' }))?.props?.label).toBe('N-400 naturalization, selected')
-  expect((await ui.find({ type: 'Button', key: 'type:i130_i485' }))?.props?.label).toBe('I-130 / I-485 immediate relative')
-  expect((await ui.find({ type: 'Button', key: 'posture:new filing packet' }))?.props?.label).toBe('New filing, selected')
-  expect((await ui.find({ type: 'Button', key: 'method:paper' }))?.props?.label).toBe('On paper, by mail, selected')
+  expect((await ui.find({ type: 'Button', key: 'type:n400' }))?.props?.label).toBe('● N-400 naturalization')
+  expect((await ui.find({ type: 'Button', key: 'type:i130_i485' }))?.props?.label).toBe('○ I-130 / I-485 immediate relative')
+  expect((await ui.find({ type: 'Button', key: 'posture:new filing packet' }))?.props).toMatchObject({ label: 'New filing', variant: 'primary' })
+  expect((await ui.find({ type: 'Button', key: 'method:paper' }))?.props).toMatchObject({ label: 'On paper, by mail', variant: 'primary' })
   await ui.unmount()
 })
 
@@ -377,7 +372,7 @@ test('Your details: Back with changes typed asks first; I don’t have a USCIS o
   await tap('account:none')
   expect(requests.filter(r => r.op === 'save_profile').at(-1)).toMatchObject({ profile: { has_uscis_online_account: 'no', uscis_online_account_number: '' } })
   expect(await ui.find({ type: 'Input', key: 'profile-uscis_online_account_number' })).toBeUndefined()
-  expect((await ui.find({ type: 'Button', key: 'account:yes' }))?.props?.label).toBe('I don’t have a USCIS online account, selected')
+  expect((await ui.find({ type: 'Button', key: 'account:yes' }))?.props?.label).toBe('● I don’t have a USCIS online account')
   await ui.input({ plugin: PLUGIN, key: 'profile-firm_name', text: 'Example Law', kind: 'change' })
   await tap('nav-back-profile')
   expect(await ui.find({ type: 'Text', text: /^You changed Firm and haven’t saved it\./ })).toBeDefined()
@@ -395,7 +390,7 @@ test('archive and the sorted list: Archive moves a matter to Archived at the foo
   await tap('do-archive')
   expect(metaOf(matters[0]!).archived_at).toBeTruthy()
   expect(await ui.find({ type: 'Text', text: /^✓ Garcia I-130 I-485 is archived\./ })).toBeDefined()
-  expect(await ui.find({ type: 'Text', text: /^Archived \(1\) ›$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Button', text: /^Archived \(1\) ›$/ })).toBeDefined()
   expect(await ui.find({ type: 'Button', key: `open:${ROOT}/Garcia I-130 I-485` })).toBeUndefined()
   await tap('sort:name')
   const rows = (await ui.findAll({ type: 'Button' })).map((b: { key?: string }) => b.key).filter((k: string | undefined) => k?.startsWith('open:'))
@@ -484,7 +479,7 @@ test('the client request: another language is the matter’s setting, and each l
   const { ui, tap, requests, copied } = await boot($, on, [garcia])
   await tap('memo')
   await tap('request')
-  expect((await ui.find({ type: 'Button', key: 'lang:Spanish' }))?.props?.label).toBe('Spanish, selected')
+  expect((await ui.find({ type: 'Button', key: 'lang:Spanish' }))?.props).toMatchObject({ label: 'Spanish', variant: 'primary' })
   await tap('main:copy-request-lang:Spanish')
   expect(copied.at(-1)).toBe('Documentos que aún necesitamos\n\n1. Su I-94.')
   await tap('lang:Portuguese')

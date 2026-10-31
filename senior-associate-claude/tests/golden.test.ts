@@ -5,7 +5,7 @@
 import type { On } from 'claude-code'
 import { expect, test } from 'claude-code/testing'
 import { GOLDEN } from './golden'
-import { GOOD_CHECKS, OPTS, PLUGIN, SEEN, answer, inActions, mount, open } from './world'
+import { GOOD_CHECKS, OPTS, PLUGIN, SEEN, answer, inActions, mount, offTheme, open } from './world'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Ui = any
@@ -39,24 +39,17 @@ function golden(on: On, opened: string, spawned: { prompt?: string }[] = [], mov
   return { requests, spawned }
 }
 
-// Every text on the page, and those the host would colour itself: a Text with no colour of its own, a Button whose
-// label the host draws, or a Markdown. On the panel's paper the host's text colour turns light in a dark theme.
+// Every text on the page.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function walk(el: any, out: { texts: string[]; hex: string[] } = { texts: [], hex: [] }) {
+function texts(el: any, out: string[] = []): string[] {
   if (!el || typeof el !== 'object') return out
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const own = (el.children ?? []).map((c: any) => (typeof c === 'string' ? c : '')).join('')
-  if (el.type === 'Text') {
-    out.texts.push(own)
-    if (!(typeof el.props?.color === 'string' && el.props.color.startsWith('#'))) out.hex.push(own)
-  }
-  if (el.type === 'Button' && (!(el.children ?? []).length || own.trim())) out.hex.push(`button ${el.props?.key}`)
-  if (el.type === 'Markdown') out.hex.push('markdown')
-  for (const child of el.children ?? []) walk(child, out)
+  if (el.type === 'Text') out.push((el.children ?? []).map((c: any) => (typeof c === 'string' ? c : '')).join(''))
+  for (const child of el.children ?? []) texts(child, out)
   return out
 }
 
-test('every matter the real server sends: its status in its words, nothing raw, no text in the host’s colour, a way forward', OPTS(), async ($, on) => {
+test('every matter the real server sends: its status in its words, nothing raw, everything in the app’s theme, a way forward', OPTS(), async ($, on) => {
   const { clock } = await open($, on)
   golden(on, '')
   const { ui, tap } = await mount($, clock)
@@ -72,11 +65,10 @@ test('every matter the real server sends: its status in its words, nothing raw, 
     }
     await tap(`open:${c.path}`)
     const page = await ui.drawn()
-    expect([name, page.props?.backgroundColor]).toEqual([name, '#F7F5F1'])
-    const { texts, hex } = walk(page)
-    expect([name, texts.includes(c.status.label)]).toEqual([name, true])
-    expect([name, hex]).toEqual([name, []])
-    expect([name, texts.filter(t => /_|That didn’t work|Traceback|\{|\/Users\//.test(t))]).toEqual([name, []])
+    const words = texts(page)
+    expect([name, words.includes(c.status.label)]).toEqual([name, true])
+    expect([name, offTheme(page)]).toEqual([name, []])
+    expect([name, words.filter(t => /_|That didn’t work|Traceback|\{|\/Users\//.test(t))]).toEqual([name, []])
     // A way forward: a main action, Claude's work to watch or stop, or More you can do (folded until asked for).
     const forward = (await ui.findAll({ type: 'Button' })).some((b: { key?: string }) => /^(main:|do-|sec-more$|watch|stop|unmark-filed|ask-fix|not-working)/.test(b.key ?? ''))
     expect([name, forward]).toEqual([name, true])
@@ -124,7 +116,8 @@ test('the real server’s list: each row in its group, archived ones folded at t
   for (const r of rows.filter((x: { archived?: boolean }) => !x.archived)) {
     const button = await ui.find({ type: 'Button', key: `open:${r.path}` })
     if (r.phase === 'filed') continue // folded under Filed
-    expect([r.name, button?.props?.label]).toEqual([r.name, `${r.name}, ${r.label}`])
+    expect([r.name, button?.props?.label]).toEqual([r.name, 'Open'])
+    expect([r.name, Boolean(await ui.find({ type: 'Text', text: r.label }))]).toEqual([r.name, true])
   }
   expect(await ui.find({ type: 'Button', key: 'archived-group' })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^Claude is working$/ })).toBeDefined()

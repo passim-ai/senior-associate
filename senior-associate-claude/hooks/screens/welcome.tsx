@@ -3,19 +3,19 @@
 import type { EngineInterface } from 'claude-code'
 import type { Ctx } from '../kit'
 import { perform } from '../perform'
-import { ACCENT_TEXT, MUTED, NAVY } from '../theme'
+import { ACCENT_TEXT, MUTED, HEAD } from '../theme'
 
 export async function welcomeScreen($: EngineInterface, x: Ctx): Promise<JSX.Element> {
   const { Box, Text, narrow, actions, button, title, eyebrow, rule, page, body, folder, noProfile, tip, numbered, p } = x
   // The sample matter the server adds to a new Matters folder: a fictional case to try before a real one.
   const hasSample = p.matters.some(m => m.sample)
   const step = (num: string, heading: string, text: string) => (
-    <Box key={`first-${num}`} flexDirection="column" gap="sm" flexGrow={1} flexShrink={1} width={narrow ? '100%' : '30%'}>
+    <Box key={`first-${num}`} flexDirection="column" gap="sm" flexGrow={1} flexShrink={1} minWidth={0} width={narrow ? '100%' : '30%'}>
       {rule(`first-rule-${num}`)}
       {narrow ? numbered(num, heading, text) : (
         <Box flexDirection="column" gap="xs" paddingTop="xs">
           <Text size="title" weight="semibold" color={ACCENT_TEXT} tabular>{num.padStart(2, '0')}</Text>
-          <Text weight="semibold" color={NAVY}>{heading}</Text>
+          <Text weight="semibold" color={HEAD}>{heading}</Text>
           <Text size="footnote">{text}</Text>
         </Box>
       )}
@@ -33,7 +33,7 @@ export async function welcomeScreen($: EngineInterface, x: Ctx): Promise<JSX.Ele
       rule('welcome-rule'),
       <Box key="first" flexDirection="column" gap="sm">
         {eyebrow('Your first matter')}
-        <Text size="title" weight="semibold" color={NAVY}>A clear path from documents to review.</Text>
+        <Text size="title" weight="semibold" color={HEAD}>A clear path from documents to review.</Text>
         <Text color={MUTED}>Senior Associate builds USCIS filing packets from a client’s documents, here in Claude. Nothing is filed or sent: you get a draft to read.</Text>
       </Box>,
       <Box key="first-steps" flexDirection={narrow ? 'column' : 'row'} columnGap="xl" rowGap="md" alignItems="flex-start">
@@ -48,10 +48,10 @@ export async function welcomeScreen($: EngineInterface, x: Ctx): Promise<JSX.Ele
         ? <Box key="sample" flexDirection="column" gap="sm">
             {rule('sample-rule')}
             <Box flexDirection="row" flexWrap="wrap" justifyContent="space-between" alignItems="center" columnGap="lg" rowGap="sm">
-              <Box flexDirection="row" gap="md" alignItems="flex-start" flexShrink={1}>
+              <Box flexDirection="row" gap="md" alignItems="flex-start" flexShrink={1} minWidth={0}>
                 <Text color={ACCENT_TEXT} weight="semibold">✦</Text>
-                <Box flexDirection="column" gap="xs" flexShrink={1}>
-                  <Text weight="semibold" color={NAVY}>See how it works</Text>
+                <Box flexDirection="column" gap="xs" flexShrink={1} minWidth={0}>
+                  <Text weight="semibold" color={HEAD}>See how it works</Text>
                   <Text size="footnote" color={MUTED}>A fictional I-601A case to try first</Text>
                 </Box>
               </Box>

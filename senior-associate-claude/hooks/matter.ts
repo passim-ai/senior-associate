@@ -1,7 +1,7 @@
 // Reading a matter's card: where the build stands, what Claude needs, and the words for each state.
 import type { Card, Draft, MatterFile, MatterRow, Payload, Profile, ReviewNote, Run, Setup } from '../types'
 import { typed } from './state'
-import { ERROR_TEXT, LINE, QUIET_TEXT, STAGE_FILL, WARN_TEXT } from './theme'
+import { ERROR, MUTED, STAGE_FILL, WARN } from './theme'
 import { andList, brief, capitalizeWords, duration, plural } from './words'
 
 export const MANY = 6 // matters before a search field appears
@@ -141,8 +141,8 @@ export const ENDED = new Set(['completed', 'failed', 'killed'])
 export const STAGE_WORD: Record<string, string> = { passed: 'done', skipped: 'skipped', in_progress: 'in progress', blocked: 'on hold', failed: 'stopped', pending: 'not started' }
 
 // A review note's colour, by its severity word.
-const NOTE_TONE: Record<string, string> = { important: ERROR_TEXT, 'worth fixing': WARN_TEXT, 'check by hand': WARN_TEXT }
-export const noteTone = (n: ReviewNote) => NOTE_TONE[n.severity_word] ?? QUIET_TEXT
+const NOTE_TONE: Record<string, string> = { important: ERROR, 'worth fixing': WARN, 'check by hand': WARN }
+export const noteTone = (n: ReviewNote) => NOTE_TONE[n.severity_word] ?? MUTED
 
 // "Important · RFE likely · found in Final review · to fix: the client"
 export function noteLine(n: ReviewNote): string {
@@ -299,14 +299,15 @@ export function itemsLine(counts: Record<string, number>): string {
   ].filter(Boolean).join(' · ')
 }
 
-// The step track, drawn as graphics: one rounded segment per step.
+// The step track, drawn as graphics: one rounded segment per step. A step not started is the app's text colour, faint;
+// a done one is that colour in full (currentColor, which the desktop sets to the app's text colour).
 export function trackSvg(stages: { status: string }[]): string {
   const n = Math.max(1, stages.length)
   const width = 1000
   const gap = 10
   const seg = (width - gap * (n - 1)) / n
   const rects = stages
-    .map((s, i) => `<rect x="${(i * (seg + gap)).toFixed(1)}" y="0" width="${seg.toFixed(1)}" height="14" rx="7" fill="${STAGE_FILL[s.status] ?? LINE}"/>`)
+    .map((s, i) => `<rect x="${(i * (seg + gap)).toFixed(1)}" y="0" width="${seg.toFixed(1)}" height="14" rx="7" fill="${STAGE_FILL[s.status] ?? 'currentColor'}"${STAGE_FILL[s.status] ? '' : ' fill-opacity="0.16"'}/>`)
     .join('')
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="14" viewBox="0 0 ${width} 14" role="img" aria-label="build progress">${rects}</svg>`
 }

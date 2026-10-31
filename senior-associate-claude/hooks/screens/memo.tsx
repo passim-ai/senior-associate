@@ -5,25 +5,19 @@ import type { Ctx } from '../kit'
 import { markdown } from '../md'
 import { copyMemo, copyRequest, perform } from '../perform'
 import { requestTranslations } from '../matter'
-import { LINE, MUTED, NAVY, SURFACE, WHITE } from '../theme'
 
-// The two documents of the tab, side by side as one control: the one shown filled in navy.
+// The two documents of the tab, side by side as one control: the one shown is the app's main button.
 export function readerToolbar($: EngineInterface, x: Ctx, which: 'memo' | 'request', right: (JSX.Element | null)[]): JSX.Element {
-  const { Box, Text, Button } = x
-  const seg = (key: string, id: string, label: string, on: boolean) => (
-    <Box key={`segbx:${key}`} flexDirection="row" backgroundColor={on ? NAVY : SURFACE} borderStyle="round" borderColor={on ? NAVY : SURFACE} paddingX="md" paddingY="xs">
-      <Button key={key} plain label={on ? `${label}, shown` : label} onPress={() => { void perform($, id) }}>
-        <Text size="footnote" weight={on ? 'semibold' : 'medium'} color={on ? WHITE : MUTED}>{label}</Text>
-      </Button>
-    </Box>
-  )
+  const { Box, Button } = x
+  const seg = (key: string, id: string, label: string, on: boolean) =>
+    <Button key={key} label={label} variant={on ? 'primary' : undefined} onPress={() => { void perform($, id) }} />
   return (
     <Box key="reader-toolbar" flexDirection="row" flexWrap="wrap" justifyContent="space-between" alignItems="center" columnGap="lg" rowGap="sm">
-      <Box flexDirection="row" backgroundColor={SURFACE} borderStyle="round" borderColor={LINE} padding="xs" gap="xs">
+      <Box flexDirection="row" gap="xs">
         {seg('seg-memo', 'memo', 'Attorney memo', which === 'memo')}
         {seg('request', 'request', 'Client request', which === 'request')}
       </Box>
-      <Box flexDirection="row" flexWrap="wrap" columnGap="md" rowGap="xs" alignItems="center">{right}</Box>
+      <Box flexDirection="row" flexWrap="wrap" columnGap="sm" rowGap="xs" alignItems="center">{right}</Box>
     </Box>
   )
 }
@@ -34,8 +28,8 @@ export async function memoScreen($: EngineInterface, x: Ctx, c: Card): Promise<J
   return matterPage(c, 'memo',
     readerToolbar($, x, 'memo', text
       ? [
-          button('copy-memo', 'Copy memo', press => { void copyMemo($, press.surface) }, 'secondary', { small: true }),
-          button('open-memo', 'Open the memo file', () => { void perform($, 'open-memo') }, 'secondary', { small: true }),
+          button('copy-memo', 'Copy memo', press => { void copyMemo($, press.surface) }, 'secondary'),
+          button('open-memo', 'Open the memo file', () => { void perform($, 'open-memo') }, 'secondary'),
         ]
       : []),
     text

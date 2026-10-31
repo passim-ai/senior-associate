@@ -4,7 +4,7 @@
 // aside, and Claude at work in the app's own agent before the server's next look. Nothing here reads a file's time.
 import type { Card, CardStatus, Lease, MatterRow, RowLease, Run } from '../types'
 import { REVIEW_KINDS, STALL_MS, asksAttorney, builtPast, partway, reviewOnly } from './matter'
-import { ACCENT_LIGHT, AMBER_TINT, GREEN_TINT, NAVY_TINT, RED_TINT, SURFACE } from './theme'
+import type { Tone } from './theme'
 
 
 // One name per status, the same on the pill, the card title and the list (docs/EXPERIENCE.md, "Status names").
@@ -14,12 +14,11 @@ export const PHASE_LABEL: Record<string, string> = {
   starting: 'Waiting for you', stopped: 'Stopped', problem: 'Can’t open',
 }
 
-// The status chip's fill: the accent's light shade where the attorney is needed, navy's where the work goes on, amber's
-// where it waits, green once it can be filed, red when it stopped, and the plain chip otherwise. The text on each is
-// the one colour that reads on it (theme.ts, onFill).
-export const PHASE_FILL: Record<string, string> = {
-  new: SURFACE, ready: NAVY_TINT, reviewed: NAVY_TINT, building: NAVY_TINT, paused: AMBER_TINT, needs_you: ACCENT_LIGHT, waiting_client: AMBER_TINT,
-  draft: AMBER_TINT, complete: GREEN_TINT, filed: SURFACE, starting: ACCENT_LIGHT, stopped: RED_TINT, problem: RED_TINT,
+// The status chip's tone: the accent where the attorney is needed, blue where the work goes on, amber where it waits,
+// green once it can be filed, red when it stopped, and quiet otherwise.
+export const PHASE_TONE: Record<string, Tone> = {
+  new: 'quiet', ready: 'info', reviewed: 'info', building: 'info', paused: 'warn', needs_you: 'accent', waiting_client: 'warn',
+  draft: 'warn', complete: 'ok', filed: 'quiet', starting: 'accent', stopped: 'error', problem: 'error',
 }
 
 // Which group of the matters list a status sits in.
@@ -34,7 +33,7 @@ export type MatterStatus = {
   /** What the matter shows: the server's phase, or starting / stopped / building from the app's own run. */
   phase: string
   label: string
-  fill: string
+  tone: Tone
   group: Group
   /** The server's phase underneath what the app adds: what the matter shows once a stop is set aside. */
   base: string
@@ -93,7 +92,7 @@ export function matterStatus(c: StatusSource, r: Run | null | undefined, now: nu
   return {
     phase,
     label: (phase === base && (server?.label || c.label)) || (PHASE_LABEL[phase] ?? phase),
-    fill: PHASE_FILL[phase] ?? SURFACE,
+    tone: PHASE_TONE[phase] ?? 'quiet',
     group: GROUP[phase] ?? 'preparing',
     base,
     run,

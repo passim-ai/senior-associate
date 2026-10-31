@@ -50,12 +50,12 @@ export async function redoScreen($: EngineInterface, x: Ctx, c: Card): Promise<J
     { title: c.name, subtitle: title, back: { id: 'redo-cancel', label: backLabel }, here: title },
     card('What happens', what),
     card(target ? 'Anything Claude should know? (optional)' : 'What should Claude change?', [
-      field(<Input
+      field('Your note', l => <Input
         key="redo-note"
-        label={target ? 'Anything Claude should know' : 'What Claude should change'}
+        label={l}
         placeholder={target ? 'e.g. Use the 2024 tax return, not the 2023 one' : 'e.g. Lead the letter with the joint lease, and use the newer bank statements'}
         rows={4}
-        submitLabel="save"
+        submitLabel="Save"
         autoFocus={!target ? true : undefined}
         value={typed.redo || undefined}
         onInput={val => { typed.redo = val }}

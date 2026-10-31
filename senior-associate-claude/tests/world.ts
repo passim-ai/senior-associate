@@ -515,12 +515,12 @@ export async function act(ui: any, id: string) {
   return ui.press({ plugin: PLUGIN, key: `main:${id}` })
 }
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+const textOf = (el: any): string => (typeof el === 'string' ? el : (el?.children ?? []).map(textOf).join(''))
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function actionTexts(ui: any): Promise<string[]> {
   const bar = await ui.find({ type: 'Box', key: 'actions' })
   const out: string[] = []
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const textOf = (el: any): string => (typeof el === 'string' ? el : (el?.children ?? []).map(textOf).join(''))
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const walk = (el: any) => {
     if (!el || typeof el !== 'object') return
@@ -531,6 +531,20 @@ export async function actionTexts(ui: any): Promise<string[]> {
   walk(bar)
   return out
 }
+// What would not follow the app's light or dark theme on the desktop, which draws a Button's label alone and every
+// field and Button in the app's own colours: a Text in a fixed colour, a fixed fill behind anything with words (only an
+// empty bar may have one), and a Button with children or no label.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function offTheme(el: any, out: string[] = []): string[] {
+  if (!el || typeof el !== 'object') return out
+  const hex = (c: unknown) => typeof c === 'string' && c.startsWith('#')
+  if (el.type === 'Text' && hex(el.props?.color)) out.push(`text in ${el.props.color}: ${textOf(el)}`)
+  if (el.type === 'Box' && hex(el.props?.backgroundColor) && (el.children ?? []).length) out.push(`fill ${el.props.backgroundColor} behind: ${textOf(el).slice(0, 40)}`)
+  if (el.type === 'Button' && ((el.children ?? []).length || !el.props?.label)) out.push(`button ${el.props?.key}`)
+  for (const child of el.children ?? []) offTheme(child, out)
+  return out
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function inActions(ui: any, pattern: RegExp): Promise<string | undefined> {
   return (await actionTexts(ui)).find(t => pattern.test(t))
@@ -568,7 +582,7 @@ export async function mount($: unknown, clock: Clock) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function unfold(ui: any, tap: (key: string) => Promise<void>, section: string) {
   const button = await ui.find({ type: 'Button', key: section })
-  if (button && /folded$/.test(String(button.props?.label ?? ''))) await tap(section)
+  if (button && /^▸/.test(String(button.props?.label ?? ''))) await tap(section)
 }
 
 // The app as most tests meet it: the stand-in world with these matters and the attorney's details, the welcome and

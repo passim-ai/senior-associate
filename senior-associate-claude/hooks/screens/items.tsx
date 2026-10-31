@@ -9,7 +9,7 @@ import type { Need } from '../matter'
 import { askAboutThis, askClaude, copyRequest, perform } from '../perform'
 import { answerFor, saveAnswer, savedAnswerFor } from '../runs'
 import { typed } from '../state'
-import { ACCENT_LIGHT, ACCENT_TEXT, AMBER, DANGER, GREEN, LINE, MUTED, NAVY } from '../theme'
+import { ACCENT, ACCENT_TEXT, ERROR, HEAD, MUTED, OK, WARN } from '../theme'
 import { ASK_LABEL, brief, nowMs, plural } from '../words'
 import { matterStatus, isBusy } from '../status'
 
@@ -50,18 +50,17 @@ export async function itemsScreen($: EngineInterface, x: Ctx, c: Card): Promise<
   const answerBox = (inputKey: string, qkey: string, akey: string, question: string, number: number) => {
     const value = answerFor(c, qkey, savedAnswers)
     return [
-      field(<Input
+      field(`Your answer to question ${number}`, l => <Input
         key={inputKey}
-        label={`Your answer to question ${number}`}
+        label={l}
         placeholder="Record your decision and any conditions…"
         rows={3}
-        submitLabel="save"
         value={value || undefined}
         onInput={val => { typed.answers[akey] = val }}
         onSubmit={val => { void saveAnswer($, c, qkey, question, val, sendWith) }}
-      />),
+      />, `field-${inputKey}`),
       <Box key={`save-row-${inputKey}`} flexDirection="row" flexWrap="wrap" columnGap="md" rowGap="xs" alignItems="center">
-        {button(`save-answer:${qkey}`, 'Save answer', () => { void saveAnswer($, c, qkey, question, typed.answers[akey] ?? value, sendWith) }, 'primary', { name: `Save answer: ${brief(question, 80)}`, small: true })}
+        {button(`save-answer:${qkey}`, 'Save answer', () => { void saveAnswer($, c, qkey, question, typed.answers[akey] ?? value, sendWith) }, 'primary')}
         {savedMark(akey, value === savedAnswerFor(c, qkey, savedAnswers))}
       </Box>,
     ]
@@ -72,17 +71,17 @@ export async function itemsScreen($: EngineInterface, x: Ctx, c: Card): Promise<
       {k ? rule(`dec-rule-${dn.qkey}`) : null}
       <Box flexDirection="row" gap="md" alignItems="flex-start">
         <Box flexDirection="row" flexShrink={0}><Text size="heading" weight="semibold" color={ACCENT_TEXT} tabular>{String(k + 1).padStart(2, '0')}</Text></Box>
-        <Box flexDirection="column" flexGrow={1} flexShrink={1} gap="xs">
-          <Text weight="semibold" color={NAVY}>{dn.question}</Text>
-          {dn.blocks ? <Text color={DANGER} size="caption" weight="medium">Needed before filing</Text> : <Text size="caption" dimColor>Not needed before filing</Text>}
+        <Box flexDirection="column" flexGrow={1} flexShrink={1} minWidth={0} gap="xs">
+          <Text weight="semibold" color={HEAD}>{dn.question}</Text>
+          {dn.blocks ? <Text color={ERROR} size="caption" weight="medium">Needed before filing</Text> : <Text size="caption" dimColor>Not needed before filing</Text>}
           {dn.detail && dn.detail !== dn.question ? <Text dimColor size="footnote">{dn.detail}</Text> : null}
         </Box>
       </Box>
       {dn.recommendation
-        ? barCard(`rec-${dn.qkey}`, LINE, [
-            <Text key="rec-head" size="footnote" weight="semibold" color={NAVY}>Suggested approach</Text>,
+        ? barCard(`rec-${dn.qkey}`, ACCENT, [
+            <Text key="rec-head" size="footnote" weight="semibold" color={HEAD}>Suggested approach</Text>,
             <Text key="rec-text" size="footnote">{`Recommended: ${dn.recommendation}`}</Text>,
-            answerable ? lone(`rec:${dn.qkey}`, button(`rec:${dn.qkey}`, 'Use the recommendation', () => { void perform($, `rec:${dn.qkey}`) }, 'secondary', { name: `Use the recommendation: ${brief(dn.question, 80)}`, small: true })) : null,
+            answerable ? lone(`rec:${dn.qkey}`, button(`rec:${dn.qkey}`, 'Use the recommendation', () => { void perform($, `rec:${dn.qkey}`) }, 'secondary')) : null,
           ])
         : null}
       {answerable
@@ -91,7 +90,7 @@ export async function itemsScreen($: EngineInterface, x: Ctx, c: Card): Promise<
       {links(`dec-acts-${dn.qkey}`, [
         link(`ask-item:${dn.qkey}`, 'Ask Claude about this', () => {
           void askAboutThis($, c, dn.question, ASK_ITEM.attorney_decision ?? 'What should we do about this?')
-        }, false, `Ask Claude about: ${brief(dn.question, 80)}`),
+        }, false),
       ])}
     </Box>
   )
@@ -102,7 +101,7 @@ export async function itemsScreen($: EngineInterface, x: Ctx, c: Card): Promise<
       {k ? rule(`rq-rule-${k}`) : null}
       <Box flexDirection="row" gap="md" alignItems="flex-start">
         <Box flexDirection="row" flexShrink={0}><Text size="heading" weight="semibold" color={ACCENT_TEXT} tabular>{String(k + 1).padStart(2, '0')}</Text></Box>
-        <Box flexDirection="column" flexGrow={1} flexShrink={1}><Text weight="semibold" color={NAVY}>{q}</Text></Box>
+        <Box flexDirection="column" flexGrow={1} flexShrink={1} minWidth={0}><Text weight="semibold" color={HEAD}>{q}</Text></Box>
       </Box>
       {answerable ? answerBox(`rq-${k}`, `report-${k}`, `${c.path}#report-${k}`, q, k + 1) : null}
     </Box>
@@ -114,7 +113,7 @@ export async function itemsScreen($: EngineInterface, x: Ctx, c: Card): Promise<
         return (
           <Box key="reply-box" flexDirection="column" gap="sm">
             <Text>Claude asked its questions in its report, on the Overview. Answer them here, in one box.</Text>
-            {field(<Input key="reply" label="Your answers" placeholder="Your answers to Claude’s questions" rows={3} submitLabel="save" value={value || undefined} onInput={val => { typed.answers[key] = val }} onSubmit={val => { void saveAnswer($, c, 'reply', 'Claude’s questions in its report', val, 'Update the packet') }} />)}
+            {field('Your answers', l => <Input key="reply" label={l} placeholder="Your answers to Claude’s questions" rows={3} submitLabel="Save" value={value || undefined} onInput={val => { typed.answers[key] = val }} onSubmit={val => { void saveAnswer($, c, 'reply', 'Claude’s questions in its report', val, 'Update the packet') }} />)}
             {savedMark(key, value === savedAnswerFor(c, 'reply', savedAnswers))}
           </Box>
         )
@@ -125,24 +124,22 @@ export async function itemsScreen($: EngineInterface, x: Ctx, c: Card): Promise<
   const line = (it: OpenItem) => {
     const mentionsDetails = /your details|attorney profile/i.test(`${it.title} ${it.detail}`)
     const isClient = it.type === 'client_document'
-    // Each item's presses are named for it, so a screen reader hears "Mark done: Sign the G-28", not five "Mark done"s.
-    const name = brief(it.title, 80)
     return (
       <Box key={`item-${it.id}`} flexDirection="row" gap="sm" alignItems="flex-start">
-        <Text color={it.blocks_filing ? DANGER : AMBER} weight="bold">{it.type === 'risk' ? '◆' : '▲'}</Text>
-        <Box flexDirection="column" flexGrow={1} flexShrink={1} gap="xs">
-          <Text weight="semibold" color={NAVY}>{it.title}</Text>
+        <Text color={it.blocks_filing ? ERROR : WARN} weight="bold">{it.type === 'risk' ? '◆' : '▲'}</Text>
+        <Box flexDirection="column" flexGrow={1} flexShrink={1} minWidth={0} gap="xs">
+          <Text weight="semibold" color={HEAD}>{it.title}</Text>
           {it.detail ? <Text dimColor size="footnote">{brief(it.detail)}</Text> : null}
-          {it.blocks_filing ? <Text color={DANGER} size="caption" weight="medium">Needed before filing</Text> : null}
+          {it.blocks_filing ? <Text color={ERROR} size="caption" weight="medium">Needed before filing</Text> : null}
           {links(`acts-${it.id}`, [
-            isClient ? link(`recv:${it.id}`, 'Received — Add files…', () => { void perform($, `recv:${it.id}`) }, true, `Received: ${name}. Add files…`) : null,
-            it.type === 'attorney_action' && (!mentionsDetails || !noProfile) ? link(`done:${it.id}`, 'Mark done', () => { void perform($, `done:${it.id}`) }, true, `Mark done: ${name}`) : null,
-            it.type === 'client_question' ? link(`client-said:${it.id}`, 'The client answered — tell Claude', () => { void perform($, `client-said:${it.id}`) }, true, `The client answered: ${name}. Tell Claude`) : null,
-            it.type === 'risk' ? link(`accept:${it.id}`, 'Accept this risk', () => { void perform($, `accept:${it.id}`) }, true, `Accept this risk: ${name}`) : null,
+            isClient ? link(`recv:${it.id}`, 'Received — Add files…', () => { void perform($, `recv:${it.id}`) }, true) : null,
+            it.type === 'attorney_action' && (!mentionsDetails || !noProfile) ? link(`done:${it.id}`, 'Mark done', () => { void perform($, `done:${it.id}`) }, true) : null,
+            it.type === 'client_question' ? link(`client-said:${it.id}`, 'The client answered — tell Claude', () => { void perform($, `client-said:${it.id}`) }, true) : null,
+            it.type === 'risk' ? link(`accept:${it.id}`, 'Accept this risk', () => { void perform($, `accept:${it.id}`) }, true) : null,
             mentionsDetails ? link(`details:${it.id}`, noProfile ? 'Add your details' : 'Your details', () => { void perform($, 'profile') }, true) : null,
             link(`ask-item:${it.id}`, 'Ask Claude about this', () => {
               void askAboutThis($, c, it.title, ASK_ITEM[it.type] ?? 'What should we do about this?')
-            }, false, `Ask Claude about: ${name}`),
+            }, false),
           ])}
         </Box>
       </Box>
@@ -167,16 +164,16 @@ export async function itemsScreen($: EngineInterface, x: Ctx, c: Card): Promise<
 
   return matterPage(c, 'items',
     section('Questions & missing evidence', [
-      <Text key="q-status" weight="medium" color={NAVY}>{ledger
+      <Text key="q-status" weight="medium" color={HEAD}>{ledger
         ? openItems.length ? `${plural(openItems.length, 'open item', 'open items')}, ${needed} needed before filing` : 'Nothing open'
         : damaged ? 'The list can’t be read' : decisions.length || asked.length ? plural(decisions.length || asked.length, 'question', 'questions') : 'Nothing listed yet'}</Text>,
       <Text key="q-what" dimColor>{built ? 'Save your decisions here, then update the packet to apply them.' : 'Save your decisions here; they go with the build.'}</Text>,
-    ], 'sec-questions', needed ? pill(`${needed} needed before filing`, ACCENT_LIGHT, 'needed-pill') : null),
+    ], 'sec-questions', needed ? pill(`${needed} needed before filing`, 'accent', 'needed-pill') : null),
     damaged
       ? card('Claude’s list of open items can’t be read', [
           <Text key="damaged">The file Claude keeps the list in is damaged, so what’s left can’t be shown. Claude can rewrite it from the review notes and the memo; this page shows it again once it’s done.</Text>,
-          links('damaged-acts', [link('ask-rewrite', ASK_LABEL, () => { void askClaude($, rewrite) }, true, `${ASK_LABEL}: rewrite the list of open items`)]),
-        ], AMBER, 'card-damaged')
+          links('damaged-acts', [link('ask-rewrite', ASK_LABEL, () => { void askClaude($, rewrite) }, true)]),
+        ], WARN, 'card-damaged')
       : !anything
         ? ledger
           ? card(null, [<Text key="clear">Nothing is open. {ledger.packet_status === 'ready_to_file' ? 'The packet is ready to file once you’ve read it through.' : ''}</Text>])
@@ -215,11 +212,11 @@ export async function itemsScreen($: EngineInterface, x: Ctx, c: Card): Promise<
                   <Text key="res-what" dimColor size="footnote">Settled by you or by Claude. Reopen puts one back on the list; Claude takes it up again on the next update.</Text>,
                   ...resolvedItems.map(it => (
                     <Box key={`res-${it.id}`} flexDirection="row" gap="sm" alignItems="flex-start">
-                      <Text color={GREEN} weight="bold">✓</Text>
-                      <Box flexDirection="column" flexGrow={1} flexShrink={1} gap="xs">
+                      <Text color={OK} weight="bold">✓</Text>
+                      <Box flexDirection="column" flexGrow={1} flexShrink={1} minWidth={0} gap="xs">
                         <Text>{it.title}</Text>
                         {it.resolution ? <Text dimColor size="footnote">{brief(it.resolution, 200)}</Text> : null}
-                        {links(`res-acts-${it.id}`, [link(`reopen:${it.id}`, 'Reopen', () => { void perform($, `reopen:${it.id}`) }, true, `Reopen: ${brief(it.title, 80)}`)])}
+                        {links(`res-acts-${it.id}`, [link(`reopen:${it.id}`, 'Reopen', () => { void perform($, `reopen:${it.id}`) }, true)])}
                       </Box>
                     </Box>
                   )),
@@ -232,8 +229,8 @@ export async function itemsScreen($: EngineInterface, x: Ctx, c: Card): Promise<
       ? <Box key="update-bar" flexDirection="column" gap="md">
           {rule('update-rule')}
           <Box flexDirection="row" flexWrap="wrap" justifyContent="space-between" alignItems="center" columnGap="lg" rowGap="sm">
-            <Box flexDirection="column" gap="xs" flexShrink={1}>
-              <Text weight="semibold" color={NAVY}>Ready to use your answers?</Text>
+            <Box flexDirection="column" gap="xs" flexShrink={1} minWidth={0}>
+              <Text weight="semibold" color={HEAD}>Ready to use your answers?</Text>
               <Text size="footnote" color={MUTED}>{built ? 'Saved answers are worked in the next time you update the packet.' : 'Saved answers go with the build.'}</Text>
             </Box>
             {actions([foot])}

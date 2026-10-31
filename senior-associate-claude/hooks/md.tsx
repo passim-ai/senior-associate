@@ -1,12 +1,12 @@
-// The memo, the client request and Claude's reports, read on the paper: their Markdown drawn as the panel's own text, in
-// paper colours (the host's Markdown takes no colour, and would turn light in a dark theme).
+// The memo, the client request and Claude's reports: their Markdown drawn as the panel's own text, so its headings, lists
+// and tables match the rest of the panel (the host's Markdown takes no colour or size of the panel's).
 //
 // The dialect is the one the deliverables are written in (scripts/packet/render_document.py): `#` to `###` headings,
 // paragraphs, `-` bullets with one level of sub-bullets, `1.` numbered lists, `- [ ]` and `- [x]` checklist items,
 // `| a | b |` tables, `>` notes, `---` rules, `**bold**`, `*italic*`, `` `code` ``, `<u>underlined</u>` and links,
 // which are drawn as their words with the address after them, as the Copy button gives them.
 import type { Els } from './kit'
-import { ACCENT, ACCENT_TEXT, HOVER, INK, LINE, MUTED, NAVY } from './theme'
+import { ACCENT, ACCENT_TEXT, HEAD, INK, MUTED } from './theme'
 
 type Run = { text: string; bold?: boolean; italic?: boolean; code?: boolean; underline?: boolean }
 type Block =
@@ -131,13 +131,13 @@ export function parse(source: string): Block[] {
   return blocks
 }
 
-// The document drawn: headings in navy, the text in ink, list markers and notes in muted and the accent, tables as
-// aligned rows. `key` keeps two documents on one screen apart; `compact` draws a report a step smaller.
+// The document drawn: headings set apart by weight, list markers and notes muted or in the accent, tables as aligned
+// rows. `key` keeps two documents on one screen apart; `compact` draws a report a step smaller.
 export function markdown(els: Pick<Els, 'Box' | 'Text'>, key: string, source: string, compact = false): JSX.Element {
   const { Box, Text } = els
   const size = compact ? 'footnote' as const : 'body' as const
   const runsOf = (runs: Run[], color: string, k: string) => runs.map((r, i) => (
-    <Text key={`${k}-${i}`} color={color} weight={r.bold ? 'semibold' : undefined} italic={r.italic || undefined} underline={r.underline || undefined} mono={r.code || undefined} backgroundColor={r.code ? HOVER : undefined}>{r.text}</Text>
+    <Text key={`${k}-${i}`} color={color} weight={r.bold ? 'semibold' : undefined} italic={r.italic || undefined} underline={r.underline || undefined} mono={r.code || undefined}>{r.text}</Text>
   ))
   const blocks = parse(source)
   return (
@@ -146,18 +146,18 @@ export function markdown(els: Pick<Els, 'Box' | 'Text'>, key: string, source: st
         const k = `${key}-${i}`
         switch (bl.kind) {
           case 'h1':
-            return <Box key={k} flexDirection="column" paddingBottom="xs"><Text size={compact ? 'heading' : 'title'} weight="semibold" color={NAVY}>{runsOf(bl.runs, NAVY, k)}</Text></Box>
+            return <Box key={k} flexDirection="column" paddingBottom="xs"><Text size={compact ? 'heading' : 'title'} weight="semibold" color={HEAD}>{runsOf(bl.runs, HEAD, k)}</Text></Box>
           case 'h2':
-            return <Box key={k} flexDirection="column" paddingTop={i ? 'md' : undefined}><Text size={compact ? 'body' : 'heading'} weight="semibold" color={NAVY}>{runsOf(bl.runs, NAVY, k)}</Text></Box>
+            return <Box key={k} flexDirection="column" paddingTop={i ? 'md' : undefined}><Text size={compact ? 'body' : 'heading'} weight="semibold" color={HEAD}>{runsOf(bl.runs, HEAD, k)}</Text></Box>
           case 'h3':
-            return <Box key={k} flexDirection="column" paddingTop={i ? 'sm' : undefined}><Text size={size} weight="semibold" color={NAVY}>{runsOf(bl.runs, NAVY, k)}</Text></Box>
+            return <Box key={k} flexDirection="column" paddingTop={i ? 'sm' : undefined}><Text size={size} weight="semibold" color={HEAD}>{runsOf(bl.runs, HEAD, k)}</Text></Box>
           case 'para':
             return <Text key={k} size={size} color={INK}>{runsOf(bl.runs, INK, k)}</Text>
           case 'quote':
             return (
               <Box key={k} flexDirection="row" gap="md">
                 <Box backgroundColor={ACCENT} paddingLeft="xs" />
-                <Box flexDirection="column" flexShrink={1} paddingY="xs"><Text size={size} color={MUTED}>{runsOf(bl.runs, MUTED, k)}</Text></Box>
+                <Box flexDirection="column" flexShrink={1} minWidth={0} paddingY="xs"><Text size={size} color={MUTED}>{runsOf(bl.runs, MUTED, k)}</Text></Box>
               </Box>
             )
           case 'bullet':
@@ -166,13 +166,13 @@ export function markdown(els: Pick<Els, 'Box' | 'Text'>, key: string, source: st
             return (
               <Box key={k} flexDirection="row" gap="sm" alignItems="flex-start" paddingLeft={bl.level ? 'xl' : 'sm'}>
                 <Box flexDirection="row" flexShrink={0}><Text size={size} color={bl.kind === 'number' ? ACCENT_TEXT : MUTED} weight={bl.kind === 'number' ? 'semibold' : undefined} tabular>{bl.marker}</Text></Box>
-                <Box flexDirection="column" flexShrink={1} flexGrow={1}><Text size={size} color={INK}>{runsOf(bl.runs, INK, k)}</Text></Box>
+                <Box flexDirection="column" flexShrink={1} flexGrow={1} minWidth={0}><Text size={size} color={INK}>{runsOf(bl.runs, INK, k)}</Text></Box>
               </Box>
             )
           case 'rule':
-            return <Box key={k} height={0} borderStyle="single" borderColor={LINE} />
+            return <Box key={k} height={0} padding={0} borderStyle="single" />
           case 'code':
-            return <Box key={k} flexDirection="column" backgroundColor={HOVER} paddingX="md" paddingY="sm"><Text size="footnote" mono color={INK}>{bl.text}</Text></Box>
+            return <Box key={k} flexDirection="column" borderStyle="round" paddingX="md" paddingY="sm"><Text size="footnote" mono color={INK}>{bl.text}</Text></Box>
           case 'table': {
             const width = `${Math.floor(100 / Math.max(1, ...bl.rows.map(r => r.length)))}%`
             return (
@@ -181,12 +181,12 @@ export function markdown(els: Pick<Els, 'Box' | 'Text'>, key: string, source: st
                   <Box key={`${k}-r${r}`} flexDirection="column">
                     <Box flexDirection="row" columnGap="md" paddingY="xs">
                       {row.map((cell, c) => (
-                        <Box key={`${k}-r${r}c${c}`} flexDirection="column" width={width} flexShrink={1}>
-                          <Text size={compact || bl.header && r === 0 ? 'footnote' : size} weight={bl.header && r === 0 ? 'semibold' : undefined} color={bl.header && r === 0 ? NAVY : INK}>{runsOf(cell, bl.header && r === 0 ? NAVY : INK, `${k}-r${r}c${c}`)}</Text>
+                        <Box key={`${k}-r${r}c${c}`} flexDirection="column" width={width} flexShrink={1} minWidth={0}>
+                          <Text size={compact || bl.header && r === 0 ? 'footnote' : size} weight={bl.header && r === 0 ? 'semibold' : undefined} color={bl.header && r === 0 ? HEAD : INK}>{runsOf(cell, bl.header && r === 0 ? HEAD : INK, `${k}-r${r}c${c}`)}</Text>
                         </Box>
                       ))}
                     </Box>
-                    <Box height={0} borderStyle="single" borderColor={LINE} />
+                    <Box height={0} padding={0} borderStyle="single" />
                   </Box>
                 ))}
               </Box>

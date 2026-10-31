@@ -8,13 +8,13 @@ import type { Need } from '../matter'
 import { askClaude, perform, sendQuestion } from '../perform'
 import { answerFor, saveInstructions } from '../runs'
 import { session, setNote, typed } from '../state'
-import { ACCENT, ACCENT_TEXT, AMBER, DANGER, LINE, MUTED, NAVY, QUIET_TEXT, STAGE_TEXT } from '../theme'
+import { ACCENT, ACCENT_TEXT, CARD, ERROR, HEAD, MUTED, STAGE_TEXT, WARN } from '../theme'
 import { markdown } from '../md'
 import { ASK_LABEL, brief, clock, dateOnly, duration, nowMs, plural, when, whenPhrase } from '../words'
 import { matterStatus } from '../status'
 
 export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise<JSX.Element> {
-  const { Box, Text, Button, Input, isDesktop, narrow, svg, allRuns, pr, d, savedAnswers, st, g, open, missingCase, asked, actions, button, lone, link, links, card, barCard, columns, disclosure, eyebrow, rule, field, savedMark, matterPage, noProfile, tip, confirmBox, caseChooser, postureChips } = x
+  const { Box, Text, Input, isDesktop, narrow, svg, allRuns, pr, d, savedAnswers, st, g, open, missingCase, asked, actions, button, lone, link, links, card, barCard, columns, disclosure, eyebrow, rule, field, savedMark, matterPage, noProfile, tip, confirmBox, caseChooser, postureChips } = x
   const prg = c.progress
   const ledger = c.open_items ?? null
   const needs = needsOf(c)
@@ -55,14 +55,14 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
   // Setup problems, and a list of open items Claude can't read, each with Claude to fix it and a way to check again.
   const systemBlock = (heading: string) => (
     <Box key="sys" flexDirection="column" gap="sm">
-      <Text weight="semibold" color={NAVY}>{heading}</Text>
+      <Text weight="semibold" color={HEAD}>{heading}</Text>
       {systemNeeds.map(x => (
         <Box key={`sys-${x.i}`} flexDirection="column" gap="xs">
           <Text>{`• ${x.question}`}</Text>
           {x.fix ? <Text dimColor size="footnote">{x.fix}</Text> : null}
           {links(`sys-acts-${x.i}`, [
-            x.ask ? link(`ask-fix:${x.i}`, ASK_LABEL, () => { void askClaude($, x.ask) }, true, `${ASK_LABEL}: ${brief(x.question, 60)}`) : null,
-            link(`check-again:${x.i}`, 'Done — check again', () => { void perform($, 'check-again') }, true, `Done — check again: ${brief(x.question, 60)}`),
+            x.ask ? link(`ask-fix:${x.i}`, ASK_LABEL, () => { void askClaude($, x.ask) }, true) : null,
+            link(`check-again:${x.i}`, 'Done — check again', () => { void perform($, 'check-again') }, true),
           ])}
         </Box>
       ))}
@@ -84,7 +84,7 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
   const changes = arrived + taken.length + inChat.length
   const tookOut = removedWords(docs)
   const madeInChat = inChat.length === 1 ? (docs.masked ? 'you made a change in chat' : `you made a change in chat (${inChat[0]!.what})`) : `you made ${inChat.length} changes in chat`
-  const freshLine = (since: string) => <Text key="fresh" weight="semibold" color={NAVY}>{changesLine(docs, since, inChat.length ? madeInChat : '')}</Text>
+  const freshLine = (since: string) => <Text key="fresh" weight="semibold" color={HEAD}>{changesLine(docs, since, inChat.length ? madeInChat : '')}</Text>
   const updateButton: ActionButton = {
     id: 'update', label: 'Update the packet', kind: 'primary',
     detail: !taken.length && !inChat.length ? `Works in ${worksIn(docs)}` : !arrived && !taken.length ? 'Re-checks what you changed in chat' : 'Brings the packet up to date',
@@ -92,7 +92,7 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
 
   if (state === 'starting') {
     title = 'Waiting for you'
-    border = AMBER
+    border = WARN
     lines.push(<Text key="s1">Claude needs your OK to start. Press Enter to send the request in your chat box.</Text>)
     foot.push(<Text key="s2" dimColor size="footnote">This page switches to Claude is working by itself once it starts.</Text>)
     extra.push(link('cancel-start', 'Cancel', () => { void perform($, 'cancel-start') }))
@@ -101,14 +101,14 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
     const kind = working?.kind ?? 'build'
     const label = runKind(kind).doing
     const s = stepText(step)
-    lines.push(<Text key="w1" weight="semibold" color={NAVY}>{STEP_KINDS.has(kind) && s ? `${label} · ${s}` : label}</Text>)
+    lines.push(<Text key="w1" weight="semibold" color={HEAD}>{STEP_KINDS.has(kind) && s ? `${label} · ${s}` : label}</Text>)
     // The track: one segment per step, and what comes next.
     if (STEP_KINDS.has(kind) || serverWorking) {
       lines.push(
         <Box key="track" flexDirection="column" gap="xs">
           {isDesktop
             ? svg(trackSvg(prg.stages), `${prg.done} of ${prg.total} steps done`)
-            : <Box flexDirection="row">{prg.stages.map(st => <Text key={st.id} color={STAGE_TEXT[st.status] ?? QUIET_TEXT}>{'━━ '}</Text>)}</Box>}
+            : <Box flexDirection="row">{prg.stages.map(st => <Text key={st.id} color={STAGE_TEXT[st.status] ?? MUTED}>{'━━ '}</Text>)}</Box>}
           {step && prg.current?.status === 'in_progress' && step.index < prg.stages.length
             ? <Text dimColor size="footnote">Then: {prg.stages.slice(step.index, step.index + 2).map(st => st.label).join(', ')}</Text>
             : null}
@@ -116,10 +116,10 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
       )
     }
     if (working?.waitingOk) {
-      border = AMBER
+      border = WARN
       lines.push(<Text key="ok">{`Claude is waiting for your OK in the chat. The ${runKind(kind).noun} continues once you answer.`}</Text>)
     } else if (stalled) {
-      border = AMBER
+      border = WARN
       lines.push(<Text key="stall">Nothing has changed for 20 minutes. Claude may be waiting for your OK in the chat, or it stopped.</Text>)
     }
     if (working) {
@@ -154,7 +154,7 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
     }
   } else if (state === 'stopped' && failed) {
     title = 'Stopped'
-    border = DANGER
+    border = ERROR
     const why = failed.reason === 'error' ? 'Claude hit a temporary problem, such as a busy service or a dropped connection'
       : failed.reason === 'by_you' ? 'you stopped it'
       : failed.reason === 'aborted' || failed.reason === 'killed' ? 'it was stopped'
@@ -169,19 +169,19 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
     extra.push(link('dismiss-run', 'Not now: show where the matter stands', () => { void perform($, 'dismiss-run') }))
   } else if (c.needs_intake && state !== 'stopped') {
     title = 'What is being filed?'
-    border = missingCase ? AMBER : ACCENT
+    border = missingCase ? WARN : ACCENT
     lines.push(<Text key="intake">This folder was made outside Senior Associate, so Claude doesn’t know the case yet. Choose it, then press Save.</Text>)
-    lines.push(...caseChooser(d, open, missingCase ? 'Choose one below, then press Save.' : '', { submitLabel: 'save', onSubmit: () => { void perform($, 'set-intake') } }))
+    lines.push(...caseChooser(d, open, missingCase ? 'Choose one below, then press Save.' : '', { submitLabel: 'Save', onSubmit: () => { void perform($, 'set-intake') } }))
     lines.push(
       <Box key="intake-postures" flexDirection="column" gap="sm">
-        <Text weight="semibold" color={NAVY}>New filing or a response?</Text>
+        <Text weight="semibold" color={HEAD}>New filing or a response?</Text>
         {postureChips(d)}
       </Box>,
     )
     main = [{ id: 'set-intake', label: 'Save', kind: 'primary', detail: 'Then build or review the documents' }]
   } else if (gated) {
     title = 'Before you build'
-    border = AMBER
+    border = WARN
     lines.push(<Text key="gate">⚠ Your details aren’t filled in, so the G-28 and the letter’s signature will be left blank.</Text>)
     main = [
       { id: 'gate-details', label: 'Add your details first', kind: 'primary', detail: '2 minutes' },
@@ -217,7 +217,7 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
       main = [{ id: 'add-files', label: 'Add files…', kind: 'primary', detail: 'What the client sent' }, ...(requestReady ? [copyButton] : [])]
     }
     if (clientNeeds.length) lines.push(<Box key="wc-list" flexDirection="column" gap="xs">{clientNeeds.slice(0, 6).map(x => <Text key={`wc-${x.i}`}>{`• ${x.question}`}</Text>)}</Box>)
-    if (optional.length && !main.some(m => m.id === 'update')) extra.push(link('update', 'Update the packet', () => { void perform($, 'update') }, true, 'Update the packet with your answers'))
+    if (optional.length && !main.some(m => m.id === 'update')) extra.push(link('update', 'Update the packet', () => { void perform($, 'update') }, true))
     if (c.outputs.packet) extra.push(link('open-packet', 'Open draft packet', () => { void perform($, 'open-packet') }, true))
   } else if (phase === 'new') {
     title = 'Add the client’s documents'
@@ -240,7 +240,7 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
     if (arrived || taken.length) {
       // New or replaced documents after a review: look at them again first (quick), or go straight to the build,
       // which reviews them first.
-      lines.push(<Text key="fresh" weight="semibold" color={NAVY}>{changesLine(docs, 'Claude reviewed the documents')}</Text>)
+      lines.push(<Text key="fresh" weight="semibold" color={HEAD}>{changesLine(docs, 'Claude reviewed the documents')}</Text>)
       lines.push(<Text key="fresh-how">Review the documents again to see what’s still missing and refresh the client request. Or build the packet now: the build starts by reviewing them.</Text>)
       main = [
         { id: 'review-again', label: 'Review the documents again', kind: 'primary', detail: 'About 5–10 minutes · see what’s still missing' },
@@ -288,7 +288,7 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
         ? [{ ...copyButton, kind: 'primary' }, seeLeft]
         : [{ ...seeLeft, kind: 'primary' }, ...(c.outputs.memo ? [{ id: 'memo', label: 'Read the memo', kind: 'secondary' as const, detail: 'What each item is and why' }] : [])]
     }
-    if (optional.length && !main.some(m => m.id === 'update')) extra.push(link('update', 'Update the packet', () => { void perform($, 'update') }, true, 'Update the packet with your answers'))
+    if (optional.length && !main.some(m => m.id === 'update')) extra.push(link('update', 'Update the packet', () => { void perform($, 'update') }, true))
     if (c.outputs.packet) extra.push(link('open-packet', 'Open draft packet', () => { void perform($, 'open-packet') }, true))
     if (c.outputs.filing_checklist) extra.push(link('print-checklist', 'Print the filing checklist', () => { void perform($, 'print-checklist') }))
   } else if (phase === 'complete') {
@@ -305,12 +305,12 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
         ]
       }
       // Questions still open here are ones the packet can be filed without; they wait on Questions.
-      if (optional.length && !changes) extra.push(link('update', 'Update the packet', () => { void perform($, 'update') }, true, 'Update the packet with your answers'))
+      if (optional.length && !changes) extra.push(link('update', 'Update the packet', () => { void perform($, 'update') }, true))
       // Files added since the build don't take away filing: the attorney may file without them.
       extra.push(link('mark-filed', 'Mark as filed', () => { void perform($, 'mark-filed') }, true))
       if (c.outputs.filing_checklist) extra.push(link('print-checklist', 'Print the filing checklist', () => { void perform($, 'print-checklist') }, true))
       // A split filing: some forms go on paper in a packet of their own.
-      if (c.outputs.paper_packet) extra.push(link('open-paper-packet', 'Open the paper part', () => { void perform($, 'open-paper-packet') }, true, `Open ${c.outputs.paper_packet.name}`))
+      if (c.outputs.paper_packet) extra.push(link('open-paper-packet', 'Open the paper part', () => { void perform($, 'open-paper-packet') }, true))
     } else {
       lines.push(<Text key="clean">Every step is done. Clean up to delete Claude’s working files from the matter folder.</Text>)
       main = [{ id: 'closeout', label: 'Clean up working files', kind: 'primary', detail: 'Deletes Claude’s working copies of client documents' }]
@@ -381,12 +381,7 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
   }
   const moreList = more.map(m => (
     <Box key={`more-${m.id}`} flexDirection="column" gap="xs">
-      <Box flexDirection="row">
-        <Button key={`do-${m.id}`} plain label={m.label} onPress={() => { void perform($, m.id) }}>
-          <Text weight="semibold" color={NAVY}>{m.label}</Text>
-          <Text color={MUTED}>{'  ›'}</Text>
-        </Button>
-      </Box>
+      {lone(`do-${m.id}`, button(`do-${m.id}`, `${m.label} ›`, () => { void perform($, m.id) }, 'link'))}
       <Text dimColor size="footnote">{m.detail}</Text>
     </Box>
   ))
@@ -401,17 +396,15 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
       : 'Claude follows them in every step of the build.'
   const instructionsBody = [
     <Text key="ins-what" dimColor size="footnote">Anything Claude should follow on this matter: what to lead with, what to leave out, how to argue it. Claude reads these before every step, in the build and every update after it.</Text>,
-    field(<Input
+    field('Additional attorney instructions', l => <Input
       key="instructions"
-      label="Additional attorney instructions"
+      label={l}
       placeholder="e.g. Lead the letter with the joint lease. Don’t include an I-765."
       rows={4}
-      submitLabel="save"
       value={instructionsValue || undefined}
       onInput={val => { typed.instructions[c.path] = val }}
       onSubmit={val => saveTheInstructions(val)}
     />, 'field-instructions'),
-    lone('save-instructions', button('save-instructions', 'Save instructions', () => saveTheInstructions(typed.instructions[c.path] ?? instructionsValue), 'secondary', { small: true })),
     savedMark('instructions', instructionsValue === savedInstructions),
   ]
   function saveTheInstructions(val: string) {
@@ -431,7 +424,7 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
         guide.intro ? <Text key="sample-intro">{guide.intro}</Text> : null,
         sampleReviewed && guide.caught?.length
           ? <Box key="sample-caught" flexDirection="column" gap="xs">
-              <Text weight="semibold" color={NAVY}>{guide.caught_title ?? 'What a good review catches'}</Text>
+              <Text weight="semibold" color={HEAD}>{guide.caught_title ?? 'What a good review catches'}</Text>
               {guide.caught.map((line, i) => <Text key={`caught-${i}`}>{`${i + 1}. ${line}`}</Text>)}
               <Text dimColor size="footnote">Compare them with Questions, above.</Text>
             </Box>
@@ -445,19 +438,19 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
   const suggestions = suggestedQuestions(c)
   const askColumn = (
     <Box key="ask-col" flexDirection="column" gap="md">
-      <Text size="heading" weight="semibold" color={NAVY}>Ask Claude about this matter</Text>
+      <Text size="heading" weight="semibold" color={HEAD}>Ask Claude about this matter</Text>
       <Text dimColor size="footnote">{busyNow
         ? 'Ask anything while Claude works. Changes you ask for wait until it finishes, or go into your instructions for the steps it hasn’t reached.'
         : 'A question, some research, or a change you want made. Claude reads this matter’s documents and work, looks up the law in BIA Edge, and makes the changes you ask for. It answers in the chat.'}</Text>
-      {research && !research.ok ? <Text key="ask-research" color={AMBER} size="footnote">Connect BIA Edge in Claude’s Connectors so Claude can cite case law.</Text> : null}
+      {research && !research.ok ? <Text key="ask-research" color={WARN} size="footnote">Connect BIA Edge in Claude’s Connectors so Claude can cite case law.</Text> : null}
       {/* Keyed by the round, so the box is drawn afresh, and empty, once a question has gone. */}
       <Box key={`ask-${session.askRound}`} flexDirection="column" gap="xs">
-        {field(<Input
+        {field('Your question', l => <Input
           key="ask"
-          label="Your question"
+          label={l}
           placeholder={builtPast(c) ? 'e.g. How strong is our bona fide marriage evidence?' : 'e.g. Does the 2019 arrest affect eligibility?'}
           rows={2}
-          submitLabel="ask"
+          submitLabel="Ask"
           value={typed.ask[c.path] || undefined}
           onInput={val => { typed.ask[c.path] = val }}
           onSubmit={val => { void sendQuestion($, c, val) }}
@@ -467,7 +460,12 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
       {suggestions.length
         ? <Box key="ask-try" flexDirection="column" gap="xs">
             <Text dimColor size="footnote">Or ask:</Text>
-            {suggestions.map((q, i) => lone(`try-${i}`, button(`ask-try:${i}`, `${q}  ›`, () => { void sendQuestion($, c, q) }, 'link')))}
+            {suggestions.map((q, i) => (
+              <Box key={`try-${i}`} flexDirection="row" columnGap="sm" alignItems="flex-start" justifyContent="space-between">
+                <Box flexDirection="column" flexShrink={1} minWidth={0}><Text size="footnote">{q}</Text></Box>
+                {button(`ask-try:${i}`, 'Ask ›', () => { void sendQuestion($, c, q) }, 'link')}
+              </Box>
+            ))}
           </Box>
         : null}
       {inChat.length > 1
@@ -498,48 +496,41 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
   const ATTENTION_SHOWN = 4
   const attentionColumn = (
     <Box key="attention-col" flexDirection="column" gap="md">
-      <Text size="heading" weight="semibold" color={NAVY}>Needs attention</Text>
+      <Text size="heading" weight="semibold" color={HEAD}>Needs attention</Text>
       {attention.length === 0
         ? <Text dimColor size="footnote">{ledger || builtPast(c) || reviewOnly(c) ? 'Nothing is open right now.' : 'Claude lists what’s missing and what needs you once it reviews the documents.'}</Text>
         : attention.slice(0, ATTENTION_SHOWN).map(a => (
             <Box key={`att-${a.id}`} flexDirection="row" gap="sm" alignItems="flex-start">
               <Text color={a.blocks ? ACCENT_TEXT : MUTED} weight="bold">•</Text>
-              <Box flexDirection="column" flexShrink={1} flexGrow={1} gap="xs">
+              <Box flexDirection="column" flexShrink={1} flexGrow={1} minWidth={0} gap="xs">
                 <Text weight="semibold" size="footnote">{a.title}</Text>
-                <Box flexDirection="row" flexWrap="wrap" columnGap="md" rowGap="xs" alignItems="center">
-                  <Text dimColor size="caption">{`${a.kind} · ${a.blocks ? 'Needed before filing' : 'Not needed before filing'}`}</Text>
-                  {button(`view:${a.id}`, 'View ›', () => { void perform($, `view:${a.id}`) }, 'link', { name: `View: ${brief(a.title, 80)}`, small: true })}
+                <Box flexDirection="row" flexWrap="wrap" columnGap="sm" rowGap="xs" alignItems="center">
+                  <Text color={MUTED} size="caption">{`${a.kind} · ${a.blocks ? 'Needed before filing' : 'Not needed before filing'}`}</Text>
+                  {button(`view:${a.id}`, 'View ›', () => { void perform($, `view:${a.id}`) }, 'link')}
                 </Box>
               </Box>
             </Box>
           ))}
-      {attention.length > ATTENTION_SHOWN ? lone('view-all', button('view-all', `All ${attention.length} on Questions ›`, () => { void perform($, 'items') }, 'link', { small: true })) : null}
+      {attention.length > ATTENTION_SHOWN ? lone('view-all', button('view-all', `All ${attention.length} on Questions ›`, () => { void perform($, 'items') }, 'link')) : null}
     </Box>
   )
 
   // ----- the numbers: documents, steps, and what is needed before filing; each opens its tab -----
+  // Wide, three columns with a line between; narrow, three lines, the number before its name.
   const metric = (key: string, id: string, value: string, label: string) => (
-    <Box key={`metric-${key}`} flexDirection="column" gap="xs" flexGrow={1} flexShrink={1} width="30%" paddingX="sm">
-      <Box flexDirection="row">
-        <Button key={`metric-${key}`} plain label={`${label}: ${value}`} onPress={() => { void perform($, id) }}>
-          <Text size={narrow ? 'heading' : 'title'} weight="semibold" color={NAVY} tabular>{value}</Text>
-        </Button>
-      </Box>
-      <Text size="caption" color={MUTED}>{`${label} ›`}</Text>
+    <Box key={`metric-${key}`} flexDirection={narrow ? 'row' : 'column'} gap={narrow ? 'md' : 'xs'} alignItems={narrow ? 'center' : 'flex-start'} flexGrow={1} flexShrink={1} minWidth={0} width={narrow ? undefined : '30%'}>
+      <Box flexDirection="row" flexShrink={0} width={narrow ? 9 : undefined}><Text size={narrow ? 'heading' : 'title'} weight="semibold" color={HEAD} tabular>{value}</Text></Box>
+      {button(`metric-${key}`, `${label} ›`, () => { void perform($, id) }, 'quiet')}
     </Box>
   )
-  const divider = (key: string) => <Box key={key} width={0} borderStyle="single" borderColor={LINE} />
+  const divider = (key: string) => (narrow ? null : <Box key={key} width={0} padding={0} borderStyle="single" />)
   const metrics = (
-    <Box key="metrics" flexDirection="column" gap="sm">
-      {rule('metrics-top')}
-      <Box flexDirection="row" alignItems="stretch" columnGap="sm">
-        {metric('docs', 'docs', String(c.documents.count), c.documents.count === 1 ? 'Document' : 'Documents')}
-        {divider('metric-div-1')}
-        {metric('steps', 'packet', `${prg.done} of ${prg.total}`, 'Steps complete')}
-        {divider('metric-div-2')}
-        {metric('needed', 'items', String(blocking), 'Needed before filing')}
-      </Box>
-      {rule('metrics-bottom')}
+    <Box key="metrics" flexDirection={narrow ? 'column' : 'row'} alignItems="stretch" gap={narrow ? 'xs' : 'lg'} backgroundColor={CARD} borderStyle="round" paddingX="xl" paddingY="md">
+      {metric('docs', 'docs', String(c.documents.count), c.documents.count === 1 ? 'Document' : 'Documents')}
+      {divider('metric-div-1')}
+      {metric('steps', 'packet', `${prg.done} of ${prg.total}`, 'Steps complete')}
+      {divider('metric-div-2')}
+      {metric('needed', 'items', String(blocking), 'Needed before filing')}
     </Box>
   )
 
@@ -563,8 +554,8 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
   }
   const detail = (key: string, label: string, value: string) => (
     <Box key={`detail-${key}`} flexDirection="row" flexWrap="wrap" columnGap="sm" rowGap="xs">
-      <Box flexDirection="column" width={narrow ? '100%' : '24%'}><Text size="footnote" weight="semibold" color={NAVY}>{label}</Text></Box>
-      <Box flexDirection="column" flexGrow={1} flexShrink={1}><Text size="footnote">{value}</Text></Box>
+      <Box flexDirection="column" width={narrow ? '100%' : '24%'}><Text size="footnote" weight="semibold" color={HEAD}>{label}</Text></Box>
+      <Box flexDirection="column" flexGrow={1} flexShrink={1} minWidth={0}><Text size="footnote">{value}</Text></Box>
     </Box>
   )
   const details = [
@@ -586,7 +577,7 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
     tip,
     barCard('card-main', border, [
       eyebrow('Next step', 'next-eyebrow'),
-      <Text key="next-title" size="title" weight="semibold" color={NAVY}>{title}</Text>,
+      <Text key="next-title" size="title" weight="semibold" color={HEAD}>{title}</Text>,
       ...lines,
       asked === 'closeout'
         ? confirmBox('closeout', 'Delete Claude’s working copies of the client’s documents? Your documents and the finished files stay.', { id: 'closeout-yes', label: 'Yes, clean up' }, 'Keep them')

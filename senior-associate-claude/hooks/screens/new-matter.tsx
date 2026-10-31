@@ -4,7 +4,7 @@ import type { Ctx } from '../kit'
 import { chosenCase, folderName, freeName } from '../matter'
 import { createMatter, perform } from '../perform'
 import { typed } from '../state'
-import { AMBER } from '../theme'
+import { WARN } from '../theme'
 
 export async function newMatterScreen($: EngineInterface, x: Ctx): Promise<JSX.Element> {
   const { Box, Text, Input, p, d, open, missingCase, actions, button, lone, card, field, subpage, caseChooser, postureChips, filingChoices } = x
@@ -16,11 +16,10 @@ export async function newMatterScreen($: EngineInterface, x: Ctx): Promise<JSX.E
   return subpage(
     { title: 'New matter', subtitle: 'Name the client and choose what is being filed. Claude takes it from there.', back: { id: 'all', label: 'Matters' }, here: 'New matter', foot: 'Back to matters' },
     card('Who is the client?', [
-      field(<Input
+      field('Client’s name', l => <Input
         key="name"
-        label="Client’s name"
+        label={l}
         placeholder="e.g. Maria Garcia"
-        submitLabel="Create"
         autoFocus
         value={typed.name || undefined}
         onInput={value => { typed.name = value }}
@@ -28,14 +27,14 @@ export async function newMatterScreen($: EngineInterface, x: Ctx): Promise<JSX.E
       />, 'field-name'),
       dupe.taken
         ? <Box key="dupe" flexDirection="column" gap="xs">
-            <Text color={AMBER}>{`You already have ${dupe.taken.name}. This one will be named “${dupe.next}”.`}</Text>
+            <Text color={WARN}>{`You already have ${dupe.taken.name}. This one will be named “${dupe.next}”.`}</Text>
             {lone('dupe-open', button(`open:${dupe.taken.path}`, 'Open the existing matter', () => { void perform($, `open:${dupe.taken!.path}`) }, 'link'))}
           </Box>
         : <Text key="hint" dimColor size="footnote">The matter folder will be named “{example}”.</Text>,
     ]),
     card('What is being filed?', caseChooser(d, open, missingCase ? 'Choose one below, then press Create matter.' : '', {
       submitLabel: 'Create', onSubmit: () => { void createMatter($, typed.name) },
-    }), missingCase ? AMBER : undefined, 'card-case'),
+    }), missingCase ? WARN : undefined, 'card-case'),
     card('New filing or a response?', [
       postureChips(d),
       response ? <Text key="response" dimColor size="footnote">{`Add the ${response} notice along with the client’s documents.`}</Text> : null,

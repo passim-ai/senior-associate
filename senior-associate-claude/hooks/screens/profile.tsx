@@ -5,7 +5,7 @@ import { PROFILE_FIELDS } from '../matter'
 import { perform, saveProfile, unsavedProfile } from '../perform'
 import { typed } from '../state'
 import { andList } from '../words'
-import { WARN_TEXT } from '../theme'
+import { WARN } from '../theme'
 
 export async function profileScreen($: EngineInterface, x: Ctx): Promise<JSX.Element> {
   // Beside the account number: with no account, Claude asks nothing about one and no open item is raised for it.
@@ -27,15 +27,14 @@ export async function profileScreen($: EngineInterface, x: Ctx): Promise<JSX.Ele
             {button('profile-discard', 'Discard', () => { void perform($, 'profile-discard') }, 'secondary')}
             {links('unsaved-more', [link('confirm-no', 'Keep editing', () => { void perform($, 'confirm-no') })])}
           </Box>,
-        ], WARN_TEXT, 'card-unsaved')
+        ], WARN, 'card-unsaved')
       : null,
     card(null, PROFILE_FIELDS.flatMap((f, i) => f.key === 'uscis_online_account_number' && noAccount ? [accountChoice()] : [
-      field(<Input
+      field(f.label, l => <Input
         key={`profile-${f.key}`}
-        label={f.label}
+        label={l}
         placeholder={f.placeholder}
         value={typed.profile[f.key] ?? current[f.key] ?? ''}
-        submitLabel="save"
         autoFocus={i === 0 ? true : undefined}
         onInput={value => { typed.profile = { ...typed.profile, [f.key]: value } }}
         onSubmit={value => { typed.profile = { ...typed.profile, [f.key]: value }; void saveProfile($, false, `profile-${f.key}`) }}
@@ -48,13 +47,12 @@ export async function profileScreen($: EngineInterface, x: Ctx): Promise<JSX.Ele
       choice('discipline-no', 'discipline:no', 'I am not subject to any such order', '', current.subject_to_discipline_order === 'no'),
       choice('discipline-yes', 'discipline:yes', 'I am subject to such an order', 'Explain it below; it goes in the G-28’s Part 6', current.subject_to_discipline_order === 'yes'),
       current.subject_to_discipline_order === 'yes'
-        ? field(<Input
+        ? field('Explanation', l => <Input
             key="profile-discipline_order_details"
-            label="Explanation"
+            label={l}
             placeholder="The order, who issued it, and its terms"
             value={typed.profile.discipline_order_details ?? current.discipline_order_details ?? ''}
-            submitLabel="save"
-            onInput={value => { typed.profile = { ...typed.profile, discipline_order_details: value } }}
+                onInput={value => { typed.profile = { ...typed.profile, discipline_order_details: value } }}
             onSubmit={value => { typed.profile = { ...typed.profile, discipline_order_details: value }; void saveProfile($, false, 'profile-discipline_order_details') }}
           />, 'field-discipline')
         : null,

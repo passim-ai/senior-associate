@@ -48,7 +48,8 @@ test('a start waiting in the chat box reads Waiting for you on the matters list 
   await tap('nav-all')
   await clock.advance(15000)
   await clock.settle()
-  expect((await ui.find({ type: 'Button', key: `open:${garcia.path}` }))?.props?.label).toBe('Garcia I-130 I-485, Waiting for you')
+  expect(await ui.find({ type: 'Button', key: `open:${garcia.path}` })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^Waiting for you$/ })).toBeDefined()
   await ui.unmount()
 })
 
@@ -186,11 +187,11 @@ test('a protected matter’s header names its forms only, as the list does', OPT
   await ui.unmount()
 })
 
-test('Help lists the keys; each Done — check again is named for its problem', OPTS(), async ($, on) => {
+test('Help lists the keys; each problem has its own Done — check again', OPTS(), async ($, on) => {
   const garcia = card('Garcia I-130 I-485', 'needs_you', DOCS)
   garcia.needs_you = [{ text: 'Install Ghostscript', kind: 'setup', who: 'system', id: 'sys-gs', fix: 'Claude can install Ghostscript for you.', ask: 'Install Ghostscript for Senior Associate.' }]
   const { ui, tap } = await boot($, on, [garcia])
-  expect((await ui.find({ type: 'Button', key: 'check-again:0' }))?.props?.label).toBe('Done — check again: Install Ghostscript')
+  expect((await ui.find({ type: 'Button', key: 'check-again:0' }))?.props?.label).toBe('Done — check again')
   await tap('help')
   expect(await ui.find({ type: 'Text', text: /^Keyboard$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^b presses the matter’s main button\.$/ })).toBeDefined()
