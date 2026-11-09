@@ -15,16 +15,35 @@ import type { EngineInterface } from 'claude-code'
 import type { MatterRow } from '../types'
 import { call } from './server'
 import { liveAgents, readRuns } from './state'
-import { nowMs } from './words'
 
 export const BLOCKED = 'Immigration Packet Builder blocked this: it contained the client’s details. Phrase the research as a legal question, without names, numbers or other facts that identify the client.'
 export const UNCHECKED = 'Immigration Packet Builder couldn’t check this research request against the client’s details. Try again in a moment.'
 
 // BIA Edge (any MCP server whose name says bia or passim) and the web tools.
-export function isResearch(tool: string): boolean {
-  if (tool === 'WebSearch' || tool === 'WebFetch') return true
-  const m = /^mcp__(.+?)__/.exec(tool)
-  return Boolean(m && /bia|passim/i.test(m[1] ?? ''))
+const LOCAL_TOOLS = new Set(['Read', 'Write', 'Edit', 'MultiEdit', 'Glob', 'Grep', 'LS', 'TodoWrite', 'Task', 'Agent', 'AskUserQuestion'])
+export function isResearch(tool: string): boolean { return !LOCAL_TOOLS.has(tool) }
+const RESEARCH_METHODS = /__(?:search_cases|search_statutes|search_references|search_passages|search_country_conditions|search_unpublished_cases|search_district_court_decisions|get_case_by_citation|get_statute_by_citation|get_reference_by_citation|get_document|get_citations|check_validity|get_regulatory_updates|get_corpus_info|get_research_playbook|get_visa_bulletin|lookup_uscis_form|find_in_statute|find_in_reference|lookup_criminal_code|get_provision_case_law|fetch)$/
+const UNKNOWN_TOOL = 'This tool is not approved for a background matter run. Use the supported local document tools or read-only legal research tools. Ask the attorney in chat for other work.'
+
+// This conservative command check reduces accidental egress; only the host's sandbox can
+// enforce an actual network boundary. Arbitrary interpreters and shell composition are refused.
+export function localCommand(input: unknown, pluginRoot = ''): boolean {
+  const raw = String((input as { command?: unknown })?.command ?? '').trim()
+  if (!raw || /[;|&><`\n]|\$\(|https?:/i.test(raw)) return false
+  const command = pluginRoot ? raw.replace(/\$\{CLAUDE_PLUGIN_ROOT\}/g, pluginRoot) : raw
+  if (/\$|\\|\bfind\b.*-(?:exec|execdir|ok|okdir)/.test(command)) return false
+  const tokens = command.match(/"[^"]*"|'[^']*'|[^\s"']+/g)?.map(t => t.replace(/^["']|["']$/g, '')) ?? []
+  if (!tokens.length) return false
+  if (['pwd', 'ls', 'cat', 'head', 'tail', 'wc', 'rg', 'find', 'mkdir', 'cp', 'gs', 'pdftotext', 'pdftoppm', 'pdfinfo'].includes(tokens[0])) return true
+  let script = ''
+  if (/^(?:python3?|\/[^ ]*\/python3?)$/.test(tokens[0])) script = tokens[1] ?? ''
+  if (tokens[0] === 'uv' || tokens[0].endsWith('/uv')) {
+    const at = tokens.indexOf('--script')
+    if (tokens[1] === 'run' && at >= 2 && tokens.slice(2, at).every(t => ['--offline', '--locked'].includes(t))) script = tokens[at+1] ?? ''
+  }
+  if (!pluginRoot || !script.startsWith(pluginRoot.replace(/\/$/, '') + '/')) return false
+  const relative = script.slice(pluginRoot.replace(/\/$/, '').length + 1)
+  return !relative.split('/').includes('..') && /^(?:scripts|skills\/[a-z-]+\/scripts)\/[a-zA-Z0-9_/-]+\.py$/.test(relative)
 }
 
 // A matter's private terms, as the server gives them (PAYLOAD.md, privacy_terms): `names` match as whole words in any
@@ -43,15 +62,10 @@ export function readTerms(res: unknown): Terms {
   return { names: all.filter(t => !/\d/.test(t) && !/\s/.test(t)), full_names: all.filter(t => !/\d/.test(t) && /\s/.test(t)), identifiers: all.filter(t => /\d/.test(t)) }
 }
 
-// Only terms that were actually had are kept, for five minutes: a failure or an empty answer is asked again next time.
-const TERMS_MS = 5 * 60000
-const cache = new Map<string, { at: number; terms: Terms }>()
-
+// Read current facts for every request; a newly imported identity must not wait for a cache expiry.
 async function termsFor($: EngineInterface, matter: string): Promise<Terms> {
-  const hit = cache.get(matter)
-  if (hit && nowMs() - hit.at < TERMS_MS) return hit.terms
   const terms = readTerms(await call($, { op: 'privacy_terms', matter_path: matter, matter }))
-  if (terms.names.length || terms.full_names.length || terms.identifiers.length) cache.set(matter, { at: nowMs(), terms })
+  if (!terms.names.length && !terms.full_names.length) throw new Error('No party names available for privacy screening')
   return terms
 }
 
@@ -113,6 +127,7 @@ export function onlyCitations(input: unknown): boolean {
   const values = typeof input === 'string' ? [input] : Object.values((input ?? {}) as Record<string, unknown>).filter((v): v is string => typeof v === 'string')
   if (!values.length) return false
   return values.every(v => {
+    if (!/\d+\s+(?:I&N Dec\.|F\.\s?(?:2d|3d|4th)|U\.S\.|S\. ?Ct\.)\s*\d+/.test(v)) return false
     const rest = withoutCitations(plain(v)).replace(/\d+\s*(?:I&N Dec\.|F\.\s?\d?d|U\.S\.|S\. ?Ct\.)\s*\d*/g, ' ').replace(/\((?:BIA|AG|A\.G\.|[\w. ]*Cir\.)?[^)]*\d{4}\)/g, ' ')
     return !/\p{L}{3,}/u.test(rest.replace(/\b(?:at|n|id|see|cf)\b/gi, ''))
   })
@@ -126,11 +141,38 @@ export function holdsTerm(input: unknown, raw: Terms | string[]): boolean {
 }
 
 function textHolds(text: string, terms: Terms): boolean {
-  if (terms.identifiers.some(t => holdsIdentifier(text, t))) return true
+  if (hasIdentifier(text)) return true
+  if (terms.identifiers.some(t => dateVariants(t).some(v => holdsIdentifier(text, v) || text.toLowerCase().includes(v.toLowerCase())))) return true
   const phrase = (t: string) => new RegExp(`(^|[^\\p{L}\\p{N}])${plain(t).trim().split(/[\s-]+/).map(escape).join('[\\s,.-]+')}($|[^\\p{L}\\p{N}])`, 'iu')
   if (terms.full_names.some(t => phrase(t).test(text))) return true
   const named = withoutCitations(text)
   return terms.names.some(t => phrase(t).test(named))
+}
+
+export function hasIdentifier(text: string): boolean {
+  const plainText = decoded(plain(text))
+  return /\bA\s*[-#.]?\s*(?:\d[\s.-]*){7,9}\b/i.test(plainText)
+    || /\b(?:EAC|WAC|LIN|SRC|MSC|IOE|NBC|YSC)[\s-]*(?:\d[\s-]*){10}\b/i.test(plainText)
+    || /\b\d{3}[- ]\d{2}[- ]\d{4}\b/.test(plainText)
+    || /\b\d{9,16}\b/.test(plainText)
+    || /\b[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}\b/.test(plainText)
+    || /\b(?:\d{3}[-. ]|\(\d{3}\)\s*)\d{3}[-. ]\d{4}\b/.test(plainText)
+    || /\b(?:date of birth|dob|born)\b.{0,20}\d/i.test(plainText)
+    || /\b\d{1,6}\s+[\p{L}0-9 .'-]{1,60}\s+(?:Street|St|Avenue|Ave|Road|Rd|Drive|Dr|Lane|Ln|Boulevard|Blvd)\b/iu.test(plainText)
+}
+
+function dateVariants(id: string): string[] {
+  let m = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(id)
+  let y: string, month: number, day: number
+  if (m) { y = m[1]; month = Number(m[2]); day = Number(m[3]) }
+  else {
+    m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(id)
+    if (!m) return [id]
+    y = m[3]; month = Number(m[1]); day = Number(m[2])
+  }
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December']
+  if (month < 1 || month > 12 || day < 1 || day > 31) return [id]
+  return [id, `${y}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`, `${month}/${day}/${y}`, `${months[month-1]} ${day}, ${y}`, `${months[month-1]} ${day} ${y}`]
 }
 
 // The matters a loop's calls belong to: its own run's, an ancestor's run's, or every matter Claude is working on as
@@ -163,9 +205,12 @@ async function mattersFor($: EngineInterface, agentId: string): Promise<string[]
 // The refusal for this call, or '' to let it go on.
 export async function researchGate($: EngineInterface, tool: string, input: unknown, agentId: string | undefined): Promise<string> {
   if (!agentId || !isResearch(tool)) return ''
-  if (/citation|validity/i.test(tool) && onlyCitations(input)) return ''
+  if (tool === 'Bash') return localCommand(input, $.plugin.root) ? '' : UNKNOWN_TOOL
+  if (tool !== 'WebSearch' && tool !== 'WebFetch' && !RESEARCH_METHODS.test(tool)) return UNKNOWN_TOOL
   try {
-    for (const matter of await mattersFor($, agentId)) {
+    const matters = await mattersFor($, agentId)
+    if (!matters.length) return UNCHECKED
+    for (const matter of matters) {
       if (holdsTerm(input, await termsFor($, matter))) return BLOCKED
     }
   } catch {
@@ -176,5 +221,5 @@ export async function researchGate($: EngineInterface, tool: string, input: unkn
 
 // A hot reload, or a new session: the terms are asked for again.
 export function forgetTerms() {
-  cache.clear()
+  // Terms are not retained between calls.
 }

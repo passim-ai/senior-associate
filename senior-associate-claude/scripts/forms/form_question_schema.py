@@ -81,6 +81,14 @@ def load_schema_modules() -> dict[str, dict[str, Any]]:
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         loaded.update(module.SCHEMAS)
+    from answer_integrity import sensitive_question
+    for schema in loaded.values():
+        for question in schema.get("required_questions", {}).values():
+            if sensitive_question(question, str(schema.get("kind") or "")) and STATUS_FILLED in question.get("allowed_statuses", [STATUS_FILLED]):
+                question["requires_client_confirmation"] = True
+                allowed = question.setdefault("allowed_statuses", [STATUS_FILLED])
+                if STATUS_PENDING_CLIENT not in allowed:
+                    allowed.append(STATUS_PENDING_CLIENT)
     return loaded
 
 

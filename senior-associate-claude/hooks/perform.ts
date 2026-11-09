@@ -757,6 +757,13 @@ async function press($: EngineInterface, id: string): Promise<void> {
       } else await setNote($, `${c.name} is back on the main list.`, 'ok')
       return
     }
+    case 'open-approved-packet':
+      await act($, { op: 'open_output', matter_path: c.path, which: 'approved_packet' }, 'Opening approved filing copies.')
+      return
+    case 'approve-filing':
+      if (await load($, { op: 'approve_filing', matter_path: c.path, digest: c.filing_readiness?.digest ?? '', risk_note: typed.answers[`${c.path}#filing-risk`] ?? '' }))
+        await setNote($, 'You approved this version for filing. Changes to the matter invalidate approval.', 'ok')
+      return
     case 'mark-filed':
       if (await load($, { op: 'mark_filed', matter_path: c.path })) await setNote($, `${c.name} is marked as filed. Undo, below, puts it back.`, 'ok')
       return

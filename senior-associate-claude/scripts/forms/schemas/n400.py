@@ -17,9 +17,9 @@ YN = {"yes": "Y", "no": "N"}
 UNIT = {"apt": "APT", "ste": "STE", "flr": "FLR"}
 PHONE = "10 digits, no punctuation (maxlen 10)."
 
-PART9_DEFAULT_NO = (
-    "An eligibility yes/no question: 'No' may be entered when nothing in the record suggests "
-    "otherwise (forms-preparer skill). A 'Yes' needs an explanation in Part 14."
+PART9_CLIENT_CONFIRMATION = (
+    "An eligibility yes/no question: leave blank until the client confirms the answer. Record "
+    "the confirmation source and date (forms-preparer skill). A 'Yes' needs an explanation in Part 14."
 )
 
 
@@ -68,12 +68,12 @@ SCHEMAS = {
             "(Part1Line5_OtherExplain, DropDownList1, the Part 2 item 3 new-name boxes, the Apt/Ste/Flr "
             "numbers, P10_Line5b_DateBecame, P9_NobilityTitles). fill writes them regardless; fill them "
             "only when the controlling answer calls for them.",
-            "Part 9 yes/no questions: the default 'No' rule of the forms-preparer skill covers items "
+            "Part 9 yes/no questions: the client-confirmation rule of the forms-preparer skill covers items "
             "1-2, 5.a-21, 23-24 and 27-29. Items 3-4 (taxes), 22.a-22.c (Selective Service), 25-26.d "
             "(U.S. armed forces) and 30.a-30.b (titles) are facts from the record. Items 31-32 and 34-37 "
             "expect 'Yes' and item 33 expects 'No'; any other answer is an attorney_decision. Items 8.a "
             "and 12 are often 'Yes' for anyone who did compulsory military service: check the employment "
-            "history and the client's account before defaulting them to 'No'.",
+            "history and the client's account before recording their confirmed answers.",
             "Box sizes: the table boxes of Parts 4, 6, 7 and 9 (item 15) are narrow, fixed at 10 pt, and "
             "neither wrap nor shrink; the field_notes give their capacity in characters. The 30 pt table "
             "boxes of Parts 4, 6 and 9 hold one line on the filing copy (a second line is cut off and the "
@@ -521,7 +521,7 @@ SCHEMAS = {
                 ["P9_Line1", "P9_Line2", "P9_Line3", "P9_Line4"],
                 ["P9_Line1", "P9_Line2", "P9_Line3", "P9_Line4"],
                 notes={
-                    "P9_Line1": PART9_DEFAULT_NO + " Applies to items 1-2.",
+                    "P9_Line1": PART9_CLIENT_CONFIRMATION + " Applies to items 1-2.",
                     "P9_Line3": "Items 3-4 are tax facts: answer from the tax transcripts or the client, not by "
                     "default.",
                 },
@@ -531,14 +531,14 @@ SCHEMAS = {
                 "Part 9, Items 5.a-5.b: Communist or totalitarian party; advocating overthrow or violence",
                 ["P9_5a", "P9_5b"],
                 ["P9_5a", "P9_5b"],
-                notes={"P9_5a": PART9_DEFAULT_NO},
+                notes={"P9_5a": PART9_CLIENT_CONFIRMATION},
                 choices=yn("P9_5a", "P9_5b"),
             ),
             "part9_terrorist_group_support": q(
                 "Part 9, Items 6.a-6.c: Membership in or support of a group that used weapons, kidnapping or sabotage",
                 ["P12_6a", "P12_6b", "P12_6c"],
                 ["P12_6a", "P12_6b", "P12_6c"],
-                notes={"P12_6a": PART9_DEFAULT_NO + " The P12_ prefix is a leftover; these are Part 9."},
+                notes={"P12_6a": PART9_CLIENT_CONFIRMATION + " The P12_ prefix is a leftover; these are Part 9."},
                 choices=yn("P12_6a", "P12_6b", "P12_6c"),
             ),
             "part9_torture_genocide_persecution": q(
@@ -546,7 +546,7 @@ SCHEMAS = {
                 ["P9_Line7a", "P9_Line7.b.", "P9_Line7.c", "P11_7d", "P9_Line7.e", "P9_Line7.f", "P9_Line7.g"],
                 ["P9_Line7a", "P9_Line7.b.", "P9_Line7.c", "P11_7d", "P9_Line7.e", "P9_Line7.f", "P9_Line7.g"],
                 notes={
-                    "P9_Line7a": PART9_DEFAULT_NO,
+                    "P9_Line7a": PART9_CLIENT_CONFIRMATION,
                     "P9_Line7.b.": "Item 7.b. The names of 7.b-7.c and 7.e-7.g contain literal dots (7.b ends with "
                     "one); 7.d is P11_7d.",
                 },
@@ -560,7 +560,7 @@ SCHEMAS = {
                 ["P9_Line8a", "P9_Line8b", "P9_Line9", "P9_Line10a", "P9_Line11", "P9_Line12", "P9_Line13",
                  "P9_Line14"],
                 notes={
-                    "P9_Line8a": PART9_DEFAULT_NO + " But 8.a (military or police unit) and 12 (weapons or "
+                    "P9_Line8a": PART9_CLIENT_CONFIRMATION + " But 8.a (military or police unit) and 12 (weapons or "
                     "military-type training) are 'Yes' for anyone who did compulsory military service: check the "
                     "employment history first. A 'Yes' to 8.a/8.b needs country, unit, rank and dates in Part 14.",
                     "P9_Line10b": "10.b and 10.c only if 10.a is 'Yes'; otherwise leave blank.",
@@ -573,7 +573,7 @@ SCHEMAS = {
                 ["P9_Line15a", "P9_Line15b", "P12_Line16"],
                 ["P9_Line15a", "P9_Line15b"],
                 notes={
-                    "P9_Line15a": PART9_DEFAULT_NO + " Any arrest, citation (traffic citations included), charge "
+                    "P9_Line15a": PART9_CLIENT_CONFIRMATION + " Any arrest, citation (traffic citations included), charge "
                     "or court record in the file makes 15.a/15.b an attorney_decision, never a default; the "
                     "items must also list offenses committed under 18 and sealed or expunged records.",
                     "P12_Line16": "Item 16, only if the applicant received a suspended sentence, probation or parole; "
@@ -618,7 +618,7 @@ SCHEMAS = {
                 ["P11_Line17A", "P11_Line17B", "P11_Line17C", "P12_Line17d", "P12_Line17e", "P12_Line17f",
                  "P12_Line17g", "P12_Line17h", "P12_Line18", "P12_Line19"],
                 notes={
-                    "P11_Line17A": PART9_DEFAULT_NO + " 17.g (failure to support dependents) must agree with Part 6 "
+                    "P11_Line17A": PART9_CLIENT_CONFIRMATION + " 17.g (failure to support dependents) must agree with Part 6 "
                     "support answers and any child-support orders.",
                     "P12_Line17e": "The tooltips of the 'No' boxes of 17.e, 17.f and 18 say 'Select Yes'; the "
                     "on-states below are right.",
@@ -630,7 +630,7 @@ SCHEMAS = {
                 "Part 9, Items 20-21: Removal, rescission or deportation proceedings; removed or deported",
                 ["P12_Line20", "P12_Line21"],
                 ["P12_Line20", "P12_Line21"],
-                notes={"P12_Line20": PART9_DEFAULT_NO},
+                notes={"P12_Line20": PART9_CLIENT_CONFIRMATION},
                 choices=yn("P12_Line20", "P12_Line21"),
             ),
             "part9_selective_service": q(
@@ -652,7 +652,7 @@ SCHEMAS = {
                  "P12_Line27", "P12_Line28", "P9_Line29"],
                 ["P12_Line23", "P12_Line24", "P12_Line25"],
                 notes={
-                    "P12_Line23": PART9_DEFAULT_NO + " Applies to 23-24, and to 27-29 when 25 is 'Yes'.",
+                    "P12_Line23": PART9_CLIENT_CONFIRMATION + " Applies to 23-24, and to 27-29 when 25 is 'Yes'.",
                     "P12_Line25": "A fact. With 'No', leave 26.a-29 blank (the form says go to 30.a).",
                     "P12_Line26a": "26.a only with 25 'Yes'; 26.b and 26.c only with 26.a 'Yes'.",
                     "P11_Line26d": "Item 26.d (former service member residing outside the U.S.), only with 26.a "

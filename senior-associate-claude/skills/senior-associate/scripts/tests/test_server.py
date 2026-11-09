@@ -762,10 +762,18 @@ class StatusTests(unittest.TestCase):
         return write(self.matter / "output/deliverables/open-items.json",
                      {"schema_version": 2, "packet_status": packet_status, "items": list(items)})
 
+    def approve_current(self):
+        sys.path.insert(0,str(PLUGIN_ROOT / 'server/tools'))
+        from filing_fixture import approve_fixture
+        current=readmodel.MatterRead(self.ctx,self.matter)
+        approve_fixture(self.matter,current.stages,current.ledger)
+
     def test_a_damaged_open_items_list_is_never_ready_to_file(self) -> None:
         write_state(self.matter, ALL_PASSED)
         good = self.ledger({"id": "action-sign", "type": "attorney_action", "title": "Sign the G-28", "blocks_filing": False,
                             "status": "open"}, packet_status="ready_to_file")
+        self.assertEqual(self.card()["phase"], "draft")
+        self.approve_current()
         self.assertEqual(self.card()["phase"], "complete")
         text = good.read_text()
         for damaged in (text.replace('"open"', '"open",', 1), "", '{"packet_status": "ready_to_file"}', "[]"):
@@ -792,8 +800,10 @@ class StatusTests(unittest.TestCase):
         self.assertEqual(self.card()["phase"], "draft")
         from scripts.matter_state import record_attorney_action
         record_attorney_action(self.matter, "resolve", "action-sign")
+        self.assertEqual(self.card()["phase"], "draft")  # resolving an item is not filing approval
+        self.approve_current()
         card = self.card()
-        self.assertEqual(card["phase"], "complete")  # marked done by the attorney: nothing needed is open
+        self.assertEqual(card["phase"], "complete")
         self.assertEqual(card["open_items"]["resolved"][0]["resolution"], "Marked done by the attorney.")
         record_attorney_action(self.matter, "reopen", "action-sign")
         self.assertEqual(self.card()["phase"], "draft")
@@ -810,8 +820,9 @@ class StatusTests(unittest.TestCase):
         write_state(self.matter, ALL_PASSED)
         write(self.matter / "output/deliverables/Filing Packet.pdf", "%PDF-1.4 packet")
         self.ledger(optional, packet_status="ready_to_file")
+        self.approve_current()
         card = self.card()
-        self.assertEqual((card["phase"], card["phase_label"]), ("complete", "Ready to file"))
+        self.assertEqual((card["phase"], card["phase_label"]), ("complete", "Approved for filing"))
         self.assertEqual(card["counts"]["needed_before_filing"], 0)
         self.assertEqual(card["counts"]["decisions_open"], 1)  # still asked, beside the packet
         self.assertEqual([(n["key"], n["blocks_filing"]) for n in card["needs_you"]], [("decide-i765", False)])
@@ -1743,7 +1754,8 @@ class CreateTests(unittest.TestCase):
         payload = actions.do_create(self.ctx, "Ramos I-360 I-485", "i360_i485_vawa")
         self.assertNotIn("warning", payload)
         folder = Path(payload["selected"])
-        self.assertEqual(folder.name, "Ramos I-360 I-485")
+        self.assertRegex(folder.name, r"^Matter [A-F0-9]{10}$")
+        self.assertEqual(payload["matter"]["meta"]["client_name"], "Ramos I-360 I-485")
         self.assertEqual(payload["matter"]["intake"]["matter_type"], "I-360/I-485 VAWA self-petition and adjustment packet")
         theory = json.loads((folder / "output/working/workflow/case_theory_evidence_map.json").read_text())
         self.assertEqual(theory["expected_forms"][:3], ["G-28", "I-360", "I-485"])

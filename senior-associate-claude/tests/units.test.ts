@@ -149,7 +149,7 @@ test('the research gate: BIA Edge and the web tools only, and a term matches how
   expect(isResearch('mcp__claude_ai_BIA_Edge__check_validity')).toBe(true)
   expect(isResearch('mcp__passim__lookup')).toBe(true)
   expect(isResearch('WebSearch')).toBe(true)
-  expect(isResearch('mcp__github__create_issue')).toBe(false)
+  expect(isResearch('mcp__github__create_issue')).toBe(true)
   expect(isResearch('Read')).toBe(false)
   const terms = ['Ana Example', 'A123456789', '555-0142']
   expect(holdsTerm({ query: 'Is ana example eligible for a waiver?' }, terms)).toBe(true)

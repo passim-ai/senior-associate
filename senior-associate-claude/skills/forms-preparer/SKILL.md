@@ -65,9 +65,11 @@ Counsel and preparer answers come from the attorney profile only. When the profi
 
 ## Yes/no eligibility questions
 
-The criminal, security, immigration-violation, and other inadmissibility questions can be answered "No" when nothing in the record suggests otherwise. If anything in the documents points the other way (an arrest record, a prior removal, an overstay, a past visa refusal), leave that answer open and add an `attorney_decision` item whose `question` names the answers at stake and whose `recommendation` gives the answer you'd draft. Either way, add one `attorney_action` item (not blocking) asking the attorney to go through these questions with the client before signing. The client is the one swearing to them, and a "No" you entered is only a draft of their answer.
+Never infer a "No" from a silent record. Criminal, security, immigration-violation, and other inadmissibility answers need a documented client response, reviewed with counsel. Leave unsupported answers blank with `pending_client` status and a blocking `client_question` open item naming the exact questions. A conflict between the client's answer and the documents is a blocking `attorney_decision`.
 
-Don't extend that default to anything else. Dates, addresses, employment, marital history, entries, and status all come from documents or stay blank. Some yes/no items are facts, not eligibility questions, and the schemas' notes say which. On the N-400, for example, the tax questions, Selective Service, U.S. military service, and titles of nobility come from the record, and the oath-related items expect "Yes". An unexpected answer there is an `attorney_decision`, never a default.
+For each answered sensitive question, link `fact_ids` to a fact with `source_kind: "client_confirmation"`, a nonempty `source` identifying the interview note or signed questionnaire, and `confirmed_at` in ISO date format. Preserve the response in that source; do not invent confirmation metadata. The forms audit rejects an answered sensitive question without this provenance. The attorney must review these answers with the client before signing; the agent cannot mark that conversation complete.
+
+Do not default other answers either. Dates, addresses, employment, marital history, entries, and status all come from documents or stay blank. Some yes/no items are facts, not eligibility questions, and the schemas' notes say which. On the N-400, for example, the tax questions, Selective Service, U.S. military service, and titles of nobility come from the record, and the oath-related items expect "Yes". An unexpected answer there is an `attorney_decision`, never a default.
 
 ## Finish
 
@@ -82,3 +84,5 @@ uv run --script "${CLAUDE_PLUGIN_ROOT}/skills/senior-associate/scripts/run_matte
 ```
 
 If `gs` (Ghostscript) is missing, `build` can't render filing copies and says so. Stop, and tell the orchestrator that Ghostscript needs installing; the app offers the attorney a button that has Claude install it. Don't hand over unrendered forms.
+
+For each sensitive answer, the cited client-confirmation fact must list the exact plan question key in `question_keys`, plus `source_kind: client_confirmation`, a source reference, `confirmed_at` (ISO date), and the actual response in `value`. A confirmation of one question cannot support a different question.

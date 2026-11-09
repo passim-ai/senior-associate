@@ -1924,6 +1924,19 @@ def main(argv: list[str] | None = None) -> int:
             raise ToolError(f"{target} is also a source in the plan. Write the packet/manifest to a different path; sources are never overwritten.")
     stamps = plan.get("stamps", True) and not args.no_stamps
     matter_root = find_matter_root(plan_path, out_pdf, base)
+    if matter_root is not None and "output/deliverables" in out_pdf.as_posix():
+        from scripts.generated_files import check_generated
+        review_receipt = out_pdf.with_name("." + out_pdf.stem + ".generated.json")
+        try:
+            check_generated([out_pdf], review_receipt)
+            from scripts.draft_packets import RELEASE_MANIFEST, release_sources
+            if (matter_root / RELEASE_MANIFEST).exists():
+                release_sources(matter_root)
+        except ValueError as exc:
+            raise ToolError(str(exc)) from exc
+    else:
+        review_receipt = None
+
 
     # A long assembly renews its run's lease as it works, at most once a half minute (a lease is fresh 30 minutes).
     def tick() -> None:
@@ -1991,6 +2004,15 @@ def main(argv: list[str] | None = None) -> int:
     expected = sum(it.count for it in items)
     if total != expected:
         warnings.append(f"Page count check: packet has {total} pages but items add up to {expected}.")
+    if review_receipt is not None:
+        from scripts.draft_packets import keep_review_copy, prune_upload_entries
+        from scripts.generated_files import record_generated
+        keep_review_copy(matter_root, out_pdf)
+        if split_dir is not None:
+            prune_upload_entries(matter_root, split_dir, [split_dir / f["file"] for f in upload_files])
+            for upload in [split_dir / f["file"] for f in upload_files]:
+                keep_review_copy(matter_root, upload)
+        record_generated([out_pdf], review_receipt)
     size = out_pdf.stat().st_size
     if plan["filing_method"] == "online" and not upload_files and size > ONLINE_UPLOAD_MAX_MB * 1_048_576:
         warnings.append(

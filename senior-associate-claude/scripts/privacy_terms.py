@@ -71,7 +71,7 @@ COMMON_WORDS = frozenset(
     mr mrs ms dr jr sr ii iii iv
     """.split()
 )
-MIN_NAME_LENGTH = 3
+MIN_NAME_LENGTH = 2
 MIN_IDENTIFIER_LENGTH = 6
 
 
@@ -90,7 +90,7 @@ def name_tokens(text: str) -> list[str]:
     """The distinctive words of a name: three letters or more, not a common word."""
     tokens: list[str] = []
     for token in re.findall(r"[^\W\d_]+(?:['’][^\W\d_]+)?", text):
-        if len(token) >= MIN_NAME_LENGTH and token.casefold() not in COMMON_WORDS:
+        if len(token) >= MIN_NAME_LENGTH and token.casefold() not in {"de", "del", "la", "van", "von", "bin", "al"}:
             tokens.append(token)
     return tokens
 
@@ -133,9 +133,8 @@ def matter_privacy_terms(matter: Path) -> dict[str, Any]:
         if not text or len(text) > 120:
             return
         tokens = name_tokens(text)
-        if not tokens:
-            return
-        full_names.setdefault(text.casefold(), text)
+        if text.casefold() not in {"de", "del", "la", "van", "von", "bin", "al"}:
+            full_names.setdefault(text.casefold(), text)
         for token in tokens:
             names.setdefault(token.casefold(), token)
 

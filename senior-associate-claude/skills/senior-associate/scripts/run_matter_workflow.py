@@ -647,6 +647,9 @@ def command_complete_stage(args: argparse.Namespace) -> int:
             # The pass itself is saved; only the re-review's comparison point is missing (it then reviews in full).
             snapshot_note = "The pass is recorded, but the record was too busy to save its snapshot; a later re-review of it reviews in full."
     renew_lease(matter_path, mutating=True, stage=",".join(state.get("running") or []), run_id=given_run_id(args))
+    if stage_id == "final_review" and args.status == "passed":
+        from scripts.filing_readiness import record_review
+        record_review(matter_path)
     kind, text = completion_event(stage_id, args.status, blocker_owner=args.blocker_owner, attorney_approved=args.attorney_approved)
     timeline(matter_path, kind, text, stage=stage_id)
     if blocker:

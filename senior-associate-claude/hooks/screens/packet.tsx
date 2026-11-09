@@ -7,9 +7,10 @@ import { askAboutThis, perform } from '../perform'
 import { HEAD, MUTED, STAGE_TEXT } from '../theme'
 import { brief, nowMs } from '../words'
 import { matterStatus, isBusy } from '../status'
+import { typed } from '../state'
 
 export async function packetScreen($: EngineInterface, x: Ctx, c: Card): Promise<JSX.Element> {
-  const { Box, Text, isDesktop, svg, allRuns, actions, button, section, rule, link, links, matterPage } = x
+  const { Box, Text, Input, field, isDesktop, svg, allRuns, actions, button, section, rule, link, links, matterPage } = x
   const prg = c.progress
   const notes = c.review_notes
   const NOTES_SHOWN = 40
@@ -19,6 +20,17 @@ export async function packetScreen($: EngineInterface, x: Ctx, c: Card): Promise
   const redoable = (status: string) => !live && status !== 'pending'
   const files = c.outputs.packet || c.outputs.cover_letter || forms.length > 0
   return matterPage(c, 'packet',
+    c.filing_readiness && files ? section('Attorney filing review', [
+      <Text key="approval-state">{c.filing_readiness.approved
+        ? `Approved for filing by ${c.filing_readiness.attorney}. Approval applies only to this version.`
+        : 'Draft for attorney review. Completing the build does not approve it for filing.'}</Text>,
+      ...c.filing_readiness.blockers.map((text, i) => <Text key={`approval-block-${i}`} size="footnote">{text}</Text>),
+      ...(c.filing_readiness.risks ?? []).map((text, i) => <Text key={`approval-risk-${i}`}>Review risk: {text}</Text>),
+      (c.filing_readiness.risks ?? []).length && !c.filing_readiness.approved ? field('Reason for filing with these risks', label => <Input key="filing-risk-note" label={label} value={typed.answers[`${c.path}#filing-risk`] || undefined} onInput={value => { typed.answers[`${c.path}#filing-risk`] = value }} onSubmit={value => { typed.answers[`${c.path}#filing-risk`] = value }} />, 'filing-risk') : null,
+      !live && c.filing_readiness.eligible && !c.filing_readiness.approved
+        ? button('approve-filing', 'I reviewed this version and approve it for filing', () => { void perform($, 'approve-filing') }, 'primary') : null,
+      c.filing_readiness.approved ? button('open-approved-packet', 'Show approved filing copies', () => { void perform($, 'open-approved-packet') }, 'primary') : null,
+    ], 'sec-approval') : null,
     files
       ? section('Files for this matter', [
           rule('files-rule'),
@@ -55,7 +67,9 @@ export async function packetScreen($: EngineInterface, x: Ctx, c: Card): Promise
             <Box flexDirection="column" flexGrow={1} flexShrink={1} minWidth={0} gap="xs">
               <Box flexDirection="row" columnGap="sm" rowGap="xs" flexWrap="wrap" alignItems="center">
                 <Text weight={s.status === 'in_progress' ? 'semibold' : 'medium'} color={HEAD}>{s.label}</Text>
-                <Text color={STAGE_TEXT[s.status] ?? MUTED} size="footnote">{STAGE_WORD[s.status] ?? s.status}</Text>
+                <Text color={STAGE_TEXT[s.status] ?? MUTED} size="footnote">{s.status === 'passed'
+                  ? (notes.some(n => n.stage_label === s.label) ? 'Completed with findings' : 'Completed')
+                  : STAGE_WORD[s.status] ?? s.status}</Text>
                 {redoable(s.status)
                   ? button(`redo:${s.id}`, s.id === 'docs_review' && reviewOnly(c) ? 'Review again ›' : 'Redo from here ›', () => { void perform($, `redo:${s.id}`) }, 'link')
                   : null}

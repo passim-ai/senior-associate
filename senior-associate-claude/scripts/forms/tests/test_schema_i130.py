@@ -322,6 +322,7 @@ class I130SchemaMeetsAuditTests(unittest.TestCase):
                     values[field] = "01/02/2000"
                 else:
                     values[field] = "Sample"
+        values.update({"Pt2Line25_DateofBirth": "01/01/1970", "Pt2Line31_DateofBirth": "01/01/1971"})
         findings = audit.audit_form("i-130", Path("/tmp/i130.pdf"), values, xfa=values, acro=values)
         self.assertEqual([item for item in findings if item["severity"] == "error"], [])
 

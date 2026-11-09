@@ -97,7 +97,10 @@ def do_create(ctx: Context, name: str, matter_type: str, filing_posture: str = "
         t = {"matter_type": described[:160]}
     p = posture_entry(filing_posture) or FILING_POSTURES[0]
     method = _filing_method(filing_method)
-    base = safe_folder_name(name)
+    from scripts.matter_protection import protected_case_type
+    import uuid
+    shielded = bool(protected or t.get("protected") or protected_case_type(t["matter_type"]))
+    base = "Matter " + uuid.uuid4().hex[:10].upper() if shielded else safe_folder_name(name)
     ctx.matters_root.mkdir(parents=True, exist_ok=True)
     folder = ctx.matters_root / base
     n = 2
@@ -112,6 +115,8 @@ def do_create(ctx: Context, name: str, matter_type: str, filing_posture: str = "
         warning = run_ensure(ctx, folder, t["matter_type"], p["value"])
         add_event(folder, "created", "Matter created.", actor="attorney", now=ctx.now())
         _apply_intake_settings(folder, t if t.get("id") else None, protected, method, ctx)
+        if shielded:
+            update_meta(folder, now=ctx.now(), client_name=name)
     except BaseException:
         shutil.rmtree(folder, ignore_errors=True)
         raise
@@ -245,6 +250,14 @@ OUTPUT_NAMES = {"packet": "packet", "cover_letter": "cover letter", "memo": "mem
 def do_open_output(ctx: Context, matter_path: str, which: str = "packet", name: str = "") -> dict[str, Any]:
     matter = resolve_matter(ctx, matter_path)
     outputs = outputs_for(matter)
+    if which == "approved_packet":
+        current = MatterRead(ctx, matter).filing_readiness
+        if not current["approved"]:
+            raise UserError("This version has not been approved for filing, or approval is stale.")
+        from scripts.draft_packets import export_approved
+        destination = export_approved(matter, current["digest"])
+        open_path(destination)
+        return {"opened": str(destination)}
     if which == "form":
         # One filled form from the matter's Forms folder, by its file name.
         form = next((f for f in outputs.get("forms") or [] if f.get("name") == name), None)
@@ -512,6 +525,23 @@ def do_change_intake(ctx: Context, matter_path: str, matter_type: str, filing_po
     return payload
 
 
+def do_approve_filing(ctx: Context, matter_path: str, digest: str, risk_note: str = "") -> dict[str, Any]:
+    from scripts.filing_readiness import approve
+    from .readmodel import MatterRead
+    from .profile import load_profile
+
+    matter = resolve_matter(ctx, matter_path)
+    with nobody_working(ctx, matter):
+        current = MatterRead(ctx, matter)
+        try:
+            approve(matter, expected_digest=digest, attorney=load_profile(ctx).get("attorney_name", ""),
+                    stages=current.stages, ledger=current.ledger, risk_note=risk_note)
+        except ValueError as exc:
+            raise UserError(str(exc)) from exc
+    add_event(matter, "filing_approved", "You approved this version for filing.", actor="attorney", now=ctx.now())
+    return app_payload(ctx, matter, status="filing_approved")
+
+
 def do_mark_filed(ctx: Context, matter_path: str) -> dict[str, Any]:
     matter = resolve_matter(ctx, matter_path)
     with nobody_working(ctx, matter):
@@ -623,6 +653,11 @@ def do_start_run(ctx: Context, matter_path: str, kind: str, stage_id: str = "", 
         raise
     payload = app_payload(ctx, matter, status="run_started")
     payload.update({"run_id": run_id, "prompt": brief, "lease": lease_view(lease, ctx.now())})
+    from scripts.keep_awake import start
+    try:
+        start(matter, run_id)
+    except OSError:
+        payload["warning"] = "Keep this Mac awake during the build; sleep prevention could not start."
     return payload
 
 
@@ -779,6 +814,14 @@ def do_set_meta(ctx: Context, matter_path: str, changes: dict[str, Any]) -> dict
         if not language or len(language) > LANGUAGE_LIMIT or not re.fullmatch(r"[^\W\d_][\w '()-]*", language):
             raise UserError("Name the language in a word or two, for example Spanish.")
         clean["client_language"] = language
+    for key in ("forum", "circuit", "jurisdiction_basis"):
+        if key in changes:
+            value = " ".join(str(changes[key]).split())
+            if len(value) > 500:
+                raise UserError("Keep jurisdiction details under 500 characters.")
+            if key == "circuit" and value not in {"", "none", "dc", "federal", *[f"ca{i}" for i in range(1, 12)]}:
+                raise UserError("Use ca1 through ca11, dc, federal, or none with an explanation.")
+            clean[key] = value
     if not clean:
         return app_payload(ctx, matter, status="meta_saved")
     update_meta(matter, now=ctx.now(), **clean)

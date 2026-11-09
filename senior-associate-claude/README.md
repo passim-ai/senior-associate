@@ -88,7 +88,7 @@ Client documents stay in the matter folder on your Mac. Claude reads them to do 
 | `skills/packet-assembly` | Build the packet PDF |
 | `skills/final-review` | One pass before filing: a check of the whole packet and the officer's review, with the strongest RFE, NOID, or denial theory and its cure. After fixes, it re-checks only its earlier notes and what changed |
 | `skills/matter-chat` | Talks a matter through in chat: answers from the documents and the work, researches with BIA Edge, makes the changes the attorney asks for and records them, and keeps its research for the next build |
-| `skills/setup` | Sets up the attorney's Mac from the chat: installs the tools (Homebrew first if needed), signs in to GitHub, changes the Matters or model letters folder, turns on automatic updates, and updates the plugin. The app's **Ask Claude to do it** buttons send it the request |
+| `skills/setup` | Sets up the attorney's Mac from the chat: installs the tools (Homebrew first if needed), signs in to GitHub, changes the Matters or model letters folder, stages updates for verification, and updates the plugin. The app's **Ask Claude to do it** buttons send it the request |
 | `agents/` | One agent per step, so each review is independent of the work it checks |
 | `scripts/forms/` | Download, fill, verify, render, and audit USCIS PDFs |
 | `scripts/packet/` | Render the cover letter and assemble the packet with bookmarks and placeholders |
@@ -115,3 +115,5 @@ The contract every skill follows is `skills/senior-associate/references/matter-c
 - To release: bump `version` in `.claude-plugin/plugin.json`, add a `CHANGELOG.md` entry, and push. Users get the new version only when the version string changes.
 
 </details>
+
+Review packets are visibly marked as drafts. The Packet screen lists procedural blockers and merits risks separately; attorney approval records the exact version and the reason for filing with any remaining merits risks. Approved filing copies are exported without draft markings. See [data handling](docs/DATA-HANDLING.md) and [verification](docs/VERIFICATION.md).

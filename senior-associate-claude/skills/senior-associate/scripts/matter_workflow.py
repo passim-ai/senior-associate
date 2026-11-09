@@ -462,15 +462,19 @@ def matter_metadata(
 INTAKE_WORDS: dict[str, tuple[str, ...]] = {
     "vawa": ("vawa", "self-petition", "self petition"),
     "i360": ("i-360", "i360", "vawa", "self-petition", "self petition"),
-    "family": ("i-130", "i130", "immediate relative", "spouse", "family"),
+    "family": ("i-130", "i130", "immediate relative"),
     "spouse": ("spouse", "marriage", "husband", "wife", "i-130a", "i130a"),
-    "sponsor": ("family", "spouse"),
+    "sponsor": ("i-864", "i864", "affidavit of support"),
     "adjustment": ("i-485", "i485", "adjustment", "adjust status"),
     "affidavit": ("i-864", "i864", "affidavit of support"),
     "work_permit": ("i-765", "i765", "employment authorization"),
     "travel": ("i-131", "i131", "advance parole", "travel document"),
     "conditions": ("i-751", "i751", "remove conditions"),
-    "waiver": ("i-751", "i751", "waiver", "remove conditions"),
+    "waiver": ("i-751", "i751", "remove conditions"),
+    "i601a": ("i-601a", "i601a", "provisional unlawful presence"),
+    "i601": ("i-601 ", "i601 ", "i-601/"),
+    "i612": ("i-612", "i612"),
+    "niw": ("national interest waiver", "niw"),
     "naturalization": ("n-400", "n400", "naturalization"),
     "packet": ("packet",),
 }
@@ -479,6 +483,20 @@ INTAKE_WORDS: dict[str, tuple[str, ...]] = {
 def intake_terms(matter_type: str, deliverable: str) -> set[str]:
     text = f"{matter_type} {deliverable}".casefold()
     terms = {term for term, words in INTAKE_WORDS.items() if any(word in text for word in words)}
+    # The requested form controls waiver routing. A spouse or marriage mentioned as
+    # a qualifying-relative fact must not create a separate family petition or I-751.
+    explicit = set(re.findall(r"\b(?:i-?\d{3}[a-z]?|n-?400)\b", text))
+    compact = {form.replace("-", "") for form in explicit}
+    for waiver in ("i601a", "i601", "i612"):
+        if waiver in compact:
+            terms.add(waiver)
+    if terms & {"i601a", "i601", "i612", "niw"}:
+        if "i751" not in compact:
+            terms -= {"conditions", "waiver"}
+        if "i130" not in compact:
+            terms -= {"family", "spouse", "sponsor"}
+        if "i864" not in compact:
+            terms.discard("affidavit")
     if "i360" in terms:
         # An I-360 self-petition takes the place of an I-130, so words like "spouse" in its description don't add one.
         terms -= {"family", "sponsor"}
@@ -502,6 +520,13 @@ def expected_forms_from_intake(matter_type: str, deliverable: str) -> list[str]:
             forms.append("I-765 if the client wants a work permit while the I-485 is pending")
     forms += [form for term, form in (("affidavit", "I-864"), ("work_permit", "I-765"), ("travel", "I-131"),
                                       ("conditions", "I-751"), ("naturalization", "N-400")) if term in terms]
+    explicit = re.findall(r"\b(?:I-?\d{3}[A-Z]?|N-?400|G-?\d{2,4})\b", matter_type.upper())
+    for form in explicit:
+        normalized = re.sub(r"^([A-Z])-?", r"\1-", form)
+        if normalized not in forms:
+            forms.append(normalized)
+    if forms and "G-28" not in forms:
+        forms.insert(0, "G-28")
     if not forms and "packet" in terms:
         forms.append("G-28")
     return list(dict.fromkeys(forms))
@@ -534,6 +559,11 @@ EVIDENCE_CATEGORIES: tuple[tuple[tuple[str, ...], str, str], ...] = (
      "Sponsor household size, tax years, current income, assets if needed, and sponsor domicile."),
     (("waiver",), "waiver_or_joint_filing_record",
      "Conditional residence posture, good-faith marriage evidence, divorce or abuse/extreme-hardship proof if applicable."),
+    (("i601a",), "provisional_waiver_eligibility", "Approved immigrant petition or DV selection; DOS fee receipt when required; physical presence and removal posture; only unlawful-presence inadmissibility."),
+    (("i601a", "i601"), "qualifying_relative_and_hardship", "Qualifying relative, applicable waiver provision, supported hardship scenario, adverse facts, and discretion; verify the case-specific requirements."),
+    (("i601",), "waivable_ground", "Identify each inadmissibility ground and a statutory waiver that actually reaches it; record any unwaivable ground."),
+    (("i612",), "exchange_visitor_waiver", "Section 212(e) applicability and the actual hardship or persecution waiver basis; never substitute an I-751 theory."),
+    (("niw",), "national_interest_waiver", "EB-2 threshold eligibility and the three Dhanasar prongs, tied to the proposed endeavor and evidence."),
     ((), "filing_logistics", "Signatures, fees, photos, sealed medicals, translations, filing address, and physical assembly notes."),
 )
 
@@ -567,6 +597,8 @@ def build_case_theory_evidence_map(
         "expected_forms": expected_forms,
         "required_stage_ids": list(required_stage_ids),
         "eligibility_elements": [],
+        "requires_specialist_reconciliation": True,
+        "reconciled_at": "",
         "required_evidence_categories": required_evidence_categories(matter_type, deliverable),
         "known_missing_documents": [],
         "likely_weak_points": [],

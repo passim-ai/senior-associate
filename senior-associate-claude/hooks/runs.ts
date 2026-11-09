@@ -448,7 +448,7 @@ export async function announce($: EngineInterface, r: Run, after: Card | null = 
 }
 
 export function finishedText(r: Run, c: Card | null): string {
-  const name = r.name || c?.name || 'The matter'
+  const name = c?.meta.protected ? 'Your confidential matter' : r.name || c?.name || 'The matter'
   if (r.status === 'failed') {
     return `${name}: the ${runKind(r.kind).noun} stopped${STEP_KINDS.has(r.kind) && r.stepLabel ? ` at ${r.stepLabel}` : ''}. Open it to try again.`
   }

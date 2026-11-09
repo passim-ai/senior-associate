@@ -16,6 +16,7 @@ from scripts.matter_state import (EVENTS_FILE, LEASE_FILE, apply_attorney_action
                                   lease_is_fresh, question_key, read_answers, read_jsonl, read_lease, read_meta,
                                   read_open_items)
 from scripts.network_gate import lease_is_unattended
+from scripts.filing_readiness import readiness
 
 from .catalog import (DEFAULT_STAGE_MINUTES, DEFAULT_WORKFLOW, FINDINGS_FILE_STAGES, PHASE_LABELS, STAGE_LABELS,
                       STAGE_MINUTES, SUPERSEDED_BY_FINAL_REVIEW, WORKFLOW_TEMPLATES, catalog, posture_entry, type_entry)
@@ -143,7 +144,7 @@ SEVERITY_WORDS = {
     "minor": "minor", "low": "minor",
     "manual_review": "check by hand",
 }
-OUTCOME_WORDS = {"deny_likely": "denial likely", "noid_likely": "NOID likely", "rfe_likely": "RFE likely", "attorney_hold": "your call"}
+OUTCOME_WORDS = {"reject_likely": "rejection likely", "deny_likely": "denial likely", "noid_likely": "NOID likely", "rfe_likely": "RFE likely", "attorney_hold": "your call"}
 OWNER_WORDS = {"attorney": "you", "client": "the client"}
 
 
@@ -621,7 +622,8 @@ class MatterRead:
         self.filed = filed_record(matter)
         self.output_files = walk_output(matter)
         # Findings matter for the list only when there's no open items list to read the questions from.
-        self.findings = findings_for(matter, self.output_files) if (not light or self.ledger_state == "missing") else []
+        self.findings = findings_for(matter, self.output_files)
+        self.filing_readiness = readiness(matter, self.stages, self.ledger)
         self.needs = needs_you(self.track, self.findings, self.ledger, self.ledger_state, matter.name)
         self.intake = intake_of(self.track)
         # The settings with protection as the one rule has it: the flag, or a case type that can only be protected.
@@ -634,9 +636,10 @@ class MatterRead:
             self.changed_at = last_change(matter, self.track, self.output_files)
 
     def phase(self, doc_count: int) -> str:
-        return phase_for(self.track, doc_count, self.needs, self.ledger, filed=bool(self.filed),
+        phase = phase_for(self.track, doc_count, self.needs, self.ledger, filed=bool(self.filed),
                          last_change_at=self.changed_at, now=self.now, lease=self.lease, lease_file=self.lease_file,
                          ledger_state=self.ledger_state)
+        return "draft" if phase == "complete" and not self.filing_readiness["approved"] else phase
 
 
 def matter_card(ctx: Context, matter: Path) -> dict[str, Any]:
@@ -686,6 +689,7 @@ def matter_card(ctx: Context, matter: Path) -> dict[str, Any]:
         "review_notes": review_notes(r.findings),
         "outputs": outputs,
         "open_items": r.ledger,
+        "filing_readiness": r.filing_readiness,
         "answers": answers,
         "memo_text": _read_text(Path(outputs["memo"]["path"])) if outputs["memo"] else "",
         "client_request_text": _read_text(Path(outputs["client_request"]["path"]), 20000) if outputs["client_request"] else "",

@@ -1514,6 +1514,14 @@ def main(argv: list[str] | None = None) -> int:
                     else out_dir / f"{name}.render.json")
     if summary_path.suffix.lower() in (".docx", ".pdf", ".md"):
         raise ToolError("--summary-json must be a .json path, not the letter or its outputs.")
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+    from scripts.generated_files import check_generated, record_generated
+    receipt = out_dir / f".{name}.generated.json"
+    try:
+        check_generated([docx_path, pdf_path], receipt)
+    except ValueError as exc:
+        raise ToolError(str(exc)) from exc
 
     # Inline warnings were already collected while parsing; build with a parser that does not repeat them.
     quiet = InlineParser(_truthy(letter.front.get("smart_quotes"), True), Audit())
@@ -1570,6 +1578,7 @@ def main(argv: list[str] | None = None) -> int:
     summary_path.parent.mkdir(parents=True, exist_ok=True)
     summary_path.write_text(json.dumps(summary, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     summary["summary_json"] = str(summary_path)
+    record_generated([docx_path, pdf_path], receipt)
     if args.json:
         print(json.dumps(summary, indent=2, ensure_ascii=False))
     else:

@@ -75,8 +75,7 @@ def lease_is_unattended(lease: dict[str, Any] | None, now: datetime | None = Non
 def unattended_run(matter_root: Path, actor: str) -> bool:
     """True while the app's background run (or its orchestrator) holds the matter, unless the caller is the
     attorney's own conversation."""
-    if actor in INTERACTIVE_ACTORS:
-        return False
+    # A caller-supplied role is not evidence that the attorney is present.
     return lease_is_unattended(read_lease(matter_root))
 
 

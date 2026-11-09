@@ -6,10 +6,11 @@ import { chosenCase, metaChanged } from '../matter'
 import { typed, updateDraft } from '../state'
 import { WARN } from '../theme'
 import { nowMs } from '../words'
+import { setMeta } from '../perform'
 import { matterStatus, isBusy } from '../status'
 
 export async function intakeScreen($: EngineInterface, x: Ctx, c: Card): Promise<JSX.Element> {
-  const { Text, p, allRuns, d, open, missingCase, actions, card, subpage, caseChooser, postureChips, filingChoices } = x
+  const { Text, Input, field, p, allRuns, d, open, missingCase, actions, card, subpage, caseChooser, postureChips, filingChoices } = x
   const types = p.catalog.matter_types
   const chosen = chosenCase(p, d)
   const posture = d.posture || 'new filing packet'
@@ -34,6 +35,12 @@ export async function intakeScreen($: EngineInterface, x: Ctx, c: Card): Promise
     // Protected by its case type: a protected catalog entry, or (the server says) the case as it is recorded now.
     card('How it is filed', filingChoices(d, Boolean(types.find(t => t.id === d.typeId)?.protected) || (sameCase && c.meta.protected_reason === 'case_type')), undefined, 'card-filing'),
     card('New filing or a response?', [postureChips(d)]),
+    card('Jurisdiction for this matter', [
+      <Text key="jurisdiction-help" dimColor>Confirm the relevant forum and circuit from the matter’s venue and posture, not the attorney’s office address.</Text>,
+      ...(['forum', 'circuit', 'jurisdiction_basis'] as const).map(key => field(
+        key === 'forum' ? 'Forum' : key === 'circuit' ? 'Circuit (ca1–ca11, dc, federal, or none)' : 'Why this jurisdiction applies',
+        label => <Input key={key} label={label} value={c.meta[key] || undefined} onSubmit={value => { void setMeta($, c, { [key]: value }) }} />, `jurisdiction-${key}`)),
+    ]),
     busyHere
       ? <Text key="intake-busy">Claude is working on this matter right now. Wait for it to finish, or stop it on the matter page, then come back.</Text>
       : actions([

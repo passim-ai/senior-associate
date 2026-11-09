@@ -86,6 +86,7 @@ Give each finding these fields:
 
 When the finding is a merits risk, add an `outcome` and write `detail` as the officer's theory, in the officer's voice:
 
+- `reject_likely`: intake rejection or a missing mandatory filing prerequisite
 - `deny_likely`: no legal basis on this posture; more evidence won't fix it
 - `noid_likely`: a serious adverse fact or contradiction that needs rebuttal
 - `rfe_likely`: approvable, but key evidence or explanation is missing
@@ -162,3 +163,9 @@ The stage passes with open findings as long as each material one has an owner. T
 You might be asked outside the workflow: "check this packet before filing", "read it like an officer", or the app's officer's review. Do the same review. The app's officer's review (Re-check as a USCIS officer would) is the attorney asking for a fresh, full read: run `changed-since ... --fresh` and review everything. Otherwise, if `changed-since` shows an earlier pass, do it as a re-review. For an officer's review, lead with the framing and the strongest theory. Save the memo and findings as above, but don't run `complete-stage`. If `open-items.json` and `Attorney Memo.md` exist, update them as `${CLAUDE_PLUGIN_ROOT}/skills/senior-associate/references/handoff.md` describes, the memo's case assessment included. In chat, give the bottom line in plain words, with no finding ids or paths: whether the packet is ready to file, plus the strongest theory and its cure.
 
 If there's no matter folder to save into, give the findings in chat in the same order, and offer to save them.
+
+For an RFE or NOID response, follow the senior-associate skill’s `references/notice-responses.md`. Final review must validate the notice-ground map, the attorney-verified deadline, and delivery instructions against the assembled response.
+
+Keep intake rejection, possible RFE, and merits denial separate. Do not imply an RFE is guaranteed; check the case-specific authority, including the I-601A denial-without-RFE rule where applicable. `passed` means the review completed, not that findings were cured. The attorney alone approves the exact deliverable version in the Packet screen.
+
+Before filing approval, inspect the current `prepared forms audit.json`: every filing form must be represented in `results`, with its `file` and `findings`. Deterministic form errors (including unsupported sensitive answers, mismatches, bad chronology, and rendering defects) cannot be accepted as merits risks. Correct the form and rerun its audit. For a manually audited unsupported form, record the actual reviewer and review evidence and the resulting findings; absence of an automated schema is not a passed audit. The attorney may separately acknowledge unresolved merits risks with a reason tied to the exact reviewed packet.

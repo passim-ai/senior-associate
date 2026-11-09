@@ -37,7 +37,7 @@ You won't need Terminal. Claude does the installing.
    3. Install the tools: brew install uv ghostscript poppler
    4. Create the folder ~/Matters.
    5. Install the plugin with the copy of Claude's command-line tool inside the Claude app (the newest "$HOME/Library/Application Support/Claude/claude-code/*/*/claude.app/Contents/MacOS/claude"): run `plugin marketplace add passim-ai/senior-associate`, then `plugin install senior-associate@document-automation --config matters_root="$HOME/Matters"`.
-   6. Turn on automatic updates with the plugin's own script, never by editing ~/.claude/settings.json: run `uv run --script "$HOME/.claude/plugins/marketplaces/document-automation/senior-associate-claude/skills/setup/scripts/auto_update.py" on`.
+   6. Leave automatic updates off with the plugin's own script, never by editing ~/.claude/settings.json: run `uv run --script "$HOME/.claude/plugins/marketplaces/document-automation/senior-associate-claude/skills/setup/scripts/auto_update.py" off`.
    7. Tell me to quit Claude with ⌘Q, open it again, and type /matters.
    ```
 
@@ -105,7 +105,7 @@ Immigration Packet Builder's own screens have an **Ask Claude to do it** button 
 
 ## Updates
 
-Automatic updates are turned on when Claude installs Immigration Packet Builder. New versions download in the background and take effect the next time you open Claude. Your version appears at the foot of every Immigration Packet Builder screen, for example "Help · Immigration Packet Builder 1.0.0", and what changed in each version is in the [CHANGELOG](senior-associate-claude/CHANGELOG.md).
+New installations leave automatic updates off. Updates are downloaded into a separate candidate folder, checked, and tried with a synthetic matter before activation. Existing installations keep their settings until you change them. Finish active builds before switching versions. Your version appears at the foot of every Immigration Packet Builder screen, for example "Help · Immigration Packet Builder 1.0.0", and what changed in each version is in the [CHANGELOG](senior-associate-claude/CHANGELOG.md).
 
 To update right away, choose **Help** in Immigration Packet Builder and press **Ask Claude to do it** next to "To get the newest version". Then quit Claude with ⌘Q and reopen it.
 
@@ -124,3 +124,7 @@ The full guide, including what each status means and how your clients' documents
 Immigration Packet Builder is free under the [PolyForm Shield License 1.0.0](LICENSE). You may use, change and share it for any purpose, including in a commercial law practice, except to build a product that competes with it. Copyright 2026 Passim AI.
 
 It is a drafting aid, not legal advice. Nothing is filed or sent for you, and your attorneys review and approve all of its work before it is relied on, sent or filed. As the license says, it comes as is, without any warranty.
+
+## Reliability and data handling
+
+See [data handling and limits](senior-associate-claude/docs/DATA-HANDLING.md), [verification procedure](senior-associate-claude/docs/VERIFICATION.md), and [the local evaluation](docs/implementation-2026-11-09.md). A completed review packet is a draft. Attorney approval binds the filing export to the reviewed version; substantive changes require review and approval again.

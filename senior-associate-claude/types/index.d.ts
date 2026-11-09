@@ -81,6 +81,9 @@ export type SavedAnswer = { question: string; answer: string; saved_at: string }
 
 /** The attorney's settings for the matter (CONTRACTS §6). */
 export type Meta = {
+  forum?: string
+  circuit?: string
+  jurisdiction_basis?: string
   /** The effective value: the setting, or a case type that can only be protected (the server's one rule). */
   protected: boolean
   /** Why: catalog, attorney or docs_review for the setting; case_type when only the case type makes it so. */
@@ -170,6 +173,7 @@ export type NeedItem = {
 export type SampleGuide = { id: string; title?: string; intro?: string; try?: string; caught_title?: string; caught?: string[]; after?: string }
 
 export type Card = {
+  filing_readiness?: { eligible: boolean; approved: boolean; digest: string; blockers: string[]; risks?: string[]; attorney: string; approved_at: string }
   name: string
   path: string
   /** new, ready, reviewed, building, paused, needs_you, waiting_client, draft, complete, filed. */

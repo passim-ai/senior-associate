@@ -109,7 +109,7 @@ _MONTHS = r"(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)[a-z]*\.?"
 _NOTE_DATE = re.compile(
     r"^\W*(?:(?:19|20)\d{2}-\d{2}-\d{2}|\d{1,2}/\d{1,2}/(?:19|20)\d{2}|" + _MONTHS + r"\s+\d{1,2},\s+(?:19|20)\d{2})\b"
 )
-_NOTE_NEGATIVE_RE = re.compile(r"\b(?:overruled|vacated|reversed|superseded|abrogated|negative)\b", re.IGNORECASE)
+_NOTE_NEGATIVE_RE = re.compile(r"\b(?:overruled|vacated|reversed|superseded|abrogated|withdrawn|unverified|unchecked|not checked|negative)\b", re.IGNORECASE)
 
 
 def chat_note_keys(path: Path | None) -> tuple[dict[str, str], dict[str, str]]:

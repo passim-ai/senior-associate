@@ -1109,9 +1109,9 @@ class NetworkGateTests(RuntimeCase):
         rw("lease", "acquire", str(self.matter), "--run-id", "bg", "--holder", "app")
         refused = self.gate("--sends-client-data", "--confirmed", ok=False)
         self.assertIn("unattended run", refused.stderr)
-        # The matter chat talks with the attorney, who can say yes.
+        # A claimed actor cannot bypass an active background lease.
         run(str(NETWORK_GATE), str(self.matter), "--action", "mcp_research", "--role", "attorney", "--actor", "matter_chat",
-            "--sends-client-data", "--confirmed")
+            "--sends-client-data", "--confirmed", ok=False)
         bad = run(str(NETWORK_GATE), str(self.matter), "--action", "email", "--role", "final_review", ok=False)
         self.assertNotEqual(bad.returncode, 0)
         # A run whose lease has gone quiet for an hour is still unattended for this check.
@@ -1119,7 +1119,7 @@ class NetworkGateTests(RuntimeCase):
         refused = self.gate("--sends-client-data", "--confirmed", ok=False)
         self.assertIn("unattended run", refused.stderr)
         decisions = [json.loads(check["notes"]) for check in self.checks()]
-        self.assertEqual([d["allowed"] for d in decisions], [True, False, True, False, True, False, False])
+        self.assertEqual([d["allowed"] for d in decisions], [True, False, True, False, False, False, False])
         self.assertEqual(decisions[3]["rule"], "unattended")
         self.assertEqual(decisions[5]["rule"], "invalid")
 

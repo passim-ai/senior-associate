@@ -81,6 +81,10 @@ META_DEFAULTS: dict[str, Any] = {
     "archived_at": "",
     "client_language": "English",
     "filing_method": "paper",
+    "client_name": "",
+    "forum": "USCIS",
+    "circuit": "",
+    "jurisdiction_basis": "",
 }
 
 

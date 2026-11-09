@@ -888,6 +888,7 @@ def write_filled_pdf(
         bindings=bindings,
     )
     if updates:
+        check_font_coverage(reader, updates)
         writer.update_page_form_field_values(None, updates, auto_regenerate=True)
     close_appearance_clips(writer)
 
@@ -898,6 +899,48 @@ def write_filled_pdf(
     return FillResult(
         fields, xfa_only, normalized, shared, defects, rebound, left_unbound, length_warnings, defect_briefs
     )
+
+
+def check_font_coverage(reader: PdfReader, updates: dict[str, object]) -> None:
+    """Refuse unsupported glyphs before pypdf can silently substitute or corrupt them.
+
+The pinned pypdf font decoder supplies the field's actual encoding. Unknown CID
+fonts require a Unicode map; encoding UTF-16 alone does not prove glyph coverage.
+"""
+    from pypdf._cmap import get_encoding
+    acro = reader.trailer["/Root"]["/AcroForm"].get_object()
+    resources = acro.get("/DR", {}).get_object() if hasattr(acro.get("/DR", {}), "get_object") else acro.get("/DR", {})
+    fonts = resources.get("/Font", {})
+    fonts = fonts.get_object() if hasattr(fonts, "get_object") else fonts
+    for name, spec in (reader.get_fields() or {}).items():
+        if spec.get("/FT") != "/Tx" or name not in updates:
+            continue
+        value = str(updates[name] or "")
+        chars = {c for c in value if ord(c) > 127}
+        if not chars:
+            continue
+        da = str(spec.get("/DA") or acro.get("/DA") or "")
+        match = re.search(r"(/[^\s]+)\s+[\d.]+\s+Tf", da)
+        resource = fonts.get(match[1]) if match else None
+        supported: set[str] = set()
+        if resource is not None:
+            font = resource.get_object()
+            encoding, character_map = get_encoding(font)
+            supported.update(v for v in character_map.values() if isinstance(v, str))
+            if isinstance(encoding, dict):
+                supported.update(encoding.values())
+            elif font.get("/Subtype") != "/Type0" and encoding not in {"utf-16-be", "utf-16"}:
+                for c in chars:
+                    try:
+                        c.encode(encoding, errors="strict")
+                        supported.add(c)
+                    except (UnicodeError, LookupError):
+                        pass
+        missing = chars - supported
+        if missing:
+            codes = ", ".join(f"U+{ord(c):04X}" for c in sorted(missing))
+            raise ValueError(f"Field {leaf_field_name(name)} cannot safely render {codes}. Nothing was written. "
+                             "Use a verified font-capable form workflow or attorney-reviewed manual completion; never silently transliterate a name.")
 
 
 def resolve_mapping(pdf_path: Path, fields: dict[str, object]) -> dict[str, object]:

@@ -88,3 +88,9 @@ uv run --script "${CLAUDE_PLUGIN_ROOT}/skills/senior-associate/scripts/run_matte
 On an online filing, write the checklist for upload: every document is a scan (the I-693 included, with the original kept), and nothing goes in for payment. Missing documents don't block this stage; they're its findings. Use `--status blocked` only when there's nothing reviewable at all.
 
 When the attorney asks for a quick review in conversation rather than a workflow stage, answer in chat in the same order (present, missing, suggested, issues), naming documents in words rather than by path, and offer to save the files.
+
+## Reconcile the case and any notice
+
+Before downstream work, read `output/working/workflow/case_theory_evidence_map.json`. Correct the requested benefit, expected forms, eligibility elements and evidence categories for this exact matter; set `reconciled_at` only after that comparison. Never let a shared word such as waiver substitute an I-751 theory for an I-601A, I-601, I-612 or NIW. Check the matter's forum, circuit and jurisdiction basis. Missing information becomes a blocking question.
+
+For an RFE or NOID, follow `../senior-associate/references/notice-responses.md` and prepare the notice response plan.

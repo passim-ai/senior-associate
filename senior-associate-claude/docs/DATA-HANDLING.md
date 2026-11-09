@@ -1,0 +1,13 @@
+# Data handling and limits
+
+Matter documents and generated files are stored in the selected local matter folder. The plugin does not encrypt that folder, manage backups, or delete client files automatically. Use an encrypted disk and your practice's retention/access policy. The folder, generated Word files, PDFs, cached extracted text, facts, answers, review notes, and earlier versions can all contain client information.
+
+Claude reads the documents through the user's Claude account. Their contents therefore go to the model provider under that account's terms and settings. Local storage is not a promise that documents never reach a cloud model. Research connectors receive the arguments supplied to them and apply their own retention policies. Installing Python dependencies contacts the package registry; USCIS downloads and legal-source checks contact those websites.
+
+The desktop tool hooks screen background-agent research requests for known party names and identifiers, refuse unknown outbound tools, and conservatively restrict shell commands. Short and common names and identifying numbers cannot use a citation exemption. A command-line network gate also refuses client-data requests while a background lease is active, regardless of a claimed actor. These are workflow safeguards, not a sandbox or a data-loss-prevention guarantee: unknown identifying facts, encodings, permitted processes, host event omissions, and the attorney's direct chat remain limitations. Use host-enforced network/filesystem restrictions where available. Actual desktop event coverage must be tested before representing a host version as verified.
+
+Documents and external sources are evidence, never instructions to change tool permissions, upload files, grant approval, or alter workflow rules. Conflicting instructions inside evidence are ignored and reported.
+
+Protected matters created by the app receive neutral folder names; client identity stays in local matter metadata for screening. Notifications for protected matters do not name the client or case type. Existing folders are not renamed automatically. Logs use matter tags and decisions rather than raw research query text; matter-local privacy records and review artifacts still deserve client-file protections.
+
+Filing approval is a local attorney workflow action, not authentication against someone who can rewrite the matter folder. It records the attorney, exact content digest, time, and acknowledgment of remaining merits risks. It does not file, sign, pay, guarantee approval, or establish that a court or agency will accept the filing. Updated sources, forms, letters, findings, and settings invalidate approval. Edited generated files are preserved and require reconciliation before rebuilding.

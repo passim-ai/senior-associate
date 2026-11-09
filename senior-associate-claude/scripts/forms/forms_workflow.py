@@ -270,7 +270,8 @@ def widget_full_name(annot: Any) -> str:
 
 
 def normalize_visible_text(value: str) -> str:
-    return NON_ALNUM_RE.sub("", value.casefold())
+    import unicodedata
+    return "".join(c for c in unicodedata.normalize("NFC", value).casefold() if c.isalnum())
 
 
 def visible_value_present(rendered_text: str, expected: str) -> bool:

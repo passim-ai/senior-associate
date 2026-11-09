@@ -1,0 +1,45 @@
+Python suites
+  ok    scripts/forms/tests/test_forms_gate.py                          8s
+  ok    scripts/forms/tests/test_schema_g28.py                          0s
+  ok    scripts/forms/tests/test_schema_i129f.py                        1s
+  ok    scripts/forms/tests/test_schema_i130.py                         0s
+  ok    scripts/forms/tests/test_schema_i130a.py                        0s
+  ok    scripts/forms/tests/test_schema_i131.py                         0s
+  ok    scripts/forms/tests/test_schema_i140.py                         1s
+  ok    scripts/forms/tests/test_schema_i360.py                         0s
+  ok    scripts/forms/tests/test_schema_i485.py                         0s
+  ok    scripts/forms/tests/test_schema_i601.py                         0s
+  ok    scripts/forms/tests/test_schema_i601a.py                        1s
+  ok    scripts/forms/tests/test_schema_i612.py                         0s
+  ok    scripts/forms/tests/test_schema_i693.py                         0s
+  ok    scripts/forms/tests/test_schema_i751.py                         0s
+  ok    scripts/forms/tests/test_schema_i765.py                         1s
+  ok    scripts/forms/tests/test_schema_i864.py                         0s
+  ok    scripts/forms/tests/test_schema_i864a.py                        0s
+  ok    scripts/forms/tests/test_schema_i907.py                         0s
+  ok    scripts/forms/tests/test_schema_n400.py                         1s
+  ok    scripts/forms/tests/test_schema_payments.py                     5s
+  ok    scripts/forms/tests/test_schema_real_blanks.py                 13s
+  ok    scripts/packet/tests/test_filing_channels.py                    0s
+  ok    scripts/packet/tests/test_packet_tools.py                      17s
+  ok    scripts/tests/test_matter_state.py                              1s
+  ok    scripts/tests/test_reliability.py                               1s
+  ok    skills/senior-associate/scripts/tests/test_server.py           39s
+  ok    skills/senior-associate/scripts/tests/test_workflow_runtime.py   69s
+App
+  ok    claude plugin test .                                            8s
+  ok    claude plugin validate .                                        1s
+  ok    claude plugin validate .. (marketplace)                         0s
+
+All 30 suites passed.
+
+Final PDF suite after bookmark adjustment:
+.............................................................            [100%]
+61 passed in 20.31s
+
+Final adversarial suite:
+....................
+----------------------------------------------------------------------
+Ran 20 tests in 0.575s
+
+OK

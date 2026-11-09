@@ -582,6 +582,13 @@ def plan_findings(
                                     values=missing_visible))
 
         fact_ids = [str(item) for item in list(question.get("fact_ids", []))]
+        from answer_integrity import confirmed, sensitive_question
+        from form_question_schema import get_question_schema
+        spec = ((get_question_schema(schema_name) or {}).get("required_questions") or {}).get(str(question.get("key")), {})
+        if (spec.get("requires_client_confirmation") or sensitive_question(question, kind)) and not confirmed(question, fact_index):
+            findings.append(finding(kind, pdf_path, "Sensitive answer needs a documented client confirmation",
+                                    question_key=question.get("key"), fields=fields,
+                                    fix="Leave unsupported answers blank and ask the client; link the dated confirmation in fact_ids."))
         if fact_ids:
             fact_records = [fact_index[fact_id] for fact_id in fact_ids if fact_id in fact_index]
             if fact_records and all(
@@ -962,6 +969,8 @@ def audit_form(kind: str, pdf_path: Path, values: dict[str, str], **context: obj
     """The form's own rules (AUDITORS[kind]) on its stored values; `context` is any other Form field."""
     form = Form(kind, pdf_path, values, **context)  # type: ignore[arg-type]
     AUDITORS[kind](form)
+    from consistency import check_consistency
+    check_consistency(form)
     return form.findings
 
 
@@ -3586,6 +3595,8 @@ def run_audit(
         form = Form(kind, pdf_path, values, xfa=xfa, acro=acro, manifest_entry=manifest_entry,
                     intent_manifest=intent_manifest)
         AUDITORS[kind](form)
+        from consistency import check_consistency
+        check_consistency(form)
         box_findings = box_rule_findings(kind=kind, pdf_path=pdf_path, widget_pdf=widget_pdf, values=values)
         too_long = {
             field_base_and_index(str(name))

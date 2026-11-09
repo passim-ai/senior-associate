@@ -820,3 +820,41 @@ test('in a protected matter no file name is said: only how many changed', OPTS()
   expect(await ui.find({ type: 'Text', text: /^Since the packet was built, 1 new file arrived and 1 file changed\.$/ })).toBeDefined()
   await ui.unmount()
 })
+
+test('filing approval sends the reviewed digest and the attorney’s risk reason', OPTS(), async ($, on) => {
+  const draft = card('Synthetic filing test', 'draft', DOCS)
+  draft.filing_readiness = { eligible: true, approved: false, digest: 'reviewed-version', blockers: [], risks: ['An unresolved merits issue'], attorney: '', approved_at: '' }
+  const { clock, ui, tap, requests } = await boot($, on, [draft])
+  await tap('packet')
+  await unfold(ui, tap, 'sec-approval')
+  expect(await ui.find({ type: 'Text', text: /Review risk: An unresolved merits issue/ })).toBeDefined()
+  await ui.input({ plugin: PLUGIN, key: 'filing-risk-note', text: 'Reviewed and elect to file with this risk.', kind: 'change' })
+  await tap('approve-filing')
+  expect(requests.find(r => r.op === 'approve_filing')).toMatchObject({ digest: 'reviewed-version', risk_note: 'Reviewed and elect to file with this risk.' })
+  await ui.unmount()
+})
+
+test('both host hook events refuse opaque outbound tools and identifiers hidden in citations', OPTS(), async ($, on) => {
+  const matter = card('Synthetic privacy test', 'ready', DOCS)
+  agents(on, 'Building the packet: Synthetic privacy test')
+  const transmitted: unknown[] = []
+  on('tool.call', async (_$, e) => { transmitted.push(e); return { result: 'sent' } as never })
+  const { ui, tap } = await boot($, on, [matter], { terms: ['Li Wu', 'Grace Young', 'A123456789'] })
+  await tap('main:build')
+  const host = $ as never as { tool: { call: (e: unknown) => Promise<unknown>; check: (e: unknown) => Promise<unknown> } }
+  for (const input of [
+    { tool: 'mcp__opaque__send', message: 'legal inquiry' },
+    { tool: 'WebSearch', query: 'Matter of Example, 25 I&N Dec. 1 (A123456789)' },
+    { tool: 'WebSearch', query: 'Li Wu hardship' },
+    { tool: 'WebSearch', query: 'Grace Young waiver' },
+  ]) {
+    const count = transmitted.length
+    const called = await host.tool.call({ ...input, agentId: 'agent-1' })
+    expect(JSON.stringify(called)).toMatch(/blocked|not approved/)
+    expect(transmitted.length).toBe(count)
+    const { tool, ...args } = input
+    const checked = await host.tool.check({ tool, input: args, agentId: 'agent-1', approver: 'person' })
+    expect(JSON.stringify(checked)).toMatch(/blocked|not approved/)
+  }
+  await ui.unmount()
+})

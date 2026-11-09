@@ -196,6 +196,7 @@ class I485SchemaMeetsAuditTests(unittest.TestCase):
                 else:
                     values[field] = "Sample"
         values.update({field: value for field, value in answers.items() if field not in values})
+        values.update({"Pt5Line3_DateofBirth": "01/01/1970", "Pt5Line8_DateofBirth[0]": "01/01/1971"})
         return values
 
     def test_required_boxes_satisfy_the_audit(self) -> None:

@@ -137,3 +137,5 @@ When the attorney wants a document review before building, run `ensure` with `fu
 - `references/filing.md`: how each form goes to USCIS, fees and payment, the packet's order
 - `references/runtime.md`: workflow commands and keys
 - `references/handoff.md`: the attorney memo, client request and filing checklist
+
+For an RFE or NOID response, follow the senior-associate skill’s `references/notice-responses.md`. Final review must validate the notice-ground map, the attorney-verified deadline, and delivery instructions against the assembled response.

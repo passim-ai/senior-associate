@@ -94,3 +94,5 @@ uv run --script "${CLAUDE_PLUGIN_ROOT}/skills/senior-associate/scripts/run_matte
 ```
 
 The reviewer stage passes only when the audit shows zero findings, the letter check shows zero errors, and every open `blocker`, `major` or `manual_review` finding has an owner. When the attorney asks for letter work directly, outside the workflow, play all three roles in order, and keep the reviewer's pass honest.
+
+For an RFE or NOID response, follow the senior-associate skill’s `references/notice-responses.md`. Final review must validate the notice-ground map, the attorney-verified deadline, and delivery instructions against the assembled response.
