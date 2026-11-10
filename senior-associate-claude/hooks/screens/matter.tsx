@@ -462,9 +462,11 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
   // ----- the research behind the letter: what was checked and when, or that BIA Edge wasn't used -----
   const rs = c.research ?? null
   const stale = rs?.state === 'checked' && rs.age_days !== null && rs.age_days > 7
+  // The library answered, but the check of the cases' later treatment wasn't finished.
+  const unfinished = rs?.state === 'checked' && rs.treatment_checked === false
   const researchCard = rs
     ? card('Research', [
-        <Text key="rs-head" weight="semibold" color={rs.state === 'checked' && !stale ? HEAD : WARN}>{`${rs.headline}${stale ? ` · ${rs.age_days} days ago` : ''}`}</Text>,
+        <Text key="rs-head" weight="semibold" color={rs.state === 'checked' && !stale && !unfinished ? HEAD : WARN}>{`${rs.headline}${stale ? ` · ${rs.age_days} days ago` : ''}`}</Text>,
         ...rs.lines.map((line, i) => <Text key={`rs-line-${i}`} size="footnote">{line}</Text>),
         rs.not_researched.length
           ? <Box key="rs-missing" flexDirection="column" gap="xs">
@@ -483,7 +485,7 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
           rs.state === 'without' && research?.ok && !busyNow
             ? button('research-redo', 'Redo the research with BIA Edge ›', () => { void perform($, 'redo:cover_letter_researcher') }, 'link') : null,
           rs.state !== 'without' && research?.ok && !busyNow
-            ? button('research-recheck', 'Check the law again ›', () => { void perform($, 'recheck') }, stale || rs.state === 'unrecorded' ? 'link' : 'quiet') : null,
+            ? button('research-recheck', 'Check the law again ›', () => { void perform($, 'recheck') }, stale || unfinished || rs.state === 'unrecorded' ? 'link' : 'quiet') : null,
         ]),
       ], rs.state === 'without' ? WARN : undefined, 'card-research')
     : null

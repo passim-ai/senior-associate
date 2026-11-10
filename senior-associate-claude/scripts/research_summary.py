@@ -38,7 +38,13 @@ LIBRARY = "BIA Edge"
 # A reported decision, as the matrix writes one: a reporter cite, "Matter of", or a caption.
 CASE = re.compile(r"I\s?&\s?N\s+Dec\.|\bF\.\s?(?:2d|3d|4th|Supp|App)|\bU\.S\.\s+\d|\bS\.\s?Ct\.|\bMatter of\b|\sv\.\s", re.I)
 LIMITED = re.compile(r"\b(caution|negative|overruled|vacated|superseded|abrogated|reversed)\b", re.I)
-UNCHECKED = re.compile(r"not checked|unchecked|couldn['’]t be checked|could not be checked", re.I)
+UNCHECKED = re.compile(r"not checked|unchecked|couldn['’]t be checked|could not be checked|incomplete|not reviewed|not completed", re.I)
+# The row says, in so many words, that a review of later treatment found nothing against the case. Anything short
+# of that (treatment history exists, coverage unknown, no validity at all) is not counted as a clean check.
+CLEAN = re.compile(r"\b(?:none|no|nothing)\b[^.;:]{0,60}\b(?:adverse|negative)\b", re.I)
+# The library's status word for a case, as the researcher copies it into the row, and the ones that flag it.
+STATUS = re.compile(r"\bImmCite\s+([a-z_]+)", re.I)
+FLAGGED = {"caution", "negative", "overruled", "vacated", "superseded"}
 STANDARD_SOURCE = re.compile(r"^authorities/", re.I)
 # Why the letter was researched without the library, as the researcher records it on the receipt.
 REASONS = {
@@ -82,6 +88,25 @@ def _is_case(row: dict[str, Any]) -> bool:
     return bool(row.get("document_id")) or bool(CASE.search(f"{row.get('authority') or ''} {row.get('citation') or ''}"))
 
 
+def treatment_of(validity: Any) -> str:
+    """How a case's row records its later treatment: limited, clean, or unknown (not checked, or not said).
+
+    The row usually opens with the library's own status word ("ImmCite caution: ..."); that word decides when it is
+    there. Otherwise the row's words do, and only an express statement that nothing adverse was found counts as clean.
+    """
+    text = str(validity or "")
+    named = STATUS.search(text)
+    status = named.group(1).casefold() if named else ""
+    if status in FLAGGED:
+        return "limited"
+    if status.startswith("unchecked") or status == "not_applicable" or UNCHECKED.search(text):
+        return "unknown"
+    # "No negative treatment" is not a limit: read the limiting words in what is left once the clean phrase is out.
+    if not status and LIMITED.search(CLEAN.sub(" ", text)):
+        return "limited"
+    return "clean" if CLEAN.search(text) else "unknown"
+
+
 def _short(text: Any, limit: int = 160) -> str:
     words = " ".join(str(text or "").split())
     return words if len(words) <= limit else words[: limit - 1].rsplit(" ", 1)[0] + "…"
@@ -122,18 +147,25 @@ def research_summary(matter: Path, today: date | None = None) -> dict[str, Any] 
     if not authorities:
         return None
 
-    limited = [str(r.get("authority") or r.get("citation")) for r in cases.values() if LIMITED.search(str(r.get("validity") or ""))]
-    unchecked = [str(r.get("authority") or r.get("citation")) for r in cases.values() if UNCHECKED.search(str(r.get("validity") or ""))]
+    by_treatment: dict[str, list[str]] = {"limited": [], "clean": [], "unknown": []}
+    for r in cases.values():
+        by_treatment[treatment_of(r.get("validity"))].append(str(r.get("authority") or r.get("citation")))
+    limited, unchecked = by_treatment["limited"], by_treatment["unknown"]
 
     receipt = read_json(matter / CURRENCY).data
     receipt = receipt if isinstance(receipt, dict) else {}
     checks = [c for c in receipt.get("checks") or [] if isinstance(c, dict)] if isinstance(receipt.get("checks"), list) else []
     connector = receipt.get("connector") if isinstance(receipt.get("connector"), dict) else {}
     treated = any(c.get("category") == "adverse_treatment" and c.get("status") == "checked" for c in checks)
-    if connector.get("available") is False or (receipt and not treated):
+    used = connector.get("available") is True and any(c.get("status") == "checked" for c in checks)
+    if connector.get("available") is False:
         state = "without"
-    elif treated:
+    elif treated or used:
+        # The library answered. Whether the check of later treatment was finished is said apart (`treated`).
         state = "checked"
+    elif receipt:
+        # A receipt from before the library's use was recorded, with no treatment check: researched without it.
+        state = "without"
     else:
         state = "unrecorded"
     reason = str(connector.get("reason") or "") if state == "without" else ""
@@ -142,6 +174,7 @@ def research_summary(matter: Path, today: date | None = None) -> dict[str, Any] 
     hits = [h for c in checks if c.get("category") in UPDATE_CHECKS and c.get("status") == "checked"
             for h in (c.get("hits") if isinstance(c.get("hits"), list) else []) if isinstance(h, dict)]
     applied = sum(1 for h in hits if h.get("disposition") == "applied")
+    covered = sum(1 for h in hits if h.get("disposition") == "already_covered")
     unresolved = [_short(u, 240) for u in receipt.get("unresolved") or [] if str(u).strip()] if isinstance(receipt.get("unresolved"), list) else []
 
     checked = _day(receipt.get("checked_at")) if state == "checked" else None
@@ -164,26 +197,43 @@ def research_summary(matter: Path, today: date | None = None) -> dict[str, Any] 
     if state == "checked":
         headline = f"Checked {long_date(checked)} with {LIBRARY}" if checked else f"Checked with {LIBRARY}"
         lines.append(cites + ".")
-        if c:
-            done = c - len(unchecked)
-            treatment = (f"Later treatment was checked for {'the case' if c == 1 else f'all {c} cases'}" if not unchecked
-                         else f"Later treatment was checked for {done} of the {c} cases; {len(unchecked)} couldn’t be checked")
-            clean = done - len(limited)
-            if limited and clean > 0:
-                treatment += (f": {_n(len(limited), 'carries', 'carry')} a limit that the research notes explain, and nothing "
-                              f"adverse was found for the other {clean}.")
-            elif limited:
-                treatment += f": {_n(len(limited), 'carries', 'carry')} a limit that the research notes explain."
+        if not treated:
+            headline += "; the check of later treatment wasn’t finished"
+            if c:
+                lines.append("The check of the cases’ later treatment wasn’t finished.")
+        elif c:
+            unknown, clean = len(unchecked), len(by_treatment["clean"])
+            done = c - unknown
+            if done == 0:
+                lines.append("The research records no completed check of later treatment for "
+                             + ("the case." if c == 1 else f"any of the {c} cases."))
             else:
-                treatment += ", and nothing adverse was found." if not unchecked else "; nothing adverse was found for the rest."
-            lines.append(treatment)
+                treatment = (f"Later treatment was checked for {'the case' if c == 1 else f'all {c} cases'}" if not unknown
+                             else f"Later treatment was checked for {done} of the {c} cases")
+                if limited and clean:
+                    treatment += (f": {_n(len(limited), 'carries', 'carry')} a limit that the research notes explain, and nothing "
+                                  f"adverse was found for the other {clean}.")
+                elif limited:
+                    treatment += f": {_n(len(limited), 'carries', 'carry')} a limit that the research notes explain."
+                else:
+                    treatment += ", and nothing adverse was found."
+                if unknown:
+                    treatment += f" For the other {'one' if unknown == 1 else unknown}, the research records no completed check."
+                lines.append(treatment)
         if researched:
             lines.append(f"{_n(researched, 'point was', 'points were')} researched for this client beyond the standard authorities"
                          + (f", and {_n(len(adverse), 'adverse authority was', 'adverse authorities were')} identified and answered." if adverse else "."))
         if hits:
-            lines.append(f"{_n(len(hits), 'recent decision or policy update was', 'recent decisions and policy updates were')} reviewed; "
-                         + ("none bears on the letter." if not applied
-                            else f"{applied} {'was' if applied == 1 else 'were'} taken into account in the research."))
+            reviewed = f"{_n(len(hits), 'recent decision or policy update was', 'recent decisions and policy updates were')} reviewed"
+            other = len(hits) - applied - covered
+            parts = []
+            if applied:
+                parts.append(f"{applied} {'was' if applied == 1 else 'were'} taken into account in the research")
+            if covered:
+                parts.append(f"{covered} {'was' if covered == 1 else 'were'} already covered by the research")
+            if other and parts:
+                parts.append(f"{other} {'doesn’t' if other == 1 else 'don’t'} apply to this letter")
+            lines.append(f"{reviewed}: {'; '.join(parts)}." if parts else f"{reviewed}; none applies to this letter.")
     elif state == "without":
         headline = f"Researched without {LIBRARY}"
         why = REASONS.get(reason)
@@ -206,7 +256,9 @@ def research_summary(matter: Path, today: date | None = None) -> dict[str, Any] 
         "lines": lines,
         # A clean check is what the library held on that date, never a guarantee.
         "caveat": ("A clean check means no adverse treatment was found in the library that day. It isn’t a guarantee that "
-                   "a case is still good law.") if state == "checked" and c else "",
+                   "a case is still good law.") if state == "checked" and treated and c else "",
+        # False when the library answered but the check of the cases' later treatment wasn't finished.
+        "treatment_checked": treated if state == "checked" else False,
         "checked_at": checked.isoformat() if checked else "",
         "age_days": age,
         "verified_at": verified.isoformat() if verified else "",

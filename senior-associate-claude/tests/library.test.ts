@@ -5,6 +5,7 @@
 import { expect, test } from 'claude-code/testing'
 import { denialOf } from '../hooks/library'
 import { researchCheck } from '../hooks/server'
+import { HEAD, WARN } from '../hooks/theme'
 import { PLUGIN, DOCS, OPTS, agents, boot, card, unfold } from './world'
 
 const EDGE = ['mcp__c0ffee__check_validity', 'mcp__c0ffee__search_cases']
@@ -90,9 +91,9 @@ test('research checked with BIA Edge: the matter’s page says what was checked 
   const { spawned } = run
   const notified: string[] = []
   on('ui.notify', async (_$, e) => { notified.push(e.text); return { value: { isSent: false, reason: 'no-surface' } } })
-  const { ui, tap, requests, clock } = await boot($, on, [done], { tools: EDGE })
+  const { ui, tap, requests, clock, matters } = await boot($, on, [done], { tools: EDGE })
   expect(await ui.find({ type: 'Text', text: /^Research$/ })).toBeDefined()
-  expect(await ui.find({ type: 'Text', text: /^Checked November 9, 2026 with BIA Edge$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^Checked November 9, 2026 with BIA Edge$/ })).toMatchObject({ props: { color: HEAD } })
   expect(await ui.find({ type: 'Text', text: /^Later treatment was checked for all 6 cases: 2 carry a limit/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^Still open: The attorney has not confirmed the controlling circuit\.$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^A clean check means no adverse treatment was found in the library that day\./ })).toBeDefined()
@@ -115,14 +116,45 @@ test('research checked with BIA Edge: the matter’s page says what was checked 
   expect(await ui.find({ type: 'Text', text: /^Checking the law again$/ })).toBeDefined()
   // While it runs, nothing offers to start it twice.
   expect(await ui.find({ type: 'Button', key: 'research-recheck' })).toBeUndefined()
-  // It finishes: the notification says what was done (the matter was ready to file before and still is), and the
-  // report is on the page under the check's own name.
+  // It finishes, and the matter's record now shows a check made today: the notification says what was done (the
+  // matter was ready to file before and still is), and the report is on the page under the check's own name.
+  Object.assign(matters[0]!, { research: { ...CHECKED, checked_at: '2026-11-10', age_days: 0, headline: 'Checked November 10, 2026 with BIA Edge', treatment_checked: true } })
   await ($ as never as { turn: { complete: (e: unknown) => Promise<unknown> } }).turn.complete({ agentId: 'agent-1', answer: 'I checked the six cases and the updates since November 9. Nothing the letter relies on has changed.', reason: 'answer', durationMs: 1000, isAborted: false, turnId: 't1' })
   run.finish('completed')
   await clock.settle()
   expect(notified).toEqual(['Lopez I-601A: the law the letter cites has been checked again.'])
   expect(await ui.find({ type: 'Text', text: /^Check of the law · finished .*, took / })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /Nothing the letter relies on has changed/ })).toBeDefined()
+  await ui.unmount()
+})
+
+test('a law check that could not check says only that it finished, and the report says why', OPTS(), async ($, on) => {
+  const done = Object.assign(card('Lopez I-601A', 'complete', DOCS), { research: CHECKED })
+  const run = agents(on, 'Checking the law again: Lopez I-601A')
+  const notified: string[] = []
+  on('ui.notify', async (_$, e) => { notified.push(e.text); return { value: { isSent: false, reason: 'no-surface' } } })
+  const { ui, tap, clock } = await boot($, on, [done], { tools: EDGE })
+  await tap('research-recheck')
+  // BIA Edge returned Passim's notice to the agent, so the record still shows yesterday's check.
+  await ($ as never as { turn: { complete: (e: unknown) => Promise<unknown> } }).turn.complete({ agentId: 'agent-1', answer: 'I could not check the law again: BIA Edge returned no research because the Passim trial has ended. Nothing was changed.', reason: 'answer', durationMs: 1000, isAborted: false, turnId: 't1' })
+  run.finish('completed')
+  await clock.settle()
+  expect(notified).toEqual(['Lopez I-601A: the check of the law has finished. Open it to see what Claude found.'])
+  expect(await ui.find({ type: 'Text', text: /BIA Edge returned no research because the Passim trial has ended/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^Checked November 9, 2026 with BIA Edge$/ })).toBeDefined()
+  await ui.unmount()
+})
+
+test('the library answered but the treatment check was not finished: said as a warning, with the check again', OPTS(), async ($, on) => {
+  const partial = { ...CHECKED, treatment_checked: false, caveat: '', headline: 'Checked November 9, 2026 with BIA Edge; the check of later treatment wasn’t finished', lines: ['The letter cites 24 authorities, 6 of them cases.', 'The check of the cases’ later treatment wasn’t finished.'] }
+  const done = Object.assign(card('Lopez I-601A', 'complete', DOCS), { research: partial })
+  const { ui } = await boot($, on, [done], { tools: EDGE })
+  expect(await ui.find({ type: 'Text', text: /^Checked November 9, 2026 with BIA Edge; the check of later treatment wasn’t finished$/ })).toMatchObject({ props: { color: WARN } })
+  expect(await ui.find({ type: 'Text', text: /^The check of the cases’ later treatment wasn’t finished\.$/ })).toBeDefined()
+  // Not sold a trial and not told to redo the research: the library is here, and the check is what is missing.
+  expect(await ui.find({ type: 'Button', key: 'research-recheck' })).toMatchObject({ props: { label: 'Check the law again ›' } })
+  expect(await ui.find({ type: 'Button', key: 'research-redo' })).toBeUndefined()
+  expect(await ui.find({ type: 'Button', text: /Start a free trial/ })).toBeUndefined()
   await ui.unmount()
 })
 
@@ -203,6 +235,32 @@ test('Passim answers that the account has no access: the page and Setup say so i
   await clock.settle()
   expect(store.access).toBeNull()
   expect(await ui.find({ type: 'Text', text: /^BIA Edge is connected, so letters can cite case law\.$/ })).toBeDefined()
+  await ui.unmount()
+})
+
+test('research answering again clears the notice, even when BIA Edge was added again under another name', OPTS(), async ($, on) => {
+  const draft = Object.assign(card('Lopez I-601A', 'draft', DOCS), { research: CHECKED })
+  const kept = { message: 'Your Passim free trial has ended.', at: '2026-11-08T15:00:00Z', plan: true, server: 'mcp__c0ffee' }
+  let reply: unknown = { result: { ok: true }, text: '{"ok":true}' }
+  on('tool.call', async () => reply as never)
+  on('agent.list', async () => ({ value: [] }))
+  // The connector is in the session under a new server name; the kept notice names the old one.
+  const { ui, store, clock } = await boot($, on, [draft], { tools: ['mcp__fresh1d__check_validity', 'mcp__fresh1d__search_passages', 'mcp__docs__get_document'] }, { access: kept })
+  expect(await ui.find({ type: 'Button', key: 'ask-link:passim_account' })).toBeDefined()
+  // Another connector answering, even through a method BIA Edge also has, says nothing about Passim.
+  await callOf($)({ tool: 'mcp__docs__get_document', id: 'x' })
+  await clock.settle()
+  expect(store.access).toMatchObject({ server: 'mcp__c0ffee' })
+  // An error from BIA Edge that isn't Passim's notice (a timeout) leaves the notice as it was.
+  reply = { result: undefined, isError: true, text: 'The search timed out.' }
+  await callOf($)({ tool: 'mcp__fresh1d__search_passages', query: 'extreme hardship', document_id: 618 })
+  expect(store.access).toMatchObject({ server: 'mcp__c0ffee' })
+  // BIA Edge answering with results, by a method only its listing identifies: the notice goes.
+  reply = { result: { ok: true }, text: '{"ok":true}' }
+  await callOf($)({ tool: 'mcp__fresh1d__search_passages', query: 'extreme hardship', document_id: 618 })
+  await clock.settle()
+  expect(store.access).toBeNull()
+  expect(await ui.find({ type: 'Button', key: 'ask-link:passim_account' })).toBeUndefined()
   await ui.unmount()
 })
 

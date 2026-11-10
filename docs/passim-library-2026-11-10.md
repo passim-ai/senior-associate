@@ -23,7 +23,8 @@ On the Passim site, `packet-builder` joins the sign-up sources it counts (`app/b
 - **The app opens four addresses and no others.** Passim's sign-up page, its plans page and its account page, and Claude's Connectors page. The app names the page; the address is fixed in the server. The sign-up and plans addresses end in `ref=packet-builder`. Nothing about the attorney, the Mac or a matter is in them.
 - **The app keeps Passim's notice, not the attorney's research.** The tool hook reads a connector's answer only when it is an error, and keeps it only when it is Passim's no-access notice. It is stored on the Mac with its date and cleared by the next answer with results.
 - **A clean check is never called a guarantee.** The card says so in small type whenever a case was checked.
-- **The summary counts; it does not conclude.** A case counts as carrying a limit when its row in the support matrix says caution, negative, overruled, vacated or the like. The research notes explain it; the card points there.
+- **The summary counts; it does not conclude.** A case counts as carrying a limit when its row in the support matrix carries the library's caution, negative, overruled or vacated status. It counts as cleanly checked only when the row says, in words, that nothing adverse was found. A row that says less (treatment history exists, coverage incomplete, nothing at all) is counted apart as having no completed check.
+- **Check the law again works nothing in.** Its brief carries no saved answers and no marked items, and tells the run to leave them; they wait for the next update. Its notification says the law was checked only when the matter's record shows a check made that day.
 - **Unpublished decisions stay out of the letter.** The memo section opens by saying they are not precedent. The researcher skips the search when nothing in the filing is contested, and records a search that found nothing.
 - **Check the law again holds the matter like any run** and shows on the timeline. It is offered only when BIA Edge is in the session and answering.
 
@@ -31,7 +32,7 @@ On the Passim site, `packet-builder` joins the sign-up sources it counts (`app/b
 
 Everything used the plugin's fictional sample matter (*Sample - Barrientos-Eckhardt*, an I-601A). No client matter was opened.
 
-**Suites.** `UV_PYTHON=3.12 bash scripts/check-plugins.sh` on the final code: all 31 Claude suites (28 Python suites, the 158 app tests, plugin and marketplace validation), the ChatGPT adapter's tests, the lifecycle test through both transports and the 13 browser scenarios.
+**Suites.** `UV_PYTHON=3.12 bash scripts/check-plugins.sh` on the final code: all 31 Claude suites (28 Python suites, the 161 app tests, plugin and marketplace validation), the ChatGPT adapter's tests, the lifecycle test through both transports and the 13 browser scenarios.
 
 **Types.** TypeScript 5.9 against the engine's own type file reports nothing in the files this change touches. It reports two strictness notes in `hooks/privacy.ts` that were there before, left as they were.
 
@@ -45,6 +46,21 @@ Everything used the plugin's fictional sample matter (*Sample - Barrientos-Eckha
 | The same, from scratch | The earlier research records removed first | One library call, 22 official-source fetches. Two points were marked as left without case-law research, and the card lists both. A case from outside the reference files was recorded as "treatment not checked" with a recommendation to drop the sentence unless the attorney keeps it. |
 
 The trial plugin and the scripts are kept with the evidence, outside this repository.
+
+## Independent review
+
+GPT-6 Astra (high) reviewed the first commit (`9a014a5`) and found six defects, all real and all fixed before release:
+
+| Finding | Fix |
+|---|---|
+| The law check's brief carried the attorney's saved answers with "redo whatever work it changes", against its own rule of changing nothing. | Its brief carries only the jurisdiction, and says to leave answers and items as they are. |
+| A case whose row said only that treatment history exists, or said nothing, was counted as cleanly checked. | Only an express "nothing adverse" counts; the rest are counted apart. |
+| A receipt where the library answered but the treatment check was unfinished read as "researched without BIA Edge". | It reads as checked, with the unfinished part said, and offers the check again. |
+| Updates marked already covered were summed up as not bearing on the letter. | Each disposition is said for what it is. |
+| A law check that could not check (no access) still announced "checked again". | It says so only when the record shows that day's check; otherwise only that it finished. |
+| Passim's notice stayed on the page if BIA Edge was added again under another name and answered through a method the app didn't list. | Any answer with results from the connector the session lists as BIA Edge clears it. |
+
+The trials above ran before these fixes. After them, the summary was run again on all three trial matters and the suites were rerun; the engine trials were not repeated.
 
 ## Not tested
 

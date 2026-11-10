@@ -109,7 +109,7 @@ class SummaryTests(unittest.TestCase):
             "The letter cites 5 authorities, 3 of them cases.",
             "Later treatment was checked for all 3 cases: 1 carries a limit that the research notes explain, and nothing adverse was found for the other 2.",
             "1 point was researched for this client beyond the standard authorities, and 2 adverse authorities were identified and answered.",
-            "2 recent decisions and policy updates were reviewed; 1 was taken into account in the research.",
+            "2 recent decisions and policy updates were reviewed: 1 was taken into account in the research; 1 doesn’t apply to this letter.",
         ])
         # A clean check is never called a guarantee.
         self.assertIn("isn’t a guarantee", s["caveat"])
@@ -121,7 +121,60 @@ class SummaryTests(unittest.TestCase):
         write(self.m / RESEARCH / "support matrix.json", matrix(proposition("P1", "A point.", [CERVANTES, unchecked])))
         s = rs.research_summary(self.m, TODAY)
         self.assertEqual(s["unchecked"], ["Matter of Example, 30 I&N Dec. 1 (BIA 2026)"])
-        self.assertIn("Later treatment was checked for 1 of the 2 cases; 1 couldn’t be checked; nothing adverse was found for the rest.", s["lines"])
+        self.assertIn("Later treatment was checked for 1 of the 2 cases, and nothing adverse was found. For the other one, the research records no completed check.", s["lines"])
+
+    def test_only_a_row_that_says_nothing_adverse_was_found_counts_as_a_clean_check(self) -> None:
+        self.checked_matter()
+        history = row("Matter of History, 29 I&N Dec. 1 (BIA 2024)", "29 I&N Dec. 1", "ImmCite treatment_available; incomplete coverage", document_id=11)
+        silent = row("Matter of Silent, 29 I&N Dec. 2 (BIA 2024)", "29 I&N Dec. 2", "", document_id=12)
+        write(self.m / RESEARCH / "support matrix.json", matrix(proposition("P1", "A point.", [CERVANTES, OJO, history, silent])))
+        s = rs.research_summary(self.m, TODAY)
+        # Treatment history existing is not a finished review, and a row that says nothing says nothing.
+        self.assertEqual(s["unchecked"], ["Matter of History, 29 I&N Dec. 1 (BIA 2024)", "Matter of Silent, 29 I&N Dec. 2 (BIA 2024)"])
+        self.assertIn("Later treatment was checked for 2 of the 4 cases: 1 carries a limit that the research notes explain, and nothing "
+                      "adverse was found for the other 1. For the other 2, the research records no completed check.", s["lines"])
+        write(self.m / RESEARCH / "support matrix.json", matrix(proposition("P1", "A point.", [history])))
+        self.assertIn("The research records no completed check of later treatment for the case.", rs.research_summary(self.m, TODAY)["lines"])
+        for text, want in (("ImmCite caution; review incomplete", "limited"), ("ImmCite negative: overruled", "limited"), ("ImmCite unchecked", "unknown"),
+                           ("treatment not checked", "unknown"), ("not checked for negative treatment", "unknown"), ("current", "unknown"),
+                           ("no negative treatment found on review", "clean"), ("overruled in part by Matter of X", "limited"),
+                           ("ImmCite treatment_available; 12 of 12 citing decisions reviewed, none adverse", "clean")):
+            with self.subTest(text):
+                self.assertEqual(rs.treatment_of(text), want)
+
+    def test_the_library_answered_but_the_treatment_check_was_not_finished(self) -> None:
+        self.checked_matter()
+        partial = receipt()
+        partial["checks"] = [c | ({"status": "not_checked"} if c["category"] == "adverse_treatment" else {}) for c in partial["checks"]]
+        write(self.m / RECEIPT, partial)
+        s = rs.research_summary(self.m, TODAY)
+        # Not "researched without BIA Edge": the updates it reviewed stand, and the unfinished part is said.
+        self.assertEqual((s["state"], s["treatment_checked"]), ("checked", False))
+        self.assertEqual(s["headline"], "Checked November 9, 2026 with BIA Edge; the check of later treatment wasn’t finished")
+        self.assertIn("The check of the cases’ later treatment wasn’t finished.", s["lines"])
+        self.assertTrue(any(line.startswith("2 recent decisions and policy updates were reviewed") for line in s["lines"]))
+        self.assertEqual(s["caveat"], "")
+        # With the treatment check finished, the same matter says so.
+        self.checked_matter()
+        self.assertTrue(rs.research_summary(self.m, TODAY)["treatment_checked"])
+
+    def test_reviewed_updates_are_said_by_what_was_done_with_them(self) -> None:
+        self.checked_matter()
+        def with_hits(*dispositions: str) -> dict:
+            made = receipt()
+            made["checks"][0]["hits"] = [{"id": f"h{i}", "url": "https://example.test/h", "disposition": d, "reason": "r"} for i, d in enumerate(dispositions)]
+            return made
+        cases = {
+            ("not_applicable", "not_applicable"): "2 recent decisions and policy updates were reviewed; none applies to this letter.",
+            # Already covered is not "doesn't apply": the authority governs the letter and needed no new work.
+            ("already_covered", "not_applicable"): "2 recent decisions and policy updates were reviewed: 1 was already covered by the research; 1 doesn’t apply to this letter.",
+            ("already_covered",): "1 recent decision or policy update was reviewed: 1 was already covered by the research.",
+            ("applied", "applied", "already_covered"): "3 recent decisions and policy updates were reviewed: 2 were taken into account in the research; 1 was already covered by the research.",
+        }
+        for dispositions, line in cases.items():
+            with self.subTest(dispositions):
+                write(self.m / RECEIPT, with_hits(*dispositions))
+                self.assertIn(line, rs.research_summary(self.m, TODAY)["lines"])
 
     def test_researched_without_the_library_says_what_was_not_checked(self) -> None:
         old = "2026-10-30"

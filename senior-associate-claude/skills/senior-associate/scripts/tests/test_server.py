@@ -427,6 +427,17 @@ class CardTests(unittest.TestCase):
         self.assertIn("senior-associate:cover-letter-researcher", prompts["recheck"])
         self.assertIn("changes neither the letter nor the packet", prompts["recheck"])
         self.assertIn("If the cover letter was researched on this run without BIA Edge", prompts["build"])
+        # A saved answer or a marked item goes with every run that works things in, and never with the law check,
+        # which changes nothing: its brief carries the jurisdiction it checks against and nothing to redo.
+        inputs = prompts_mod.BriefInputs(answers=[{"key": "decide-i765", "question": "Include an I-765?", "answer": "Yes."}], acted=[("resolve", "Passport photos")])
+        carried = prompts_mod.prompts_for(self.ctx, self.matter, {"matter_type": "I-130/I-485 immediate relative packet"}, inputs)
+        for kind in ("build", "continue", "update", "redo", "stress_test"):
+            self.assertIn("The attorney's answers to the open questions", carried[kind], kind)
+            self.assertIn("Since the last run, the attorney marked done", carried[kind], kind)
+        for text in ("The attorney's answers to the open questions", "Include an I-765?", "redo whatever work it changes", "Since the last run"):
+            self.assertNotIn(text, carried["recheck"])
+        self.assertIn("Jurisdiction:", carried["recheck"])
+        self.assertIn("Leave the attorney's saved answers and the other open items exactly as they are", carried["recheck"])
         for text in prompts.values():
             self.assertIn("each with a short `question`", text)
             self.assertIn("at most four sentences", text)

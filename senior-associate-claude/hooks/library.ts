@@ -29,8 +29,17 @@ export function denialOf(text: string): { message: string; plan: boolean } | nul
 
 // The connector a tool belongs to: "mcp__<server>".
 const serverOf = (tool: string) => tool.split('__').slice(0, 2).join('__')
-// BIA Edge by its own methods, whatever its connector's server is named now (it may have been added again).
+// BIA Edge by the methods no other connector has, and by how the session lists it: its connector's server may be
+// named anything, and may have been added again under another name since the notice was kept.
 const ITS_METHODS = /__(?:check_validity|get_case_by_citation|search_cases|get_regulatory_updates|search_unpublished_cases)$/
+async function isLibraryServer($: EngineInterface, server: string): Promise<boolean> {
+  if (/biaedge|bia_edge|passim/i.test(server)) return true
+  try {
+    return (await $.tool.list()).some(t => serverOf(t.name) === server && /__(?:check_validity|get_case_by_citation)$/.test(t.name))
+  } catch {
+    return false
+  }
+}
 
 // After a connector's tool has answered: keep Passim's no-access answer, or clear it once research answers again.
 export async function noteAccess($: EngineInterface, tool: string, result: unknown): Promise<void> {
@@ -42,6 +51,9 @@ export async function noteAccess($: EngineInterface, tool: string, result: unkno
     if (denied) await setAccess($, { ...denied, at: await nowIso($), server: serverOf(tool) })
     return
   }
+  // An answer with results. Only its having answered is read, never what it holds.
   const kept = await readAccess($)
-  if (kept && (kept.server === serverOf(tool) || ITS_METHODS.test(tool))) await setAccess($, null)
+  if (!kept) return
+  const server = serverOf(tool)
+  if (kept.server === server || ITS_METHODS.test(tool) || await isLibraryServer($, server)) await setAccess($, null)
 }

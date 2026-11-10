@@ -188,6 +188,8 @@ export type Research = {
   checked_at: string
   /** Days since the law was last checked; null when it never was. */
   age_days: number | null
+  /** False when the library answered but the check of the cases' later treatment wasn't finished. */
+  treatment_checked?: boolean
   authorities: number
   cases: number
   /** Points left without case-law research because BIA Edge wasn't available, in the research's own words. */

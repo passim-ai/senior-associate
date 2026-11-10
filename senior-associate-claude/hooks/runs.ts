@@ -460,7 +460,13 @@ export function finishedText(r: Run, c: Card | null): string {
   const questions = needs.filter(n => n.who === 'attorney').length
   const phase = matterStatus(c, null, nowMs()).phase
   if (phase === 'needs_you' && questions) return `${name}: Claude needs your answer on ${plural(questions, 'question', 'questions')}.`
-  if (r.kind === 'recheck') return `${name}: the law the letter cites has been checked again.`
+  // The law check: said as done only when the matter's record shows a check made today. A run that couldn't check
+  // (BIA Edge returned no research, say) ends with a report all the same, and the report says why.
+  if (r.kind === 'recheck') {
+    return c.research?.state === 'checked' && c.research.treatment_checked !== false && c.research.age_days === 0
+      ? `${name}: the law the letter cites has been checked again.`
+      : `${name}: the check of the law has finished. Open it to see what Claude found.`
+  }
   if (phase === 'complete') return `${name} is ready to file.`
   const needed = neededBeforeFiling(c).total
   if (phase === 'draft') return needed ? `${name}: draft packet ready. ${plural(needed, 'item is', 'items are')} needed before filing.` : `${name}: draft packet ready.`

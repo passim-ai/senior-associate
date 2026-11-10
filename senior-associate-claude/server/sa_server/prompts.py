@@ -63,7 +63,10 @@ def prompts_for(ctx: Context, matter: Path, intake: dict[str, Any], inputs: Brie
     meta = read_meta(matter)
     jurisdiction = "\nJurisdiction: " + json.dumps({k: meta.get(k, "") for k in ("forum", "circuit", "jurisdiction_basis")}) + "\nConfirm missing jurisdiction before relying on circuit-specific law.\n"
     after = jurisdiction + _answers_block(inputs.answers) + _actions_line(inputs.acted, _is_protected(mt, inputs))
-    return {key: text + ("" if key == "closeout" else after) + REPORT_NOTE for key, text in prompts.items()}
+    # Cleaning up works nothing in. Nor does the law check: it gets the jurisdiction it checks against, and the
+    # attorney's saved answers and marked items wait, untouched, for the next update.
+    tails = {"closeout": "", "recheck": jurisdiction}
+    return {key: text + tails.get(key, after) + REPORT_NOTE for key, text in prompts.items()}
 
 
 def _profile_line(ctx: Context) -> str:
@@ -311,7 +314,8 @@ def _prompts_for(ctx: Context, matter: Path, mt: str, fp: str, deliverable: str,
             "review written with the matrix's checked dates. It researches nothing new and changes neither the letter "
             "nor the packet. If a cited authority now has adverse treatment, or a change touches a point the letter "
             "makes, add an attorney_decision open item that says what changed and recommends what to do, and lead "
-            "your report with it. If BIA Edge isn't connected or returns no research, change nothing and say so. "
+            "your report with it. Leave the attorney's saved answers and the other open items exactly as they are; the "
+            "next update works those in. If BIA Edge isn't connected or returns no research, change nothing and say so. "
             "Then bring Sources checked in Attorney Memo.md up to date and render Attorney Memo.pdf from it again."
         ),
         "closeout": (
