@@ -280,6 +280,41 @@ test('a command that sends a file, or the matter’s folder, is told from one th
   expect(spelledOut('ls "$PWD/x" | head -3')).toBe('ls "$PWD/x" | head -3')
 })
 
+test('reading a long command is quick, whatever it holds', () => {
+  // The gate reads every shell command an agent runs, some of them 20,000 characters of a file being written. A
+  // pattern that takes seconds on one of them would stall the build, so each shape that could is timed here.
+  const params = Array.from({ length: 60 }, (_, i) => `k${i}=v${i}`).join('&')
+  const long = [
+    // An address full of "=" in an assignment in front of a command, quoted and bare.
+    `U="https://example.com/search?${params}" curl -s "$U"`,
+    `U=https://example.com/search?${params} X=1 somecommand --flag`,
+    `export A=${'a=b='.repeat(400)} ; ls`,
+    // A 20,000-character file written with cat, with addresses, quotes, pipes and "<<" in what is written.
+    `cat > notes.py <<'EOF'\n${'row(url="https://www.uscis.gov/policy-manual", note="a | b; c & d", n=1 << 4)\n'.repeat(260)}EOF`,
+    // A here-document that never closes, many of them, and many quotes that never close.
+    `${'python3 - <<X\nprint(1 << 2)\n'.repeat(120)}`,
+    `echo ${'"unclosed '.repeat(900)}`,
+    // Long runs of what the patterns repeat over: assignments, wrappers, pipes, spaces.
+    `${'A=1 '.repeat(2000)}curl -s https://example.com/`,
+    `${'sudo env time '.repeat(700)}ls`,
+    `${'ls | '.repeat(2000)}wc -l`,
+    `curl ${'-H "X: y" '.repeat(900)}https://example.com/ -d ${'a=1&'.repeat(900)}`,
+    `rsync ${'-a '.repeat(3000)}a b`,
+    `${' '.repeat(20000)}ls`,
+  ]
+  for (const command of long) {
+    const started = Date.now()
+    const read = spelledOut(command)
+    reachesNetwork(read)
+    sendsFile(read)
+    carriesFolder(read, ['/matters/Garcia I-130'])
+    shellParts(read).map(programOf)
+    expect(Date.now() - started).toBeLessThan(250)
+  }
+  expect(reachesNetwork(long[0] ?? '')).toBe(true)
+  expect(reachesNetwork(long[3] ?? '')).toBe(false)
+})
+
 test('a name that is also an everyday word counts only as a name is written', () => {
   const t = readTerms({ names: ['May', 'Long', 'An'], full_names: ['An Long May'] })
   expect(holdsTerm({ query: 'the applicant may adjust as long as an immigrant visa is available' }, t)).toBe(false)

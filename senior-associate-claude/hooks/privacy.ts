@@ -141,7 +141,9 @@ export function shellParts(text: string): string[] {
 // The program a part runs: past any assignments (X=1 curl …), wrappers (sudo, env, xargs) and the shell's own words
 // (then, do), and without its folder (/usr/bin/curl).
 const LEAD = /^(?:[({!]+\s*|(?:[A-Za-z_][A-Za-z0-9_]*=(?:"[^"]*"|'[^']*'|\S*)|sudo|exec|time|nohup|command|env|then|do|else|elif|if|while|until)\s+|xargs\s+(?:-\S+\s+)*)*/
-const ONLY_ASSIGNS = /^\s*(?:(?:export|local|declare|readonly)\s+)?(?:[A-Za-z_][A-Za-z0-9_]*=(?:"[^"]*"|'[^']*'|\S*)\s*)+$/
+// One assignment after another, with space between: a value is never cut in two to find a second one, which on a
+// long address full of "=" would take a very long time to give up on.
+const ONLY_ASSIGNS = /^\s*(?:(?:export|local|declare|readonly)\s+)?[A-Za-z_][A-Za-z0-9_]*=(?:"[^"]*"|'[^']*'|\S*)(?:\s+[A-Za-z_][A-Za-z0-9_]*=(?:"[^"]*"|'[^']*'|\S*))*\s*$/
 export function programOf(part: string): string {
   if (ONLY_ASSIGNS.test(part)) return '' // X="https://…" runs nothing; the value is read where it is used
   const rest = part.trimStart().replace(LEAD, '')
