@@ -1,6 +1,10 @@
 # What's new in Immigration Packet Builder
 
-Your version appears at the foot of every Immigration Packet Builder screen ("Help · Immigration Packet Builder 1.4.0"). After an update, quit Claude with ⌘Q and reopen it.
+Your version appears at the foot of every Immigration Packet Builder screen ("Help · Immigration Packet Builder 1.4.1"). After an update, quit Claude with ⌘Q and reopen it.
+
+## 1.4.1 (November 2026)
+
+**Use Auto for builds.** In Claude's usual permission setting, a full build stops to ask your permission several hundred times: 479 on the sample matter, seconds apart. The matter page now tells you to switch the permission setting under the prompt box to **Auto** before you build, and reminds you whenever a build is waiting for your OK. In Auto, Claude checks each step itself. In Auto the page puts the build request in your chat box; press Return to send it. Help has the same under "Stop Claude asking permission for every step".
 
 ## 1.4.0 (November 2026)
 

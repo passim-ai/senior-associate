@@ -77,11 +77,13 @@ Type `/matters` any time to come back. **Help**, at the foot of every screen, ex
 
 ## Permission prompts
 
-Claude asks before it runs some commands, and the build waits until you answer. While it waits, the matter page says **Claude is waiting for your OK in the chat**. Answer in the chat.
+**Use Auto for builds.** Under the prompt box, set the permission setting to **Auto** before you press Build. Claude then checks each step itself.
 
-To stop the same question from coming back on later builds, choose **Yes, and don't ask again**. Claude remembers that answer for your Matters folder, which is one more reason to always choose that folder in the Code tab.
+In Claude's usual setting, Claude asks before each command it runs and each file it writes, and the build waits for every answer. A full build of the sample matter asked 479 times, never more than 90 seconds apart. Choosing **Yes, and don't ask again** removes only a few, because most of a build's commands are one of a kind. While Claude waits, the matter page says **Claude is waiting for your OK in the chat** and reminds you about Auto.
 
-In **Auto** mode (chosen under the prompt box), Claude can't start a build from the matter page by itself. The page puts the request in your chat box instead. Press Return to send it. The page then switches to **Claude is working** on its own.
+In **Auto**, Claude can't start a build from the matter page by itself. The page puts the request in your chat box instead. Press Return to send it. The page then switches to **Claude is working** on its own.
+
+If your Claude app has no Auto setting, a build still works, but it asks at each step.
 
 ## Case-law research (BIA Edge)
 
