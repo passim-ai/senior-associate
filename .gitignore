@@ -16,3 +16,8 @@ __pycache__/
 .pytest_cache/
 *.log
 .DS_Store
+
+# ChatGPT adapter build and test output.
+senior-associate-chatgpt/dist/
+senior-associate-chatgpt/web/dist/
+senior-associate-chatgpt/artifacts/

@@ -1,0 +1,31 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "senior-associate-chatgpt",
+  "version": "0.2.1",
+  "description": "Senior Associate / Matters for ChatGPT desktop: manage local immigration matters, review documents, prepare and review filing packets, and work through attorney questions.",
+  "author": {
+    "name": "Chris Hammond"
+  },
+  "license": "SEE LICENSE IN LICENSE",
+  "extensions": {
+    "com.openai": {
+      "requires_local_executor": true,
+      "onboardingSkill": "./skills/setup/SKILL.md",
+      "interface": {
+        "displayName": "Senior Associate / Matters",
+        "shortDescription": "Client documents, filing packets, and attorney review.",
+        "developerName": "Passim AI",
+        "category": "Productivity",
+        "capabilities": [
+          "Read",
+          "Write"
+        ],
+        "defaultPrompt": [
+          "Open Matters",
+          "Review the documents for my matter",
+          "Continue building my filing packet"
+        ]
+      }
+    }
+  }
+}

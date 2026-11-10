@@ -4,6 +4,8 @@ Immigration Packet Builder turns a client's documents into a USCIS filing packet
 
 It was called Senior Associate until version 1.2.0. The plugin's install name (`senior-associate`) and this repository's address haven't changed, so installs made under the old name keep updating.
 
+This project contains both clients: [`senior-associate-claude`](senior-associate-claude/) and [`senior-associate-chatgpt`](senior-associate-chatgpt/). The ChatGPT adapter builds against the Claude folder's shared Python engine, so fixes are packaged together rather than maintained in two engine copies. Its interface and host integration remain separate. See [building and testing both plugins](docs/both-plugins-2026-11-09.md). The install instructions below are for Claude.
+
 For each matter you get:
 
 - **The packet**: one PDF, ready to sign and file. While anything is still needed before filing, you get a **draft packet** instead, with placeholders for the missing pieces.

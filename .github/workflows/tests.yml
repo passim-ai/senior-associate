@@ -21,3 +21,25 @@ jobs:
       - name: Run the suites
         working-directory: senior-associate-claude
         run: scripts/check.sh --quick
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: senior-associate-chatgpt/web/package-lock.json
+      - name: Build and test ChatGPT UI
+        working-directory: senior-associate-chatgpt/web
+        run: |
+          npm ci --ignore-scripts
+          npm run build
+          npm test
+          npx --no-install playwright install chromium
+      - name: Package and test both transports
+        run: |
+          python3 senior-associate-chatgpt/build.py
+          uv run --locked --script senior-associate-chatgpt/tests/test_adapter.py
+          uv run --locked --script tests/test_plugins_e2e.py
+      - name: Test ChatGPT browser workflows
+        working-directory: senior-associate-chatgpt/web
+        env:
+          PLAYWRIGHT_CHANNEL: chromium
+        run: npx --no-install playwright test
