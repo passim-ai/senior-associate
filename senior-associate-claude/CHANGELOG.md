@@ -1,6 +1,29 @@
 # What's new in Immigration Packet Builder
 
-Your version appears at the foot of every Immigration Packet Builder screen ("Help · Immigration Packet Builder 1.2.0"). After an update, quit Claude with ⌘Q and reopen it.
+Your version appears at the foot of every Immigration Packet Builder screen ("Help · Immigration Packet Builder 1.3.0"). After an update, quit Claude with ⌘Q and reopen it.
+
+## 1.3.0 (November 2026)
+
+**Every packet is a draft until you approve it.** Each page of a packet Claude assembles is marked "DRAFT — ATTORNEY REVIEW REQUIRED" in a band above the page. A finished matter says **Ready to file** and offers **Approve for filing**. The Packet tab lists whatever is still open (items needed before filing, review notes, form-check errors), and you can approve as it is, with a line on why. The approval records your name, the time, that exact version, what was open and your reason. The clean copies go in the matter's folder under **Approved for filing**. If the packet, the letter, the forms or the client's documents change afterwards, you approve again.
+
+**Your edits are kept.** If you edit the cover letter in Word or mark up the packet and then rebuild, Claude moves your version to **Your edited copies** beside it and lists it as an open item, instead of writing over it.
+
+**Forms.**
+- A question about arrests, removal, fraud, the security grounds and the like is answered only from the client's own dated answer. Without one, the box is left blank and listed as an open item. Claude no longer answers "No" because the documents are silent.
+- A name with a letter the form can't print (Nguyễn, Łukasz) leaves that one box blank and raises a decision for you. Nothing is respelled.
+- New checks catch contradictions before the packet is assembled: two answers to one question, dates out of order, a malformed Social Security number, and one person's name written two ways on different forms.
+
+**RFE and NOID responses.** Claude plans the response against the notice itself. Each ground is matched to an answer and its evidence, and the deadline is quoted from the notice for you to verify.
+
+**Research.** The cover letter's research now records what it covered, when, and which federal circuit governs. Choose the circuit under **Where the case is decided** on the matter's first screen. A research check more than a week old is listed when you approve.
+
+**Protected matters.** The folder keeps a neutral name in Finder, and the app shows the name you gave the matter.
+
+**Privacy.** The check that keeps client details out of research now also covers commands that reach the internet and tools Claude doesn't recognize.
+
+**Your Mac stays awake during a build,** for up to six hours. Closing the lid still interrupts it.
+
+**Updates.** New installs leave automatic updates off. To update, choose **Help** and press **Ask Claude to do it** next to "To get the newest version". If you installed before 1.3.0, automatic updates stay on until you ask Claude to turn them off.
 
 ## 1.2.0 (October 2026)
 

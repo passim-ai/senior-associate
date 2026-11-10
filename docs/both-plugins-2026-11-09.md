@@ -5,7 +5,7 @@ The project now contains the complete ChatGPT adapter source alongside the Claud
 ## Source and packaging
 
 - Claude engine: this repository's `senior-associate-claude/`, including reliability commit `4a017d8`.
-- Imported adapter: all tracked `senior-associate-chatgpt/` files from `/Users/chrishammond/worktrees/senior-associate/chatgpt-matters`, commit `9d966b26e0a6ab7a739827c6d9cd3b161670f662`. The original checkout and installed packages were not changed.
+- Imported adapter: all tracked `senior-associate-chatgpt/` files from a separate local checkout (`chatgpt-matters`), commit `9d966b26e0a6ab7a739827c6d9cd3b161670f662`. The original checkout and installed packages were not changed.
 - ChatGPT candidate version: **0.2.1**. `build.py` copies the sibling engine and adapts only prompt Markdown. The source folder is not the installable package; the complete build path is recorded in `senior-associate-chatgpt/dist/latest.txt`.
 - Each build has its own output directory. `shared-source.json` records hashes for 214 shared source files, including 82 Python files, plus hashes for the packaged contents. Tests compare every shared Python file against the current Claude source and verify every packaged hash.
 - Fonts, original adapter documentation, manifests, MCP server, privacy hook, frontend, tests, and the package lock are in this project. Dependency caches and build/test outputs are ignored.
