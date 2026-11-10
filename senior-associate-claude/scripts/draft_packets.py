@@ -91,8 +91,10 @@ def release_sources(matter: Path) -> dict[str, dict]:
     """The packets that can be approved now: each review copy in the deliverables folder, with its clean source.
 
     A review copy renamed since it was assembled (the handoff drops "(DRAFT)" from its name once nothing blocks
-    filing) is found by its contents. One that is gone (an earlier packet, replaced) is left out. Raises when there
-    is nothing to approve, or when a clean source is missing, changed or outside the matter."""
+    filing) is found by its contents. One that can't be found at all (renamed and then marked up, or removed) stays
+    in the release under the name it was assembled as: what is filed is its clean source, and a packet is retired
+    only when the next assembly leaves it out (`retire_others`), never because its review copy went missing. Raises
+    when there is nothing to approve, or when a clean source is missing, changed or outside the matter."""
     entries = _recorded(matter)
     current: dict[str, dict] = {}
     elsewhere: dict[str, str] | None = None
@@ -101,10 +103,7 @@ def release_sources(matter: Path) -> dict[str, dict]:
         if not (matter / relative).is_file():
             if elsewhere is None:
                 elsewhere = _review_copies(matter, set(entries))
-            moved = elsewhere.get(str(entry.get("draft_sha256") or ""))
-            if moved is None:
-                continue
-            relative = moved
+            relative = elsewhere.get(str(entry.get("draft_sha256") or ""), relative)
         source = matter / entry["source"]
         try:
             source.resolve().relative_to(root)
@@ -137,9 +136,20 @@ def keep_review_copy(matter: Path, packet: Path) -> None:
     stamp_review_copy(clean, packet)
     entries[relative] = {"source": clean.relative_to(matter).as_posix(), "clean_sha256": sha256_file(clean),
                          "draft_sha256": sha256_file(packet)}
-    # A packet that is gone (assembled under another name before, then removed) leaves the record.
-    entries = {name: entry for name, entry in entries.items() if (matter / name).is_file()}
     write_json_atomic(matter / RELEASE_MANIFEST, {"schema_version": 1, "entries": entries})
+
+
+def retire_others(matter: Path, current: list[Path]) -> None:
+    """Called once an assembly has kept everything it made (the packet and, for an online filing, its upload files):
+    those are the release now. Only one packet is ever current, so whatever was recorded before under another name
+    (the packet as "Filing Packet (DRAFT).pdf" before nothing blocked filing, upload files from a different split)
+    leaves the record. Their clean bytes stay on disk."""
+    try:
+        entries = _recorded(matter)
+    except ValueError:
+        return
+    keep = {path.resolve().relative_to(matter.resolve()).as_posix() for path in current}
+    write_json_atomic(matter / RELEASE_MANIFEST, {"schema_version": 1, "entries": {name: entry for name, entry in entries.items() if name in keep}})
 
 
 def export_approved(matter: Path, version: str) -> Path:
@@ -163,15 +173,3 @@ def export_approved(matter: Path, version: str) -> Path:
         if upload_map.is_file() and not (target.parent / upload_map.name).exists():
             shutil.copy2(upload_map, target.parent / upload_map.name)
     return destination
-
-
-def prune_upload_entries(matter: Path, folder: Path, current: list[Path]) -> None:
-    """Retire obsolete split exports from the current manifest; preserve their clean bytes on disk."""
-    record = read_json(matter / RELEASE_MANIFEST)
-    if not record.ok or not isinstance(record.data, dict):
-        return
-    prefix = folder.relative_to(matter).as_posix() + "/"
-    keep = {path.relative_to(matter).as_posix() for path in current}
-    entries = {name: entry for name, entry in record.data.get("entries", {}).items()
-               if not name.startswith(prefix) or name in keep}
-    write_json_atomic(matter / RELEASE_MANIFEST, {"schema_version": 1, "entries": entries})

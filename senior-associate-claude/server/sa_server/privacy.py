@@ -22,7 +22,7 @@ MIN_LENGTH = 2
 # Words that can't stand alone as a term without blocking ordinary legal questions.
 TOO_COMMON = {"the", "and", "for", "with", "none", "unknown", "n/a", "yes", "no", "not", "applicable", "same", "mr", "mrs", "ms",
               "de", "del", "la", "los", "las", "van", "von", "bin", "packet", "client", "documents", "docs", "waiver",
-              "petition", "joint", "matter", "new", "rfe", "noid", "response"}
+              "petition", "joint", "matter", "new", "rfe", "noid", "response", "sample"}
 
 
 def _from_folder_name(name: str) -> list[str]:

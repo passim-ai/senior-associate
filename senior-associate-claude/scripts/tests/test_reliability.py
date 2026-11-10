@@ -5,6 +5,7 @@
 # ///
 """Synthetic adversarial acceptance tests; no client data or live legal research."""
 import json
+import os
 from datetime import date, timedelta
 from pathlib import Path
 import sys
@@ -15,7 +16,7 @@ from unittest.mock import patch
 ROOT = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(ROOT), str(ROOT/'scripts/forms'), str(ROOT/'skills/senior-associate/scripts')]
 from scripts import filing_readiness as fr
-from scripts.draft_packets import keep_review_copy, export_approved, release_sources
+from scripts.draft_packets import keep_review_copy, export_approved, release_sources, retire_others
 from scripts.generated_files import KEPT_DIR, kept_notice, preserve_edits, record_generated
 from scripts.legal_currency import currency_problems
 from scripts.response_review import response_problems
@@ -93,8 +94,18 @@ class FilingTests(unittest.TestCase):
             {'severity':'error','form':'i-485','file':str(form),'title':'I-94 number is missing','open_item':'doc-i94'},
             {'severity':'warning','form':'i-485','file':str(form),'title':'A long answer'}]})
         fr.record_review(self.m)
+        checks=lambda:[r for r in self.ready()['risks'] if r.startswith('Forms check')]
+        # The audit names an open item nobody added: the reference hides nothing.
+        self.assertEqual(checks(),['Forms check, I-485: Date of birth is after the filing date.','Forms check, I-485: I-94 number is missing.'])
+        # On the list but not counted as needed before filing: the error is still said here.
+        self.ledger['open']=[{'id':'doc-i94','blocks_filing':False}];self.assertEqual(len(checks()),2)
+        # Counted as needed before filing, or settled by the attorney: said once, there.
+        self.ledger['open']=[{'id':'doc-i94','blocks_filing':True}]
+        self.assertEqual(checks(),['Forms check, I-485: Date of birth is after the filing date.'])
+        self.assertIn('1 open item on Questions is marked needed before filing.',self.ready()['risks'])
+        self.ledger['open']=[];self.ledger['resolved']=[{'id':'doc-i94','blocks_filing':True}]
         ready=self.ready();self.assertTrue(ready['eligible'])
-        self.assertEqual([r for r in ready['risks'] if r.startswith('Forms check')],['Forms check, I-485: Date of birth is after the filing date.'])
+        self.assertEqual(checks(),['Forms check, I-485: Date of birth is after the filing date.'])
         with self.assertRaises(ValueError):self.approve()
         self.approve(risk_note='The date is corrected by hand on the printed form.');self.assertTrue(self.ready()['approved'])
     def test_a_clean_audit_covers_its_forms_and_an_unchecked_form_is_said(self):
@@ -145,6 +156,48 @@ class FilingTests(unittest.TestCase):
         with self.assertRaises(ValueError):release_sources(self.m)
         blocked=self.ready();self.assertFalse(blocked['eligible']);self.assertIn('Update the packet',blocked['blockers'][0])
         with self.assertRaises(ValueError):self.approve(risk_note='any reason')
+    def test_a_renamed_then_marked_up_review_copy_still_approves_its_clean_packet(self):
+        final=self.p.with_name('Filing Packet.pdf');self.p.rename(final)   # the handoff's rename
+        final.write_bytes(b'annotated in Preview after the rename')        # neither its name nor its contents match now
+        self.assertEqual(list(release_sources(self.m)),['output/deliverables/Filing Packet (DRAFT).pdf'])
+        ready=self.ready();self.assertTrue(ready['eligible'],ready['blockers'])
+        self.assertTrue(any("isn't in the matter's folder as Claude assembled it" in r for r in ready['risks']),ready['risks'])
+        with self.assertRaisesRegex(ValueError,'Explain your decision'):self.approve()
+        self.approve(risk_note='My notes on the review copy are not for filing.')
+        clean=export_approved(self.m,self.ready()['digest'])/'Filing Packet.pdf'
+        self.assertEqual(float(PdfReader(clean).pages[0].mediabox.height),792)
+        # A split filing keeps every part: one part's review copy going missing never drops it from what is approved.
+        second=self.m/'output/deliverables/Upload files/Part 2 (DRAFT).pdf'
+        packet(self.p);packet(second);keep_review_copy(self.m,self.p);keep_review_copy(self.m,second);retire_others(self.m,[self.p,second])
+        second.unlink()
+        self.assertEqual(sorted(release_sources(self.m)),['output/deliverables/Filing Packet (DRAFT).pdf','output/deliverables/Upload files/Part 2 (DRAFT).pdf'])
+        # The next assembly is what retires what is no longer made: here the packet under its filing name, with no
+        # upload files, though the draft-named copy was never removed.
+        ready_name=self.p.with_name('Filing Packet.pdf');packet(ready_name);keep_review_copy(self.m,ready_name);retire_others(self.m,[ready_name])
+        self.assertTrue(self.p.exists());self.assertEqual(list(release_sources(self.m)),['output/deliverables/Filing Packet.pdf'])
+    def test_new_contents_under_an_old_date_are_read_and_an_approval_reads_every_file(self):
+        doc=self.m/'passport scan.txt';doc.write_text('AAAA');fr.record_review(self.m);self.approve()
+        self.assertTrue(self.ready()['approved'])
+        before=doc.stat();doc.write_text('BBBB');os.utime(doc,ns=(before.st_atime_ns,before.st_mtime_ns))   # same size, same date
+        self.assertEqual(doc.stat().st_mtime_ns,before.st_mtime_ns)
+        self.assertFalse(self.ready()['approved'])
+        # Whatever the cache has been made to say, a review receipt and an approval are taken from the files.
+        fr.record_review(self.m);page=self.ready()['digest']
+        doc.write_text('CCCC');now=doc.stat()
+        cache=self.m/'output/working/workflow/fingerprint-cache.json';kept=json.loads(cache.read_text())
+        kept['files']['passport scan.txt'].update(size=now.st_size,mtime_ns=now.st_mtime_ns,ctime_ns=now.st_ctime_ns)
+        cache.write_text(json.dumps(kept))
+        self.assertEqual(self.ready()['digest'],page)   # the page trusts its cache, as the quiet refresh must
+        self.assertNotEqual(fr.readiness(self.m,self.stages,self.ledger,fresh=True)['digest'],page)
+        with self.assertRaisesRegex(ValueError,'changed since this page was drawn'):
+            fr.approve(self.m,expected_digest=page,attorney='Synthetic Attorney',stages=self.stages,ledger=self.ledger)
+    def test_a_note_the_app_calls_worth_fixing_takes_a_reason_like_any_material_note(self):
+        notes=[{'title':'The I-864 leaves out a household member','severity_word':'worth fixing','outcome_word':''},
+               {'title':'A typo in the cover letter','severity_word':'minor','outcome_word':''}]
+        ready=fr.readiness(self.m,self.stages,self.ledger,notes=notes)
+        self.assertEqual([r for r in ready['risks'] if r.startswith('Review note')],['Review note: The I-864 leaves out a household member'])
+        with self.assertRaisesRegex(ValueError,'Explain your decision'):
+            fr.approve(self.m,expected_digest=ready['digest'],attorney='Synthetic Attorney',stages=self.stages,ledger=self.ledger,notes=notes)
     def test_a_linked_folder_blocks_and_nothing_assembled_says_so(self):
         (self.m/'linked').symlink_to('/tmp',target_is_directory=True)
         self.assertFalse(self.ready()['eligible']);self.assertIn('link',self.ready()['blockers'][0])
@@ -214,9 +267,19 @@ class IntegrityTests(unittest.TestCase):
             p.write_bytes(b'attorney edits');kept=preserve_edits([p],receipt)
             self.assertEqual(len(kept),1);self.assertEqual(kept[0].parent.name,KEPT_DIR);self.assertEqual(kept[0].read_bytes(),b'attorney edits')
             self.assertFalse(p.exists());self.assertIn('attorney_action',kept_notice(kept))
-            # A file from before receipts existed, or renamed since, is taken as generated: the rebuild goes on.
-            old=Path(d)/'older letter.docx';old.write_bytes(b'from an earlier version')
-            self.assertEqual(preserve_edits([old],receipt),[]);self.assertTrue(old.exists())
+            # A file from before receipts were kept (a letter edited in Word under an earlier version, say), or one
+            # whose receipt is gone or damaged: nobody can say it wasn't edited, so it is kept too, and the rebuild
+            # goes on. Its name says what it is, and the notice asks rather than asserts.
+            old=Path(d)/'older letter.docx';old.write_bytes(b'edited in Word under an earlier version')
+            kept=preserve_edits([old],receipt)
+            self.assertEqual(len(kept),1);self.assertFalse(old.exists())
+            self.assertEqual(kept[0].parent.name,KEPT_DIR);self.assertIn('(earlier copy, ',kept[0].name)
+            self.assertEqual(kept[0].read_bytes(),b'edited in Word under an earlier version')
+            self.assertIn('asking whether the attorney had changed it',kept_notice(kept));self.assertIn('not needed before filing',kept_notice(kept))
+            p.write_bytes(b'generated again');receipt.write_text('{ damaged')
+            self.assertEqual(len(preserve_edits([p],receipt)),1);self.assertFalse(p.exists())
+            # A new matter has nothing there yet: nothing is kept, and nothing is said.
+            self.assertEqual(preserve_edits([Path(d)/'new letter.docx'],Path(d)/'none.json'),[]);self.assertEqual(kept_notice([]),'')
     def test_a_social_security_number_is_not_a_sensitive_answer(self):
         from answer_integrity import sensitive_question
         self.assertFalse(sensitive_question({'label':"Part 2, Item 3: Petitioner's U.S. Social Security Number, if any"},'i-130'))

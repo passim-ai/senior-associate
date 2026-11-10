@@ -2002,13 +2002,13 @@ def main(argv: list[str] | None = None) -> int:
     if total != expected:
         warnings.append(f"Page count check: packet has {total} pages but items add up to {expected}.")
     if review_receipt is not None:
-        from scripts.draft_packets import keep_review_copy, prune_upload_entries
+        from scripts.draft_packets import keep_review_copy, retire_others
         from scripts.generated_files import record_generated
-        keep_review_copy(matter_root, out_pdf)
-        if split_dir is not None:
-            prune_upload_entries(matter_root, split_dir, [split_dir / f["file"] for f in upload_files])
-            for upload in [split_dir / f["file"] for f in upload_files]:
-                keep_review_copy(matter_root, upload)
+        made = [out_pdf] + ([split_dir / f["file"] for f in upload_files] if split_dir is not None else [])
+        for path in made:
+            keep_review_copy(matter_root, path)
+        # What this assembly made is the release now; a packet or an upload file recorded before it is retired.
+        retire_others(matter_root, made)
         record_generated([out_pdf], review_receipt)
     size = out_pdf.stat().st_size
     if plan["filing_method"] == "online" and not upload_files and size > ONLINE_UPLOAD_MAX_MB * 1_048_576:

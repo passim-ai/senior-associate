@@ -4,23 +4,30 @@
 // reads and can act on. The terms stay in this module's memory; they are never logged, drawn or written anywhere.
 //
 // What the host lets this do: `tool.call` and `tool.check` see every call with the loop it runs in (`agentId`), and
-// either can refuse it. Three rules, each for the loops it belongs to:
+// either can refuse it. Four rules, each for the loops it belongs to:
 //
 // 1. Research, in any agent's loop. A call is tied to its matter by that loop: the app's own agent, or an agent it
 //    started (`parentId` in the agent list). A loop the app can't place (an orchestrator started from the chat, another
 //    session's helper) is checked against every matter the server says Claude is working on, and passes when Claude
 //    is working on none: there is nothing of a client's to keep back.
-// 2. A shell command that reaches the network (a URL, curl, ssh), in a matter run's own loops: screened as research
-//    is. Every other shell command passes: the steps run the plugin's own scripts, with variables, pipes and line
-//    breaks as the skills write them, and a local command carries nothing off the machine.
-// 3. Any other tool that could carry words off the machine (another connector, a publishing or messaging tool), in a
-//    matter run's own loops: refused. The host's local tools, skills included, always pass.
+// 2. A shell command that reaches the network (a URL, curl, ssh), and the app's built-in browser, in a matter run's
+//    own loops: screened as research is. A command that sends a file or piped text, or writes the matter's folder
+//    into an address or a request, is refused: what a file holds can't be read here. Every other shell command
+//    passes: the steps run the plugin's own scripts, with variables, pipes and line breaks as the skills write them,
+//    and a local command carries nothing off the machine.
+// 3. Any other tool that sends what it is given somewhere else (another connector, or one of the host's tools that
+//    publishes, schedules or hands off), in a matter run's own loops: refused.
+// 4. Every other tool of the host's passes, whatever it is called: files, skills, tasks, agents, an agent's report
+//    to the one that started it, the desktop app's own controls. The host adds tools with each release, and a matter
+//    run that can't hand its report back does no work at all, so what is refused is named and the rest is let be.
 //
 // The attorney's own chat (no `agentId`) is never gated: there, what goes into research is the attorney's call
 // (docs/EXPERIENCE.md). Nothing here touches an agent that isn't working on a matter beyond rule 1.
 //
-// It fails closed where a client's details could leave: when the terms (or the list of matters at work) can't be had,
-// research from Claude's agents is refused with a sentence that says so. These are workflow safeguards, not a sandbox:
+// It fails closed where a client's details could leave: when the matters at work or their terms can't be read,
+// research from Claude's agents and a matter run's own outbound calls are refused with a sentence that says so. A
+// matter with no name on record yet (the folder is named by a file number, and nothing has been read) is not that:
+// its calls are still checked for anything shaped like an identifier. These are workflow safeguards, not a sandbox:
 // only the host's own sandbox enforces a network boundary.
 import type { EngineInterface } from 'claude-code'
 import type { MatterRow } from '../types'
@@ -30,16 +37,22 @@ import { liveAgents, readRuns } from './state'
 export const BLOCKED = 'Immigration Packet Builder blocked this: it contained the client’s details. Phrase the research as a legal question, without names, numbers or other facts that identify the client.'
 export const UNCHECKED = 'Immigration Packet Builder couldn’t check this research request against the client’s details. Try again in a moment.'
 export const SHELL_BLOCKED = 'Immigration Packet Builder blocked this command: it reaches the network and carries the client’s details (a name, a number, or a file named for them). Keep client details out of anything sent off this Mac: fetch public pages by their address alone, and save downloads under a neutral file name.'
+export const UPLOAD_BLOCKED = 'Immigration Packet Builder blocked this command: it sends a file or piped text off this Mac, and what is in it can’t be checked for the client’s details. Work on the client’s files with the local tools, and fetch public pages by their address alone.'
 export const UNKNOWN_TOOL = 'This tool can send information off this Mac, so it isn’t used during a matter run. Use the local file tools, the plugin’s own scripts, web search or fetch, and the BIA Edge research tools. If the work needs something else, say so in your report and the attorney can do it in chat.'
 
-// The host's own local tools: files, skills, tasks and agents. None of them carries words off the machine.
-const LOCAL_TOOLS = new Set([
-  'Read', 'Write', 'Edit', 'MultiEdit', 'NotebookEdit', 'Glob', 'Grep', 'LS', 'LSP',
-  'TodoWrite', 'Task', 'Agent', 'AskUserQuestion', 'ExitPlanMode', 'EnterPlanMode',
-  'Skill', 'ToolSearch', 'ListSkills', 'SearchSkills', 'WaitForMcpServers',
-  'TaskCreate', 'TaskGet', 'TaskUpdate', 'TaskList', 'TaskOutput', 'TaskStop', 'GetTask', 'ListAgents', 'SendMessage',
-  'BashOutput', 'KillShell', 'KillBash', 'Monitor', 'ScheduleWakeup', 'WrapUp', 'ReportFindings',
+// The host's own tools that publish what they are given, hand it to another service, or act outside this session:
+// artifacts and designs, projects, scheduled and remote runs, feedback, control of the computer. Every other tool of
+// the host's is local, whatever it is called (rule 4): this list names what is refused, never what is allowed.
+const OUTBOUND_BUILTINS = new Set([
+  'Artifact', 'ArtifactCheck', 'ArtifactComments', 'ArtifactData', 'AppifactRepl', 'ClaudeDesign', 'DesignSync',
+  'Projects', 'SendToProject', 'SendToProjectContext', 'SendFile', 'SendFeedback', 'ShareOnboardingGuide',
+  'PublishPlugin', 'RemoteTrigger', 'CronCreate', 'request_computer',
 ])
+// The desktop app's own controls (its task list, chapters, panes): local, though named the way a connector's are.
+const HOST_APP = /^mcp__ccd_/
+// The app's built-in browser. It sends what it is given (an address, typed text, a script), so it is screened as
+// research is. The attorney's own Chrome, with its signed-in sites, is a connector like any other.
+const BROWSER = /^mcp__Claude_Browser__/
 // The BIA Edge connector's read-only methods, by name: the connector's server may be named anything (an id, say).
 const RESEARCH_METHODS = /__(?:search_cases|search_statutes|search_references|search_passages|search_country_conditions|search_unpublished_cases|search_district_court_decisions|get_case_by_citation|get_statute_by_citation|get_reference_by_citation|get_document|get_citations|check_validity|get_regulatory_updates|get_corpus_info|get_research_playbook|get_visa_bulletin|lookup_uscis_form|find_in_statute|find_in_reference|lookup_criminal_code|get_provision_case_law|get_district_docket_outcomes|get_eoir_profile|query_eoir_stats|fetch)$/
 
@@ -50,8 +63,19 @@ export function isResearch(tool: string): boolean {
   return Boolean(m && (/bia|passim/i.test(m[1] ?? '') || RESEARCH_METHODS.test(tool)))
 }
 
-// A call the gate looks at: everything but the host's local tools.
-export function isScreened(tool: string): boolean { return !LOCAL_TOOLS.has(tool) }
+export function isBrowser(tool: string): boolean { return BROWSER.test(tool) }
+
+// A tool that sends what it is given somewhere else: a connector that isn't research, or one of the host's outbound
+// tools. A matter run's agents don't use these at all.
+export function isOutbound(tool: string): boolean {
+  if (isResearch(tool) || isBrowser(tool) || HOST_APP.test(tool)) return false
+  return tool.startsWith('mcp__') || OUTBOUND_BUILTINS.has(tool)
+}
+
+// A call the gate looks at: the shell, research, the browser and the outbound tools. Everything else is local.
+export function isScreened(tool: string): boolean {
+  return tool === 'Bash' || isResearch(tool) || isBrowser(tool) || isOutbound(tool)
+}
 
 // A shell command that reaches the network: it names an address, or runs a program that connects somewhere. Words
 // inside a longer name (a file called "curl-notes.txt") don't count.
@@ -61,6 +85,72 @@ export function reachesNetwork(command: string): boolean {
   return /\b(?:https?|ftp|sftp|ssh):\/\//i.test(command) || NETWORK_PROGRAMS.test(command) || NETWORK_CODE.test(command)
 }
 const commandOf = (input: unknown): string => String((input as { command?: unknown })?.command ?? '')
+
+// A command with its own simple assignments written out (M="/matters/Garcia"; … "$M/passport.pdf"), so a path kept in
+// a variable is read where it is used. Only for reading the command: nothing is run, and what the shell would work
+// out for itself ($PWD, a command's output) stays as written.
+export function spelledOut(command: string): string {
+  const values = new Map<string, string>()
+  const assign = /(?:^|[;&\n]\s*|\bexport\s+)([A-Za-z_][A-Za-z0-9_]*)=(?:"([^"\n]*)"|'([^'\n]*)'|([^\s;&|]*))/g
+  for (let m = assign.exec(command); m; m = assign.exec(command)) values.set(m[1] ?? '', m[2] ?? m[3] ?? m[4] ?? '')
+  if (!values.size) return command
+  let out = command
+  for (let pass = 0; pass < 3; pass++) {
+    out = out.replace(/\$\{([A-Za-z_][A-Za-z0-9_]*)\}|\$([A-Za-z_][A-Za-z0-9_]*)/g, (all: string, a?: string, b?: string) => values.get(a ?? b ?? '') ?? all)
+  }
+  return out
+}
+
+// A command that sends a file or piped text: a copy program, a transfer program's upload option or a file given as
+// its request's data, a pipe or a file fed into a program that connects. What the file holds can't be read here.
+// The options are read only in a transfer program's own part of the command: `awk -F '@'` and `unzip -d` are local.
+const COPY_OUT = /(?:^|[;&|(`]\s*|\$\(\s*|\b(?:sudo|exec|time|xargs)\s+)(?:scp|sftp|rsync|ftp|nc|ncat|netcat|telnet|mail|mailx|sendmail)(?=$|[\s;&|)`])/
+const TRANSFERS = /^\s*(?:[A-Za-z_][A-Za-z0-9_]*=\S*\s+)*(?:(?:sudo|exec|time)\s+)?(?:curl|wget|http|https|xh)(?=\s|$)/
+const UPLOAD_OPTION = /\s(?:-T|--upload-file|--post-file|--body-file)(?:=|\s)/
+const FILE_AS_DATA = /\s(?:-d|--data(?:-binary|-ascii|-urlencode)?|--json|-F|--form)(?:=|\s+)["']?(?:[^\s"'@<=]*=)?[@<]/
+const PIPED_OUT = /\|\s*(?:sudo\s+)?(?:curl|wget|nc|ncat|netcat|ssh|mail|mailx|sendmail)(?=$|[\s;&|)`])/
+const FED_A_FILE = /(?:^|[\s;&|(`])(?:curl|wget|ssh)\s[^|;&\n]*(?<!<)<(?!<)\s*[^\s<(&]/
+const parts = (command: string): string[] => command.split(/[;|&\n]+/)
+export function sendsFile(command: string): boolean {
+  if (COPY_OUT.test(command) || PIPED_OUT.test(command) || FED_A_FILE.test(command)) return true
+  return parts(command).some(part => TRANSFERS.test(part) && (UPLOAD_OPTION.test(part) || FILE_AS_DATA.test(part)))
+}
+
+// The matter's own folder written where it is sent, not where a download is saved: inside an address, or in what a
+// transfer program's request carries (its data, a header). The folder's name is the client's.
+const IN_ADDRESS = /(?:https?|ftp|sftp):\/\/[^\s"']*$/i
+const IN_REQUEST = /\s(?:-d|--data(?:-[a-z]+)?|--json|-F|--form(?:-string)?|--url-query|--post-data|--body-data|-H|--header|-A|--user-agent|-e|--referer|-b|--cookie)(?:=|\s+)(?:"[^"]*|'[^']*|[^"'\s]*)$/
+export function carriesFolder(command: string, folders: string[]): boolean {
+  for (const folder of folders) {
+    if (!folder) continue
+    for (let at = command.indexOf(folder); at >= 0; at = command.indexOf(folder, at + folder.length)) {
+      const before = command.slice(0, at)
+      if (IN_ADDRESS.test(before)) return true
+      const part = parts(before).pop() ?? ''
+      if (TRANSFERS.test(part) && IN_REQUEST.test(part)) return true
+    }
+  }
+  return false
+}
+
+// What the built-in browser is given to send: an address, typed text, a value, a script. A tab's id or a place on
+// the screen is not that, and a long number among them is no identifier.
+const BROWSER_SENDS = new Set(['url', 'text', 'value', 'query', 'prompt'])
+export function browserSends(input: unknown): string[] {
+  const out: string[] = []
+  const walk = (value: unknown, key: string, depth: number) => {
+    if (depth > 6 || value == null) return
+    if (typeof value === 'string') {
+      if (BROWSER_SENDS.has(key)) out.push(value)
+    } else if (Array.isArray(value)) {
+      for (const item of value) walk(item, key, depth + 1)
+    } else if (typeof value === 'object') {
+      for (const [k, v] of Object.entries(value as Record<string, unknown>)) walk(v, k, depth + 1)
+    }
+  }
+  walk(input, '', 0)
+  return out
+}
 
 // A matter's private terms, as the server gives them (PAYLOAD.md, privacy_terms): `names` match as whole words in any
 // case, `full_names` as whole phrases, `identifiers` with spaces and dashes removed. An older shape (`terms` alone)
@@ -78,12 +168,14 @@ export function readTerms(res: unknown): Terms {
   return { names: all.filter(t => !/\d/.test(t) && !/\s/.test(t)), full_names: all.filter(t => !/\d/.test(t) && /\s/.test(t)), identifiers: all.filter(t => /\d/.test(t)) }
 }
 
-// Read current facts for every request; a newly imported identity must not wait for a cache expiry.
+// Read current facts for every request; a newly imported identity must not wait for a cache expiry. A matter with no
+// name on record yet (its folder is named by a file number, and nothing has been read) gives no names: its calls are
+// still checked for anything shaped like an identifier, and by name as soon as one is recorded. Throws only when the
+// server can't be asked.
 async function termsFor($: EngineInterface, matter: string): Promise<Terms> {
-  const terms = readTerms(await call($, { op: 'privacy_terms', matter_path: matter, matter }))
-  if (!terms.names.length && !terms.full_names.length) throw new Error('No party names available for privacy screening')
-  return terms
+  return readTerms(await call($, { op: 'privacy_terms', matter_path: matter, matter }))
 }
+const NO_TERMS: Terms = { names: [], full_names: [], identifiers: [] }
 
 // Accents off, so "García" and "Garcia" are the same word either way round.
 const plain = (s: string) => s.normalize('NFD').replace(/\p{M}+/gu, '')
@@ -214,39 +306,46 @@ function dateVariants(id: string): string[] {
 }
 
 // Whose loop a call runs in. `ours`: a matter run's own (the app's agent, one it started, or any of the plugin's own
-// agents however they were started); `matters`: the matter it works on when the app knows, else every matter Claude is
-// working on right now, as the server reports it. Throws when it can't tell.
-type Placed = { ours: boolean; matters: string[] }
+// agents however they were started); null when the host can't say what the agent is. `matter`: the matter it works
+// on, when the app knows.
+type Whose = { ours: boolean | null; matter?: string }
 // The plugin's own agents, by the type they were started as ("senior-associate:docs-review").
 const OUR_AGENT = /senior.?associate/i
 
-async function placeOf($: EngineInterface, agentId: string, needMatters: boolean): Promise<Placed> {
+async function whose($: EngineInterface, agentId: string): Promise<Whose> {
   const runs = await readRuns($)
   const byAgent = (id: string) => Object.values(runs).find(r => r.agentId === id && (r.status === 'running' || r.status === 'starting'))?.matter
   const own = byAgent(agentId)
-  if (own) return { ours: true, matters: [own] }
-  let ours = false
+  if (own) return { ours: true, matter: own }
+  let agents: Awaited<ReturnType<typeof $.agent.list>>
   try {
-    const agents = await $.agent.list()
-    let at = agents.find(a => a.id === agentId)
-    for (let hops = 0; at && hops < 8; hops++) {
-      if (OUR_AGENT.test(at.type)) ours = true
-      const parent = at.parentId
-      if (!parent) break
-      const matter = liveAgents.has(parent) ? byAgent(parent) : undefined
-      if (matter) return { ours: true, matters: [matter] }
-      at = agents.find(a => a.id === parent)
-    }
+    agents = await $.agent.list()
   } catch {
-    // the list isn't available: research is still checked against every matter at work
+    return { ours: null }
   }
-  if (!needMatters) return { ours, matters: [] }
+  let ours = false
+  let at = agents.find(a => a.id === agentId)
+  for (let hops = 0; at && hops < 8; hops++) {
+    if (OUR_AGENT.test(at.type)) ours = true
+    const parent = at.parentId
+    if (!parent) break
+    const matter = liveAgents.has(parent) ? byAgent(parent) : undefined
+    if (matter) return { ours: true, matter }
+    at = agents.find(a => a.id === parent)
+  }
+  return { ours }
+}
+
+// Every matter Claude is working on right now: the app's own runs, and what the server reports. Throws when the
+// server can't be asked.
+async function mattersAtWork($: EngineInterface): Promise<string[]> {
+  const runs = await readRuns($)
   const res = (await call($, { op: 'list', include_archived: true })) as unknown as { matters?: MatterRow[] }
   const working = new Set(Object.values(runs).filter(r => r.status === 'running' || r.status === 'starting').map(r => r.matter))
   // A matter Claude is working on, or one an unattended run still holds by the network gate's rule (an orchestrator
   // however it started, quiet for a while, or one the app lost track of): its terms are checked either way.
   for (const m of res.matters ?? []) if (m.phase === 'building' || m.unattended_run) working.add(m.path)
-  return { ours, matters: [...working] }
+  return [...working]
 }
 
 // A command with the matters' own folders taken out: where a download is saved isn't sent anywhere.
@@ -259,24 +358,32 @@ export async function researchGate($: EngineInterface, tool: string, input: unkn
   if (!agentId || !isScreened(tool)) return ''
   const shell = tool === 'Bash'
   const research = isResearch(tool)
+  const browser = isBrowser(tool)
+  const command = shell ? spelledOut(commandOf(input)) : ''
   // A local shell command carries nothing off the machine, whoever runs it.
-  if (shell && !reachesNetwork(commandOf(input))) return ''
-  let place: Placed
+  if (shell && !reachesNetwork(command)) return ''
+  let who: Whose
   try {
-    // Research is checked whoever asks, so it needs the matters at work; the rest first needs to know whose loop it is.
-    place = await placeOf($, agentId, research)
-    if (!shell && !research) return place.ours ? UNKNOWN_TOOL : ''
-    // A shell command that reaches the network matters only in a matter run's own loops.
-    if (shell && !place.ours) return ''
-    if (shell && !place.matters.length) place = await placeOf($, agentId, true)
+    who = await whose($, agentId)
   } catch {
-    return UNCHECKED
+    who = { ours: null }
   }
-  if (!place.matters.length) return place.ours ? UNCHECKED : ''
+  // Everything but research is a matter run's own concern: another agent's tools and commands are let be.
+  if (!research && who.ours === false) return ''
+  // An outbound tool has no place in a matter run, and a file's contents can't be read on their way out.
+  if (who.ours && !shell && !research && !browser) return UNKNOWN_TOOL
+  if (who.ours && shell && sendsFile(command)) return UPLOAD_BLOCKED
+  const refusal = shell ? SHELL_BLOCKED : research || browser ? BLOCKED : UNKNOWN_TOOL
   try {
-    const sent = shell ? withoutFolders(commandOf(input), place.matters) : input
-    for (const matter of place.matters) {
-      if (holdsTerm(sent, await termsFor($, matter))) return shell ? SHELL_BLOCKED : BLOCKED
+    const matters = who.matter ? [who.matter] : await mattersAtWork($)
+    if (shell && carriesFolder(command, matters)) return SHELL_BLOCKED
+    const sent = shell ? withoutFolders(command, matters) : browser ? browserSends(input) : input
+    // No matter at work that anyone knows of. One of the plugin's own agents may still hold a client's file (started
+    // by hand, outside a run), so what it sends is checked for anything shaped like an identifier; anyone else has
+    // nothing of a client's to keep back.
+    if (!matters.length) return who.ours && holdsTerm(sent, NO_TERMS) ? refusal : ''
+    for (const matter of matters) {
+      if (holdsTerm(sent, await termsFor($, matter))) return refusal
     }
   } catch {
     return UNCHECKED

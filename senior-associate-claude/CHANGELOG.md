@@ -6,7 +6,7 @@ Your version appears at the foot of every Immigration Packet Builder screen ("He
 
 **Every packet is a draft until you approve it.** Each page of a packet Claude assembles is marked "DRAFT — ATTORNEY REVIEW REQUIRED" in a band above the page. A finished matter says **Ready to file** and offers **Approve for filing**. The Packet tab lists whatever is still open (items needed before filing, review notes, form-check errors), and you can approve as it is, with a line on why. The approval records your name, the time, that exact version, what was open and your reason. The clean copies go in the matter's folder under **Approved for filing**. If the packet, the letter, the forms or the client's documents change afterwards, you approve again.
 
-**Your edits are kept.** If you edit the cover letter in Word or mark up the packet and then rebuild, Claude moves your version to **Your edited copies** beside it and lists it as an open item, instead of writing over it.
+**Your edits are kept.** If you edit the cover letter in Word or mark up the packet and then rebuild, Claude moves your version to **Your edited copies** beside it and lists it as an open item, instead of writing over it. The first time you rebuild a matter made before 1.3.0, the letter and packet that were there are kept the same way, as earlier copies, in case you had edited them.
 
 **Forms.**
 - A question about arrests, removal, fraud, the security grounds and the like is answered only from the client's own dated answer. Without one, the box is left blank and listed as an open item. Claude no longer answers "No" because the documents are silent.
@@ -19,7 +19,7 @@ Your version appears at the foot of every Immigration Packet Builder screen ("He
 
 **Protected matters.** The folder keeps a neutral name in Finder, and the app shows the name you gave the matter.
 
-**Privacy.** The check that keeps client details out of research now also covers commands that reach the internet and tools Claude doesn't recognize.
+**Privacy.** The check that keeps client details out of research now also covers commands that reach the internet and Claude's built-in browser. During a build, Claude's agents can't upload a file or use another connector, such as email or a shared drive.
 
 **Your Mac stays awake during a build,** for up to six hours. Closing the lid still interrupts it.
 

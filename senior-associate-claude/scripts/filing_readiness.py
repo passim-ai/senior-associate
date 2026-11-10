@@ -27,6 +27,8 @@ CURRENCY = Path("output/working/workflow/legal currency review.json")
 THEORY = Path("output/working/workflow/case_theory_evidence_map.json")
 RESPONSE_PLAN = Path("output/working/workflow/notice response plan.json")
 MATERIAL = {"error", "blocker", "critical", "high", "major", "manual_review"}
+# The same severities as the app words them on a review note (readmodel.SEVERITY_WORDS).
+MATERIAL_WORDS = {"important", "worth fixing", "check by hand"}
 ADVERSE = {"deny_likely", "noid_likely", "rfe_likely", "reject_likely", "attorney_hold"}
 RESOLVED = {"resolved", "closed", "fixed", "cured"}
 SKIP_DIRS = {".git", "__pycache__", "node_modules", ".venv"}
@@ -55,11 +57,14 @@ OUTCOME_SAYS = {
 
 
 class _Hashes:
-    """Each covered file's hash, kept while its size and modified time stay the same, so the matter page's quiet
-    refresh reads a file again only when it changed."""
+    """Each covered file's hash, kept while its size, its modified time and its change time stay the same, so the
+    matter page's quiet refresh reads a file again only when it changed. The change time is the one a program can't
+    set back, so new contents under an old date are still read. `fresh` reads every file whatever the cache says:
+    a review receipt and an approval are taken from the files themselves."""
 
-    def __init__(self, matter: Path) -> None:
+    def __init__(self, matter: Path, *, fresh: bool = False) -> None:
         self.matter = matter
+        self.fresh = fresh
         data = read_json(matter / HASHES).data
         files = data.get("files") if isinstance(data, dict) and data.get("version") == 1 else None
         self.entries: dict[str, dict[str, Any]] = {k: v for k, v in (files or {}).items() if isinstance(v, dict)}
@@ -68,11 +73,12 @@ class _Hashes:
     def sha(self, rel: str) -> str:
         path = self.matter / rel
         st = path.stat()
+        seen = {"size": st.st_size, "mtime_ns": st.st_mtime_ns, "ctime_ns": st.st_ctime_ns}
         known = self.entries.get(rel)
-        if known and known.get("size") == st.st_size and known.get("mtime_ns") == st.st_mtime_ns and known.get("sha256"):
+        if not self.fresh and known and known.get("sha256") and all(known.get(key) == value for key, value in seen.items()):
             return str(known["sha256"])
         value = sha256_file(path)
-        self.entries[rel] = {"size": st.st_size, "mtime_ns": st.st_mtime_ns, "sha256": value}
+        self.entries[rel] = {**seen, "sha256": value}
         self.dirty = True
         return value
 
@@ -108,14 +114,14 @@ def _covered_file(rel: str, name: str) -> bool:
     return not (at_top and (name in HANDOFF_NAMES or name.startswith(HANDOFF_PREFIXES)))
 
 
-def fingerprint(matter: Path) -> dict[str, str]:
+def fingerprint(matter: Path, *, fresh: bool = False) -> dict[str, str]:
     """What a review or an approval covers: the client's documents and the files that are filed (the packet, the
     letter, the forms, the upload files, and the packet's clean copies).
 
     Claude's working files, the app's own records, the memo and the client request aren't part of it, so saving an
     answer, archiving the matter or cleaning up never undoes a review or an approval. A linked file or folder is
     refused rather than followed out of the matter."""
-    cache = _Hashes(matter)
+    cache = _Hashes(matter, fresh=fresh)
     files: dict[str, str] = {}
     for parent, dirs, names in os.walk(matter, followlinks=False):
         here = Path(parent).relative_to(matter).as_posix()
@@ -155,7 +161,7 @@ def record_review(matter: Path) -> None:
     """The final review passed on what the matter holds now. A matter that can't be read through (a linked folder)
     gets no receipt, and approval says why; passing the review itself is never refused for it."""
     try:
-        files = fingerprint(matter)
+        files = fingerprint(matter, fresh=True)
     except (OSError, ValueError):
         (matter / REVIEW_RECEIPT).unlink(missing_ok=True)
         return
@@ -195,7 +201,7 @@ def _review_points(matter: Path, notes: list[dict[str, Any]] | None, files: dict
         points.append(OUTCOME_SAYS[str(data["overall_outcome"])])
     if notes is not None:
         listed = [f"Review note: {n.get('title')}" for n in notes
-                  if n.get("title") and (n.get("severity_word") in {"important", "check by hand"} or n.get("outcome_word"))]
+                  if n.get("title") and (n.get("severity_word") in MATERIAL_WORDS or n.get("outcome_word"))]
     else:
         listed = []
         for path in _findings_files(matter):
@@ -216,9 +222,21 @@ def _review_points(matter: Path, notes: list[dict[str, Any]] | None, files: dict
     return points
 
 
-def _forms_points(matter: Path) -> list[str]:
-    """What the automatic check of the filled forms still reports. An error already tied to an open item is on
-    Questions, and counted there."""
+def _on_the_list(ledger: dict[str, Any] | None) -> set[str]:
+    """The open items an approval already accounts for: those counted as needed before filing, and those the
+    attorney has settled."""
+    if not isinstance(ledger, dict):
+        return set()
+    counted = [item for item in ledger.get("open") or [] if isinstance(item, dict) and item.get("blocks_filing")]
+    settled = [item for item in ledger.get("resolved") or [] if isinstance(item, dict)]
+    return {str(item.get("id")) for item in counted + settled if item.get("id")}
+
+
+def _forms_points(matter: Path, ledger: dict[str, Any] | None = None) -> list[str]:
+    """What the automatic check of the filled forms still reports. An error tied to an open item is left to that
+    item only when the item is really on the list (counted as needed before filing, or settled by the attorney);
+    a reference to an item nobody added hides nothing."""
+    listed = _on_the_list(ledger)
     forms = sorted((matter / DELIVERABLES / "Forms").glob("*.pdf"))
     audits = sorted((matter / "output/working/vault/forms").glob("*/prepared forms audit.json"))
     if not forms:
@@ -242,7 +260,9 @@ def _forms_points(matter: Path) -> list[str]:
             # An older record kept each form's findings with its result.
             found.extend(result.get("findings") or [] if isinstance(result.get("findings"), list) else [])
         for finding in found:
-            if not isinstance(finding, dict) or str(finding.get("severity") or "").lower() != "error" or finding.get("open_item"):
+            if not isinstance(finding, dict) or str(finding.get("severity") or "").lower() != "error":
+                continue
+            if finding.get("open_item") and str(finding["open_item"]) in listed:
                 continue
             form = str(finding.get("form") or "").upper()
             title = str(finding.get("title") or "an error remains")
@@ -289,13 +309,13 @@ def _result(*, blockers: list[str] | None = None, risks: list[str] | None = None
 
 
 def readiness(matter: Path, stages: list[dict[str, Any]], ledger: dict[str, Any] | None, *,
-              notes: list[dict[str, Any]] | None = None, posture: str = "") -> dict[str, Any]:
+              notes: list[dict[str, Any]] | None = None, posture: str = "", fresh: bool = False) -> dict[str, Any]:
     """Where the packet stands for the attorney's sign-off: whether it can be approved, whether this exact version
-    is, and what to weigh first."""
+    is, and what to weigh first. `fresh` reads every file again instead of trusting the cache."""
     from scripts.draft_packets import release_sources
     try:
         entries = release_sources(matter)
-        files = fingerprint(matter)
+        files = fingerprint(matter, fresh=fresh)
     except ValueError as exc:
         return _result(blockers=[str(exc)])
     except OSError:
@@ -322,7 +342,7 @@ def readiness(matter: Path, stages: list[dict[str, Any]], ledger: dict[str, Any]
             risks.append("Claude's memo still calls this a draft packet; it says why.")
     reviewed = any(s.get("id") == "final_review" and s.get("status") == "passed" for s in stages)
     risks.extend(_review_points(matter, notes, files, reviewed))
-    risks.extend(_forms_points(matter))
+    risks.extend(_forms_points(matter, ledger))
     currency = _currency_point(matter)
     if currency:
         risks.append(currency)
@@ -331,12 +351,17 @@ def readiness(matter: Path, stages: list[dict[str, Any]], ledger: dict[str, Any]
     if marked:
         risks.append(f"{', '.join(marked)} was changed after Claude assembled it (marked up or saved again, perhaps). "
                      "The clean copies come from the packet as assembled, without those changes.")
+    gone = sorted(Path(rel).name for rel in entries if rel not in files)
+    if gone:
+        risks.append(f"{', '.join(gone)} isn't in the matter's folder as Claude assembled it (renamed and changed, or "
+                     "removed). Its clean copy is still part of what you approve, as assembled.")
     return _result(version=version, risks=risks)
 
 
 def approve(matter: Path, *, expected_digest: str, attorney: str, stages: list[dict[str, Any]], ledger: dict[str, Any] | None,
             risk_note: str = "", notes: list[dict[str, Any]] | None = None, posture: str = "") -> None:
-    current = readiness(matter, stages, ledger, notes=notes, posture=posture)
+    # The approval is taken from the files themselves, never from what was remembered about them.
+    current = readiness(matter, stages, ledger, notes=notes, posture=posture, fresh=True)
     if not attorney.strip():
         raise ValueError("Add the attorney's name in Your details first: the approval is recorded under it.")
     if not current["eligible"]:

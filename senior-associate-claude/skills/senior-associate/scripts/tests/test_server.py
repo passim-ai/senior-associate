@@ -970,6 +970,10 @@ class StatusTests(unittest.TestCase):
         for code in ("rfe_likely", "pre_mailing", "approvable", "attorney_handoff", "manual_review", "release_action", "clerical"):
             self.assertNotIn(code, shown)
         self.assertNotIn("findings", self.card())  # the raw findings never go to the screen
+        # What an approval lists as a material note is what the reviewers call material, in these same words: a
+        # "major" note the app words "worth fixing" is counted, as it is when the findings are read directly.
+        from scripts.filing_readiness import MATERIAL, MATERIAL_WORDS
+        self.assertEqual({readmodel.SEVERITY_WORDS[s] for s in MATERIAL if s in readmodel.SEVERITY_WORDS}, MATERIAL_WORDS)
 
     def test_counts_add_up_and_answers_are_counted(self) -> None:
         from scripts.matter_state import save_answer
@@ -1894,6 +1898,11 @@ class PrivacyTermsTests(unittest.TestCase):
 
     def tearDown(self) -> None:
         self.tmp.cleanup()
+
+    def test_the_sample_matters_own_label_is_not_a_private_term(self) -> None:
+        # "Sample - Barrientos-Eckhardt": a search for a sample declaration is not a search for the client.
+        from sa_server import privacy
+        self.assertEqual(privacy._from_folder_name("Sample - Barrientos-Eckhardt"), ["Barrientos-Eckhardt"])
 
     def test_names_and_identifiers_from_the_fact_table_and_the_folder(self) -> None:
         self.assertEqual(cli_mod.run_cli({"op": "privacy_terms", "matter": str(self.matter)}, self.ctx)["terms"], ["Quillfeather"])
