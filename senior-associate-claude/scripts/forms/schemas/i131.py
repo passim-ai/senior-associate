@@ -422,7 +422,7 @@ def removal_proceedings() -> dict[str, Any]:
         ["P4_Line1_YesNo"],
         notes={
             "P4_Line1_YesNo": (
-                "Draft No only where the record shows no proceedings. Yes needs attorney review before filing: "
+                "Leave blank until the client confirms the answer; record the source and date. Yes needs attorney review before filing: "
                 "the Instructions say ICE, not USCIS, generally has jurisdiction over an I-131 for someone in "
                 "proceedings or under a final order."
             ),
@@ -1095,7 +1095,7 @@ SCHEMAS = {
                 allowed=FILLED_OR_NA,
                 notes={
                     "P6_Line3a_YesNo": (
-                        RTD_ONLY + " Draft No only where the record shows none of these; every Yes needs an "
+                        RTD_ONLY + " Answer only with dated client confirmation; every Yes needs an "
                         "explanation in Part 13 and attorney review."
                     ),
                     "Line4c_Yes": (

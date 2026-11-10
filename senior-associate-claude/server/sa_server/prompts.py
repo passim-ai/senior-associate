@@ -58,7 +58,10 @@ def prompts_for(ctx: Context, matter: Path, intake: dict[str, Any], inputs: Brie
     fp = intake.get("filing_posture") or "new filing packet"
     deliverable = intake.get("deliverable") or DEFAULT_DELIVERABLE
     prompts = _prompts_for(ctx, matter, mt, fp, deliverable, inputs=inputs)
-    after = _answers_block(inputs.answers) + _actions_line(inputs.acted, _is_protected(mt, inputs))
+    from scripts.matter_state import read_meta
+    meta = read_meta(matter)
+    jurisdiction = "\nJurisdiction: " + json.dumps({k: meta.get(k, "") for k in ("forum", "circuit", "jurisdiction_basis")}) + "\nConfirm missing jurisdiction before relying on circuit-specific law.\n"
+    after = jurisdiction + _answers_block(inputs.answers) + _actions_line(inputs.acted, _is_protected(mt, inputs))
     return {key: text + ("" if key == "closeout" else after) + REPORT_NOTE for key, text in prompts.items()}
 
 

@@ -1,0 +1,5 @@
+dist/
+web/dist/
+artifacts/
+web/test-results/
+web/playwright-report/

@@ -45,7 +45,11 @@ fi
 
 echo "Python suites"
 while IFS= read -r suite; do
-  run "$suite" "$UV" run --quiet --script "$suite"
+  if [ -f "$suite.lock" ]; then
+    run "$suite" "$UV" run --locked --quiet --script "$suite"
+  else
+    run "$suite" "$UV" run --quiet --script "$suite"
+  fi
 done < <(find scripts skills -path '*/tests/test_*.py' -type f | sort)
 
 if [ "$QUICK" -eq 0 ]; then
@@ -59,7 +63,8 @@ if [ "$QUICK" -eq 0 ]; then
     run "claude plugin validate ." "$CLAUDE" plugin validate .
     run "claude plugin validate .. (marketplace)" "$CLAUDE" plugin validate ..
   else
-    echo "  skip  the Claude CLI isn't installed: app tests and plugin validation didn't run"
+    echo "  FAIL  the Claude CLI is required for full verification; use --quick only for offline checks"
+    failed+=("Claude CLI unavailable")
   fi
 fi
 

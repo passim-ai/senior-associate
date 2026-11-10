@@ -227,6 +227,7 @@ class FormJob:
     edition: dict[str, Any] = field(default_factory=dict)  # editions.check_blank for its blank
     conflict: list[dict[str, str]] = field(default_factory=list)  # edits made outside build
     suggested_items: list[dict[str, Any]] = field(default_factory=list)  # open items to add
+    unprintable: dict[str, str] = field(default_factory=dict)  # box -> letters the form's font can't print
 
     def blank(self, layout: Layout) -> Path:
         return layout.blank_dir / blank_name(self.kind)
@@ -507,6 +508,55 @@ def edition_gate(job: FormJob, blank: Path, allowed: dict[str, str]) -> bool:
     return False
 
 
+def unprintable_open_item(job: FormJob) -> dict[str, Any]:
+    """The attorney's decision when a name or place holds a letter the form's own font can't print, in the
+    open-items format. The id is per form, so the audit's finding and the ledger name the same item."""
+    form = editions.form_label(job.kind)
+    letters = sorted({part.split(" ")[0] for text in job.unprintable.values() for part in text.split(", ")})
+    count = len(job.unprintable)
+    return {
+        "id": f"forms-letters-{re.sub(r'[^a-z0-9]+', '-', job.name.lower()).strip('-')}",
+        "type": "attorney_decision",
+        "title": f"The {form} can't print {', '.join(letters)}"[:79],
+        "question": (
+            f"The {form}'s own font can't print {', '.join(letters)}, so {count} box{'es were' if count != 1 else ' was'} "
+            "left blank rather than respelled. How should the value go on the form?"
+        ),
+        "recommendation": (
+            "Write it by hand on the printed form exactly as the passport's biographic page shows it; or tell Claude "
+            "the spelling to type (the passport's machine-readable line, or a prior USCIS notice)."
+        ),
+        "detail": (
+            f"Boxes left blank on {job.name}: {fw.capped(sorted(job.unprintable), 6)}. Every other answer is on the "
+            "form. Nothing was transliterated."
+        ),
+        "needed_for": form,
+        "blocks_filing": True,
+        "status": "open",
+        "stage": "forms_preparer",
+    }
+
+
+def letters_gate(job: FormJob, blank: Path) -> None:
+    """Leave blank the boxes whose text holds a letter the form's own font can't print, and say so, instead of
+    stopping the whole form at the first one. The answers stay in the plan."""
+    try:
+        job.unprintable = xfa_tools.unprintable_boxes(blank, dict(job.mapping))
+    except Exception:  # a blank this check can't read: fill's own check still refuses an unprintable letter
+        job.unprintable = {}
+    if not job.unprintable:
+        return
+    job.mapping = {box: value for box, value in job.mapping.items() if box not in job.unprintable}
+    job.mapping_sha = sha256_bytes(json.dumps(job.mapping, sort_keys=True).encode("utf-8"))
+    item = unprintable_open_item(job)
+    job.suggested_items.append(item)
+    job.warnings.append(
+        f"warning: {len(job.unprintable)} box(es) left blank because the form's font can't print a letter in them "
+        f"({fw.capped(sorted(job.unprintable), 3)}); nothing is transliterated. Add the open item {item['id']} "
+        "(in the build log) so the attorney decides how the value goes on the form."
+    )
+
+
 def parse_allowed_editions(values: list[str]) -> dict[str, str]:
     allowed: dict[str, str] = {}
     for value in values:
@@ -546,6 +596,7 @@ def build(layout: Layout, *, force: bool = False, allow_new_edition: dict[str, s
         job.blank_sha = sha256_file(blank)
         if not edition_gate(job, blank, allow_new_edition or {}):
             continue
+        letters_gate(job, blank)
         try:
             job.plan_summary, job.entry = fw.apply_plan(
                 job.plan,
@@ -554,11 +605,14 @@ def build(layout: Layout, *, force: bool = False, allow_new_edition: dict[str, s
                 source_pdf=job.source(layout),
                 blank_pdf=blank,
                 fact_table_base=layout.vault,
-                withheld=set(job.edition.get("withheld") or {}),
+                withheld=set(job.edition.get("withheld") or {}) | set(job.unprintable),
             )
         except (ValueError, KeyError) as exc:
             job.error = f"plan not usable: {exc}"
             continue
+        if job.entry is not None and job.unprintable:
+            job.entry["unprintable_boxes"] = dict(job.unprintable)
+            job.entry["unprintable_open_item"] = job.suggested_items[-1]["id"]
         if job.entry is not None and job.edition.get("status") not in editions.FILLABLE:
             job.entry["edition_check"] = job.edition
         previous = previous_forms.get(job.name)
@@ -682,6 +736,10 @@ def check(layout: Layout, *, audit_out: Path | None = None) -> dict[str, Any]:
         if blank.exists():
             job.edition = editions.check_blank(job.kind, blank, str((job.plan or {}).get("question_schema") or "") or None)
         entry = dict(dict(manifest.get("files") or {}).get(str(filing)) or {})
+        job.unprintable = {str(box): str(letters) for box, letters in dict(entry.get("unprintable_boxes") or {}).items()}
+        if job.unprintable:
+            job.mapping = {box: value for box, value in job.mapping.items() if box not in job.unprintable}
+            job.mapping_sha = sha256_bytes(json.dumps(job.mapping, sort_keys=True).encode("utf-8"))
         built_on = dict(entry.get("edition_check") or {})
         # A form the attorney decided to prepare on this blank (--allow-new-edition): build filled
         # only its unchanged boxes, so the withheld ones are not expected on it.

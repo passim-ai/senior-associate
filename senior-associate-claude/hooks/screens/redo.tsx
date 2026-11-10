@@ -2,7 +2,7 @@
 import type { EngineInterface } from 'claude-code'
 import type { Card, View } from '../../types'
 import type { Ctx, Kids } from '../kit'
-import { REVIEW_STEPS, docChanges, minutesFrom, reviewOnly, worksIn } from '../matter'
+import { REVIEW_STEPS, docChanges, minutesFrom, reviewOnly, shownName, worksIn } from '../matter'
 import { session, setNote, typed } from '../state'
 import { duration, nowMs, plural } from '../words'
 import { matterStatus, isBusy } from '../status'
@@ -44,10 +44,10 @@ export async function redoScreen($: EngineInterface, x: Ctx, c: Card): Promise<J
         ]
   const alsoIn = [worksIn(docs), answered ? `your ${plural(answered, 'answer', 'answers')}` : ''].filter(Boolean)
   if (alsoIn.length) what.push(<Text key="w4">{`It also works in ${alsoIn.join(' and ')}.`}</Text>)
-  const backLabel = r.from === 'packet' ? 'Packet' : r.from === 'documents' ? 'Documents' : r.from === 'items' ? 'Questions' : c.name
+  const backLabel = r.from === 'packet' ? 'Packet' : r.from === 'documents' ? 'Documents' : r.from === 'items' ? 'Questions' : shownName(c)
   const busyHere = isBusy(matterStatus(c, allRuns[c.path], nowMs()))
   return subpage(
-    { title: c.name, subtitle: title, back: { id: 'redo-cancel', label: backLabel }, here: title },
+    { title: shownName(c), subtitle: title, back: { id: 'redo-cancel', label: backLabel }, here: title },
     card('What happens', what),
     card(target ? 'Anything Claude should know? (optional)' : 'What should Claude change?', [
       field('Your note', l => <Input

@@ -18,11 +18,11 @@ from scripts.privacy_terms import matter_privacy_terms
 from .catalog import MATTER_TYPES
 from .readmodel import FORM_NUMBER_RE
 
-MIN_LENGTH = 3
+MIN_LENGTH = 2
 # Words that can't stand alone as a term without blocking ordinary legal questions.
 TOO_COMMON = {"the", "and", "for", "with", "none", "unknown", "n/a", "yes", "no", "not", "applicable", "same", "mr", "mrs", "ms",
               "de", "del", "la", "los", "las", "van", "von", "bin", "packet", "client", "documents", "docs", "waiver",
-              "petition", "joint", "matter", "new", "rfe", "noid", "response"}
+              "petition", "joint", "matter", "new", "rfe", "noid", "response", "sample"}
 
 
 def _from_folder_name(name: str) -> list[str]:
@@ -47,9 +47,13 @@ def _dedupe(values: list[str]) -> list[str]:
 def terms_payload(matter: Path) -> dict[str, Any]:
     """{terms, names, full_names, identifiers}: ``terms`` everything, longest first; ``names`` single words to match
     whole-word and without regard to case; ``identifiers`` to match with spaces and dashes removed, digits to digits."""
+    from scripts.matter_state import read_meta
     found = matter_privacy_terms(matter)
-    names = _dedupe(_from_folder_name(matter.name) + list(found.get("names") or []))
-    full_names = _dedupe(list(found.get("full_names") or []))
+    initial = read_meta(matter).get("client_name", "")
+    if initial:
+        initial = " ".join(FORM_NUMBER_RE.sub(" ", initial).split())
+    names = _dedupe((_from_folder_name(initial) if initial else _from_folder_name(matter.name)) + list(found.get("names") or []))
+    full_names = _dedupe(([initial] if initial else []) + list(found.get("full_names") or []))
     identifiers = _dedupe(list(found.get("identifiers") or []))
     terms = sorted(_dedupe(full_names + names + identifiers), key=lambda t: (-len(t), t.casefold()))
     return {"status": "privacy_terms", "terms": terms, "names": names, "full_names": full_names, "identifiers": identifiers}

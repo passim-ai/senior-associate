@@ -22,7 +22,10 @@ export type Stage = { id: string; label: string; status: string }
 
 /** One row of the Matters list, in the server's words: its status, its case, and the one thing to do next. */
 export type MatterRow = {
+  /** The matter's folder name: how requests to Claude name it. */
   name: string
+  /** The name the app shows it under: the folder's name, or for a protected matter (whose folder is "Matter 3F9A…") the name the attorney gave it. */
+  title?: string
   path: string
   phase: string
   label: string
@@ -81,6 +84,9 @@ export type SavedAnswer = { question: string; answer: string; saved_at: string }
 
 /** The attorney's settings for the matter (CONTRACTS §6). */
 export type Meta = {
+  forum?: string
+  circuit?: string
+  jurisdiction_basis?: string
   /** The effective value: the setting, or a case type that can only be protected (the server's one rule). */
   protected: boolean
   /** Why: catalog, attorney or docs_review for the setting; case_type when only the case type makes it so. */
@@ -170,7 +176,12 @@ export type NeedItem = {
 export type SampleGuide = { id: string; title?: string; intro?: string; try?: string; caught_title?: string; caught?: string[]; after?: string }
 
 export type Card = {
+  /** Where the packet stands for the attorney's sign-off: `blockers` make approval impossible (nothing assembled); `risks` are what to weigh first, and approving with any open takes a reason. */
+  filing_readiness?: { eligible: boolean; approved: boolean; digest: string; blockers: string[]; risks?: string[]; attorney: string; approved_at: string; risk_note?: string }
+  /** The matter's folder name: how requests to Claude name it. */
   name: string
+  /** The name the app shows it under (see MatterRow.title). */
+  title?: string
   path: string
   /** new, ready, reviewed, building, paused, needs_you, waiting_client, draft, complete, filed. */
   phase: string

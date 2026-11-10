@@ -150,6 +150,10 @@ def build_matters(root: Path) -> dict[str, str]:
     for name in ("Indigo Ready I-130 Packet.pdf", "Filing Checklist.pdf", "Attorney Memo.md"):
         write(complete / "output/deliverables" / name, "%PDF")
     write(complete / "output/deliverables/Forms/I-130.pdf", "%PDF form")
+    sys.path.insert(0, str(HERE))
+    from filing_fixture import approve_fixture
+    # Ready to file and not yet approved: the state the attorney meets first, with approval as the next step.
+    approve_fixture(complete, [{"id": sid, "status": "passed"} for sid in FULL], {"packet_status": "ready_to_file", "open": []}, approved=False)
     m["complete"] = complete.name
 
     filed = matter("Jordan Filed I-765", "EAD.pdf")

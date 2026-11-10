@@ -170,8 +170,10 @@ class I131SchemaTests(unittest.TestCase):
                 self.assertIn("filled", allowed, key)
         advance = questions(ADVANCE_PAROLE)
         self.assertEqual(advance["proposed_travel"]["allowed_statuses"], ["pending_client_input", "filled"])
-        for key in ("application_type", "admission_details", "replacement_request", "removal_proceedings"):
+        for key in ("application_type", "admission_details", "replacement_request"):
             self.assertNotIn("allowed_statuses", advance[key], key)  # filled only
+
+        self.assertEqual(advance["removal_proceedings"]["allowed_statuses"], ["filled", "pending_client_input"])
 
     def test_advance_parole_schema_agrees_with_the_audit(self) -> None:
         """Every box audit_i131 requires for a 5.A filing is non-empty when its question is filled, and

@@ -1327,13 +1327,14 @@ test('new matter: the VAWA cases are listed, and the folder name never says VAWA
   expect(await ui.find({ type: 'Button', text: /^○ I-360 \/ I-485 VAWA self-petition and adjustment$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /Self-petition and adjustment filed together/ })).toBeDefined()
 
-  // The folder name a VAWA matter gets is the client's name and form numbers only.
+  // The name a VAWA matter goes by here is the client's name and form numbers only, and its folder in Finder gets a
+  // neutral name: the page says both.
   await ui.input({ plugin: PLUGIN, key: 'name', text: 'ramos', kind: 'change' })
   await tap('type:i360_vawa')
-  expect(await ui.find({ type: 'Text', text: /folder will be named “Ramos I-360”/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^Here it will be called “Ramos I-360”\. Its folder in Finder gets a neutral name instead/ })).toBeDefined()
   await tap('type:i360_i485_vawa')
-  expect(await ui.find({ type: 'Text', text: /folder will be named “Ramos I-360 I-485”/ })).toBeDefined()
-  expect(await ui.find({ type: 'Text', text: /folder will be named .*VAWA/i })).toBeUndefined()
+  expect(await ui.find({ type: 'Text', text: /^Here it will be called “Ramos I-360 I-485”\./ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /will be (named|called) .*VAWA/i })).toBeUndefined()
 
   await tap('main:create')
   const created = requests.find(r => r.op === 'create')

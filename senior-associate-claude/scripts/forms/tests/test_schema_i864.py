@@ -133,6 +133,7 @@ class I864SchemaTests(unittest.TestCase):
             for field in item["required_nonempty_fields_when_filled"]:
                 values[field] = ANSWERS.get(field, "Zztest")
         self.assertEqual([name for name in ANSWERS if name not in values], [])
+        values["P4_Line10_SocialSecurityNumber"] = "123456789"  # synthetic, structurally valid
         findings = audit.audit_form("i-864", Path("/x/I-864.pdf"), values, xfa=values, acro=values)
         # Errors and the household-income warning are cleared; only the unsigned signatures remain.
         self.assertEqual([f["title"] for f in findings], ["Signature fields are still blank"])

@@ -762,6 +762,12 @@ class StatusTests(unittest.TestCase):
         return write(self.matter / "output/deliverables/open-items.json",
                      {"schema_version": 2, "packet_status": packet_status, "items": list(items)})
 
+    def approve_current(self):
+        sys.path.insert(0,str(PLUGIN_ROOT / 'server/tools'))
+        from filing_fixture import approve_fixture
+        current=readmodel.MatterRead(self.ctx,self.matter)
+        approve_fixture(self.matter,current.stages,current.ledger)
+
     def test_a_damaged_open_items_list_is_never_ready_to_file(self) -> None:
         write_state(self.matter, ALL_PASSED)
         good = self.ledger({"id": "action-sign", "type": "attorney_action", "title": "Sign the G-28", "blocks_filing": False,
@@ -810,8 +816,20 @@ class StatusTests(unittest.TestCase):
         write_state(self.matter, ALL_PASSED)
         write(self.matter / "output/deliverables/Filing Packet.pdf", "%PDF-1.4 packet")
         self.ledger(optional, packet_status="ready_to_file")
+        # Ready to file is the workflow's word; approving that exact version is the attorney's own step, on top of it.
         card = self.card()
         self.assertEqual((card["phase"], card["phase_label"]), ("complete", "Ready to file"))
+        self.assertEqual((card["filing_readiness"]["eligible"], card["filing_readiness"]["approved"]), (False, False))
+        self.assertEqual(card["filing_readiness"]["blockers"], ["There's no assembled packet to approve yet. Build the packet first."])
+        self.approve_current()
+        card = self.card()
+        self.assertEqual((card["phase"], card["phase_label"]), ("complete", "Ready to file"))
+        self.assertEqual((card["filing_readiness"]["approved"], card["filing_readiness"]["attorney"]), (True, "Synthetic Attorney"))
+        # The app's own records (an answer saved, the matter archived) never take the approval back.
+        actions.do_save_answer(self.ctx, str(self.matter), "decide-i765", "Include an I-765?", "Yes")
+        actions.do_archive(self.ctx, str(self.matter))
+        actions.do_archive(self.ctx, str(self.matter), archived=False)
+        self.assertTrue(self.card()["filing_readiness"]["approved"])
         self.assertEqual(card["counts"]["needed_before_filing"], 0)
         self.assertEqual(card["counts"]["decisions_open"], 1)  # still asked, beside the packet
         self.assertEqual([(n["key"], n["blocks_filing"]) for n in card["needs_you"]], [("decide-i765", False)])
@@ -952,6 +970,10 @@ class StatusTests(unittest.TestCase):
         for code in ("rfe_likely", "pre_mailing", "approvable", "attorney_handoff", "manual_review", "release_action", "clerical"):
             self.assertNotIn(code, shown)
         self.assertNotIn("findings", self.card())  # the raw findings never go to the screen
+        # What an approval lists as a material note is what the reviewers call material, in these same words: a
+        # "major" note the app words "worth fixing" is counted, as it is when the findings are read directly.
+        from scripts.filing_readiness import MATERIAL, MATERIAL_WORDS
+        self.assertEqual({readmodel.SEVERITY_WORDS[s] for s in MATERIAL if s in readmodel.SEVERITY_WORDS}, MATERIAL_WORDS)
 
     def test_counts_add_up_and_answers_are_counted(self) -> None:
         from scripts.matter_state import save_answer
@@ -1737,13 +1759,24 @@ class CreateTests(unittest.TestCase):
         self.assertIn("Confidential matter (8 U.S.C. 1367)", prompts_mod.prompt_for(self.ctx, Path(card["path"]), "build"))
         self.assertEqual(card["timeline"][-1]["text"], "Matter created.")
 
+    def test_a_protected_matters_shown_name_is_told_apart_and_an_ordinary_matter_goes_by_its_folder(self) -> None:
+        first = actions.do_create(self.ctx, "Ramos I-360 I-485", "i360_i485_vawa")["matter"]
+        again = actions.do_create(self.ctx, "Ramos I-360 I-485", "i360_i485_vawa")["matter"]
+        self.assertEqual((first["title"], again["title"]), ("Ramos I-360 I-485", "Ramos I-360 I-485 (2)"))
+        plain = actions.do_create(self.ctx, "Ortiz N-400", "n400")["matter"]
+        self.assertEqual((plain["name"], plain["title"]), ("Ortiz N-400", "Ortiz N-400"))
+
     def test_a_vawa_matter_is_named_by_its_form_numbers_and_files_a_self_petition(self) -> None:
         shorts = {t["id"]: t["short"] for t in catalog.MATTER_TYPES}
         self.assertEqual((shorts["i360_vawa"], shorts["i360_i485_vawa"]), ("I-360", "I-360 I-485"))
         payload = actions.do_create(self.ctx, "Ramos I-360 I-485", "i360_i485_vawa")
         self.assertNotIn("warning", payload)
         folder = Path(payload["selected"])
-        self.assertEqual(folder.name, "Ramos I-360 I-485")
+        self.assertRegex(folder.name, r"^Matter [A-F0-9]{10}$")
+        self.assertEqual(payload["matter"]["meta"]["client_name"], "Ramos I-360 I-485")
+        # On the attorney's own screen it goes by the name they gave it; requests to Claude name the neutral folder.
+        self.assertEqual((payload["matter"]["name"], payload["matter"]["title"]), (folder.name, "Ramos I-360 I-485"))
+        self.assertEqual(readmodel.matters_list(self.ctx)[0]["title"], "Ramos I-360 I-485")
         self.assertEqual(payload["matter"]["intake"]["matter_type"], "I-360/I-485 VAWA self-petition and adjustment packet")
         theory = json.loads((folder / "output/working/workflow/case_theory_evidence_map.json").read_text())
         self.assertEqual(theory["expected_forms"][:3], ["G-28", "I-360", "I-485"])
@@ -1865,6 +1898,11 @@ class PrivacyTermsTests(unittest.TestCase):
 
     def tearDown(self) -> None:
         self.tmp.cleanup()
+
+    def test_the_sample_matters_own_label_is_not_a_private_term(self) -> None:
+        # "Sample - Barrientos-Eckhardt": a search for a sample declaration is not a search for the client.
+        from sa_server import privacy
+        self.assertEqual(privacy._from_folder_name("Sample - Barrientos-Eckhardt"), ["Barrientos-Eckhardt"])
 
     def test_names_and_identifiers_from_the_fact_table_and_the_folder(self) -> None:
         self.assertEqual(cli_mod.run_cli({"op": "privacy_terms", "matter": str(self.matter)}, self.ctx)["terms"], ["Quillfeather"])

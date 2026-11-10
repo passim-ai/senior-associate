@@ -45,6 +45,8 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
   const clientNeeds = needs.filter(x => x.who === 'client')
   const systemNeeds = needs.filter(x => x.who === 'system')
   const gated = g?.matter === c.path && noProfile && !working && !starting
+  // The attorney's sign-off on this version of the packet (the Packet tab holds the open points and the approval).
+  const fr = c.outputs.packet ? c.filing_readiness ?? null : null
   const stalled = shown.stalled
 
   // The attorney's questions are answered on the Questions tab. Here: how many, and how many have an answer saved.
@@ -297,6 +299,21 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
       if (changes) {
         lines.push(freshLine('the packet was built'))
         main = [updateButton, { id: 'open-packet', label: 'Open packet', kind: 'secondary', detail: c.outputs.packet.name }]
+      } else if (fr?.approved) {
+        lines.push(<Text key="done">{`You approved this version for filing${fr.approved_at ? ` on ${dateOnly(fr.approved_at)}` : ''}. The clean copies, without the DRAFT marking, are ready to print or upload. Follow the memo’s Filing logistics: signatures, photos, fees and mailing.`}</Text>)
+        main = [
+          { id: 'open-approved-packet', label: 'Show the approved copies', kind: 'primary', detail: 'The clean copies, in Finder' },
+          ...(c.outputs.memo ? [{ id: 'memo', label: 'Read the memo', kind: 'secondary' as const, detail: 'Filing steps and signatures' }] : []),
+        ]
+      } else if (fr) {
+        // Ready to file, and the last step is the attorney's own: the packet stays marked DRAFT until they approve it.
+        const points = fr.risks?.length ?? 0
+        lines.push(<Text key="done">The packet passed its final review, including the officer’s review, and nothing needed before filing is open. Every page is marked DRAFT until you approve it: read it through, then approve it to get clean copies to file.</Text>)
+        main = [
+          { id: 'open-packet', label: 'Open packet', kind: 'primary', detail: c.outputs.packet.name },
+          { id: 'approve', label: 'Approve for filing', kind: 'secondary', detail: !fr.eligible ? 'See what’s in the way' : points ? `${plural(points, 'point', 'points')} to look at first` : 'Then clean copies, without the DRAFT marking' },
+        ]
+        if (c.outputs.memo) extra.push(link('memo', 'Read the memo', () => { void perform($, 'memo') }, true))
       } else {
         lines.push(<Text key="done">The packet passed its final review, including the officer’s review, and nothing stands in the way of filing. Read it through, then follow the memo’s Filing logistics: signatures, photos, fees and mailing.</Text>)
         main = [
@@ -367,6 +384,11 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
       if (built) offer('change', 'Tell Claude what to change', 'A correction, or a different approach. Claude redoes only the steps it affects, checks the packet again, and updates the memo.')
       if (built) offer('steps', 'Redo a step…', 'On the Packet tab, choose a step. Claude redoes it and every step after it; the steps before it stay as they are.')
       if (c.outputs.packet) offer('stress', 'Re-check as a USCIS officer would', 'About 15 minutes. A fresh, full officer’s review of the packet as it is now, not only of what changed; it updates Questions and the memo.')
+      // A draft can be approved as it is: the attorney decides what to file, and what is still open goes on the record.
+      if (fr && phase !== 'complete' && phase !== 'filed') {
+        if (fr.approved) offer('open-approved-packet', 'Show the approved copies', 'The clean copies of the version you approved, without the DRAFT marking.')
+        else if (fr.eligible) offer('approve', 'Approve for filing as it is', 'Clean copies without the DRAFT marking. The Packet tab lists what is still open; your reason for filing with it open is kept with the approval.')
+      }
       if (c.outputs.packet && phase !== 'complete') offer('mark-filed', 'Mark as filed', 'Once you’ve filed it. Moves it to Filed on the matters list; Undo puts it back.')
       if (prg.total > 0 && prg.done === prg.total) offer('closeout', 'Clean up working files', 'Deletes Claude’s working copies of the client’s documents. Your documents and the finished files stay.')
       offer('intake', 'Change what is being filed', anyDone || ledger
@@ -566,6 +588,8 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
     c.outputs.memo ? detail('memo', 'Attorney memo', c.outputs.memo.modified ? `updated ${when(c.outputs.memo.modified)}` : 'ready to read') : null,
     requestReady ? detail('request', 'Client request', missingCount(c) ? `What the client still needs to send · ${plural(missingCount(c), 'item', 'items')} · ready to copy into an email` : 'Ready to copy into an email') : null,
     c.timeline.length ? detail('timeline', 'Timeline', timelineLine(c)) : null,
+    // A protected matter's folder has a neutral name; here is what to look for in Finder.
+    c.title && c.title !== c.name ? detail('folder', 'Folder', `${c.name}, in your Matters folder. A protected client’s folder isn’t named for them.`) : null,
     links('links', [
       link('open-folder', 'Open the matter folder in Finder', () => { void perform($, 'open-folder') }, true),
       c.outputs.folder ? link('open-deliverables', 'Show files in Finder', () => { void perform($, 'open-deliverables') }, true) : null,

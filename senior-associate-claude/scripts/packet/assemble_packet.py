@@ -1924,6 +1924,16 @@ def main(argv: list[str] | None = None) -> int:
             raise ToolError(f"{target} is also a source in the plan. Write the packet/manifest to a different path; sources are never overwritten.")
     stamps = plan.get("stamps", True) and not args.no_stamps
     matter_root = find_matter_root(plan_path, out_pdf, base)
+    if matter_root is not None and "output/deliverables" in out_pdf.as_posix():
+        from scripts.generated_files import kept_notice, preserve_edits
+        review_receipt = out_pdf.with_name("." + out_pdf.stem + ".generated.json")
+        # A packet the attorney marked up is never overwritten: it is set aside, and the summary says so.
+        kept_edits = preserve_edits([out_pdf], review_receipt)
+        if kept_edits:
+            warnings.append(kept_notice(kept_edits))
+    else:
+        review_receipt = None
+
 
     # A long assembly renews its run's lease as it works, at most once a half minute (a lease is fresh 30 minutes).
     def tick() -> None:
@@ -1991,6 +2001,17 @@ def main(argv: list[str] | None = None) -> int:
     expected = sum(it.count for it in items)
     if total != expected:
         warnings.append(f"Page count check: packet has {total} pages but items add up to {expected}.")
+    if review_receipt is not None:
+        from scripts.draft_packets import keep_review_copy, retire_superseded
+        from scripts.generated_files import record_generated
+        made = [out_pdf] + ([split_dir / f["file"] for f in upload_files] if split_dir is not None else [])
+        for path in made:
+            keep_review_copy(matter_root, path, part_of=out_pdf)
+        # What this assembly replaces leaves the release: the same packet under its other name, and upload files
+        # split from it before. A split filing's other part is its own assembly and stays; when the fees tool says
+        # the filing isn't split, this packet is all of it.
+        retire_superseded(matter_root, out_pdf, made, whole_filing=channels is not None and not channels.get("split"))
+        record_generated([out_pdf], review_receipt)
     size = out_pdf.stat().st_size
     if plan["filing_method"] == "online" and not upload_files and size > ONLINE_UPLOAD_MAX_MB * 1_048_576:
         warnings.append(

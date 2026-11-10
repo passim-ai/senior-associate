@@ -58,7 +58,7 @@ You can also ask in the chat: "Build the packet for the Garcia matter", "What do
 | Needs your answer | Claude needs a decision from you. | Answer, then Update the packet |
 | Waiting on the client | Every open question is the client's. | Copy the client request; add files when they arrive |
 | Draft packet | Built, but some things are needed before filing. | See what's left |
-| Ready to file | Passed the final review, including the officer's review. Nothing needed before filing is open. | Read the memo and the packet; Mark as filed |
+| Ready to file | Passed the final review, including the officer's review. Nothing needed before filing is open. The packet is marked DRAFT until you approve it. | Read the memo and the packet; Approve for filing; Mark as filed |
 | Filed | You marked it filed. | Nothing (Undo if that was a mistake) |
 | Can't open | Immigration Packet Builder can't read the matter's folder. | Press it to have Claude repair it |
 
@@ -88,7 +88,7 @@ Client documents stay in the matter folder on your Mac. Claude reads them to do 
 | `skills/packet-assembly` | Build the packet PDF |
 | `skills/final-review` | One pass before filing: a check of the whole packet and the officer's review, with the strongest RFE, NOID, or denial theory and its cure. After fixes, it re-checks only its earlier notes and what changed |
 | `skills/matter-chat` | Talks a matter through in chat: answers from the documents and the work, researches with BIA Edge, makes the changes the attorney asks for and records them, and keeps its research for the next build |
-| `skills/setup` | Sets up the attorney's Mac from the chat: installs the tools (Homebrew first if needed), signs in to GitHub, changes the Matters or model letters folder, turns on automatic updates, and updates the plugin. The app's **Ask Claude to do it** buttons send it the request |
+| `skills/setup` | Sets up the attorney's Mac from the chat: installs the tools (Homebrew first if needed), signs in to GitHub, changes the Matters or model letters folder, stages updates for verification, and updates the plugin. The app's **Ask Claude to do it** buttons send it the request |
 | `agents/` | One agent per step, so each review is independent of the work it checks |
 | `scripts/forms/` | Download, fill, verify, render, and audit USCIS PDFs |
 | `scripts/packet/` | Render the cover letter and assemble the packet with bookmarks and placeholders |
@@ -115,3 +115,5 @@ The contract every skill follows is `skills/senior-associate/references/matter-c
 - To release: bump `version` in `.claude-plugin/plugin.json`, add a `CHANGELOG.md` entry, and push. Users get the new version only when the version string changes.
 
 </details>
+
+Every packet Claude assembles is marked DRAFT above each page until you approve it. On the Packet tab, **Approve for filing** lists whatever is still open (items needed before filing, review notes, form-check errors); you can approve as it is, with a line on why, and the approval records that exact version, what was open and your reason. The approved copies, without the marking, go in the matter's folder under Approved for filing. A change to the packet or the client's documents needs approving again. See [data handling](docs/DATA-HANDLING.md) and [verification](docs/VERIFICATION.md).

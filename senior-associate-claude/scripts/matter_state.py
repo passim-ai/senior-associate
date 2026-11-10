@@ -56,6 +56,8 @@ APP_WRITTEN_NAMES = frozenset({
     "filed.json",
     "removed.json",
     "hash-cache.json",
+    "fingerprint-cache.json",
+    "filing-approval.json",
 })
 
 # A lease nobody has renewed for this long belongs to a run that is gone.
@@ -81,6 +83,10 @@ META_DEFAULTS: dict[str, Any] = {
     "archived_at": "",
     "client_language": "English",
     "filing_method": "paper",
+    "client_name": "",
+    "forum": "USCIS",
+    "circuit": "",
+    "jurisdiction_basis": "",
 }
 
 

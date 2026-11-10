@@ -1,7 +1,7 @@
 // What each press does.
 import type { EngineInterface } from 'claude-code'
 import type { BackTo, Card, Payload, Profile, View } from '../types'
-import { PROFILE_FIELDS, REVIEW_KINDS, STEP_KINDS, asksAttorney, builtPast, carried, chosenCase, folderName, metaChanged, needsOf, profileIsEmpty, reportQuestions, requestTranslations, requiredMissing, retryKind, reviewOnly } from './matter'
+import { PROFILE_FIELDS, REVIEW_KINDS, STEP_KINDS, asksAttorney, builtPast, carried, chosenCase, folderName, metaChanged, needsOf, profileIsEmpty, reportQuestions, requestTranslations, requiredMissing, retryKind, reviewOnly, shownName } from './matter'
 import { clearAnswers, composeAnswers, saveAnswer, startRun, stopRun, toChat, withdrawStart } from './runs'
 import { act, call, closePicker, doctor, load, ownMatters, refresh, setPayload } from './server'
 import { EMPTY_DRAFT, MATTER_VIEWS, PANE, go, readConfirm, readDraft, readGate, readNote, readOrigins, readPayload, readPrefs, readRedoAt, readRuns, readSetup, readView, remember, session, setNote, typed, updateCaseMissing, updateConfirm, updateDocked, updateDraft, updateExpanded, updateFilter, updateGate, updateLaunching, updateOrigins, updateRedoAt, updateRuns, updateSetup, updateSort, updateView } from './state'
@@ -24,7 +24,7 @@ export async function createMatter($: EngineInterface, raw: string) {
   const folder = folderName(entered, chosen.short)
   const created = await load($, { op: 'create', name: folder, matter_type: chosen.matterType, filing_posture: d.posture || 'new filing packet', filing_method: d.method ?? 'paper', protected: Boolean(d.protect) })
   if (created) {
-    $.ui.toast(`${created.matter?.name ?? folder} created. Add the client’s documents next.`)
+    $.ui.toast(`${created.matter ? shownName(created.matter) : folder} created. Add the client’s documents next.`)
     typed.name = ''
     typed.other = ''
     await updateDraft($, () => EMPTY_DRAFT)
@@ -98,6 +98,17 @@ export async function setMeta($: EngineInterface, c: Card, changes: Record<strin
     await setNote($, err instanceof Error ? err.message : String(err))
     return false
   }
+}
+
+// The federal circuits, as the attorney names them; the matter keeps each by its short code.
+export const CIRCUITS: { id: string; label: string }[] = [
+  ...['First', 'Second', 'Third', 'Fourth', 'Fifth', 'Sixth', 'Seventh', 'Eighth', 'Ninth', 'Tenth', 'Eleventh'].map((label, i) => ({ id: `ca${i + 1}`, label })),
+  { id: 'dc', label: 'D.C.' }, { id: 'federal', label: 'Federal' }, { id: 'none', label: 'None applies' },
+]
+
+// Where the case is decided (who decides it, the circuit, why): saved as each is chosen, and said on the page.
+export async function saveJurisdiction($: EngineInterface, c: Card, changes: { forum?: string; circuit?: string; jurisdiction_basis?: string }) {
+  if (await setMeta($, c, changes)) await setNote($, 'Saved. Claude uses it from its next step on.', 'ok')
 }
 
 // The client request's language: English always, and this one too from the next run that writes it.
@@ -418,6 +429,10 @@ async function press($: EngineInterface, id: string): Promise<void> {
   if (id.startsWith('lang:')) {
     if (!c) return
     return setLanguage($, c, id.slice(5))
+  }
+  if (id.startsWith('circuit:')) {
+    if (c) await saveJurisdiction($, c, { circuit: id.slice(8) })
+    return
   }
   if (id.startsWith('posture:')) {
     const posture = id.slice(8)
@@ -753,15 +768,36 @@ async function press($: EngineInterface, id: string): Promise<void> {
       if (!res || res.warning) return
       if (id === 'archive') {
         await goHome($)
-        await setNote($, `${c.name} is archived. It’s under Archived, at the foot of the list; Unarchive there puts it back.`, 'ok')
-      } else await setNote($, `${c.name} is back on the main list.`, 'ok')
+        await setNote($, `${shownName(c)} is archived. It’s under Archived, at the foot of the list; Unarchive there puts it back.`, 'ok')
+      } else await setNote($, `${shownName(c)} is back on the main list.`, 'ok')
+      return
+    }
+    case 'open-approved-packet':
+      await act($, { op: 'open_output', matter_path: c.path, which: 'approved_packet' }, 'Opening the approved copies in Finder.')
+      return
+    case 'approve': {
+      // From the Overview: the Packet tab is where the open points, the reason and the approval are.
+      await go($, 'packet')
+      await $.ui.scroll({ to: { key: 'sec-approval' }, in: PANE, block: 'start' }).catch(() => undefined)
+      return
+    }
+    case 'approve-filing': {
+      const key = `${c.path}#filing-risk`
+      if ((c.filing_readiness?.risks ?? []).length && !(typed.answers[key] ?? '').trim()) {
+        await setNote($, 'Say in a line why you’re filing with these points open, then press Approve. Your reason is kept with the approval.')
+        return
+      }
+      if (await load($, { op: 'approve_filing', matter_path: c.path, digest: c.filing_readiness?.digest ?? '', risk_note: typed.answers[key] ?? '', stay: true })) {
+        delete typed.answers[key]
+        await setNote($, 'You approved this version for filing. The clean copies, without the DRAFT marking, are ready: Show the approved copies opens them. If the packet or the documents change, the new version needs approving again.', 'ok')
+      }
       return
     }
     case 'mark-filed':
-      if (await load($, { op: 'mark_filed', matter_path: c.path })) await setNote($, `${c.name} is marked as filed. Undo, below, puts it back.`, 'ok')
+      if (await load($, { op: 'mark_filed', matter_path: c.path })) await setNote($, `${shownName(c)} is marked as filed. Undo, below, puts it back.`, 'ok')
       return
     case 'unmark-filed':
-      if (await load($, { op: 'unmark_filed', matter_path: c.path })) await setNote($, `${c.name} is no longer marked as filed.`, 'ok')
+      if (await load($, { op: 'unmark_filed', matter_path: c.path })) await setNote($, `${shownName(c)} is no longer marked as filed.`, 'ok')
       return
     case 'check-again': {
       const s = await doctor($)

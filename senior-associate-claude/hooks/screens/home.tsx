@@ -2,7 +2,7 @@
 import type { EngineInterface } from 'claude-code'
 import type { MatterRow } from '../../types'
 import type { Ctx } from '../kit'
-import { FEW, MANY, requiredMissing } from '../matter'
+import { FEW, MANY, requiredMissing, shownName } from '../matter'
 import { perform } from '../perform'
 import { PANE, updateFilter } from '../state'
 import { GROUP_TITLE, matterStatus } from '../status'
@@ -19,7 +19,7 @@ const STATUS_ORDER = ['stopped', 'starting', 'needs_you', 'building', 'draft', '
 const GROUP_ORDER: Group[] = ['needs_you', 'working', 'preparing', 'ready', 'filed']
 
 export function sortRows(rows: { m: MatterRow; s: MatterStatus }[], sort: string): { m: MatterRow; s: MatterStatus }[] {
-  const byName = (a: MatterRow, b: MatterRow) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
+  const byName = (a: MatterRow, b: MatterRow) => shownName(a).localeCompare(shownName(b), undefined, { sensitivity: 'base' })
   const byUpdated = (a: MatterRow, b: MatterRow) => b.updated_at.localeCompare(a.updated_at) || byName(a, b)
   return [...rows].sort((x, y) => {
     if (sort === 'name') return byName(x.m, y.m)
@@ -36,7 +36,7 @@ export async function homeScreen($: EngineInterface, x: Ctx): Promise<JSX.Elemen
   const live = everything.filter(r => !r.m.archived)
   const archived = everything.filter(r => r.m.archived)
   const needle = q.trim().toLowerCase()
-  const matches = (m: MatterRow) => m.name.toLowerCase().includes(needle) || m.case_line.toLowerCase().includes(needle)
+  const matches = (m: MatterRow) => shownName(m).toLowerCase().includes(needle) || m.case_line.toLowerCase().includes(needle)
   const shown = sortRows(needle ? live.filter(r => matches(r.m)) : live, sort)
   const shownArchived = sortRows(needle ? archived.filter(r => matches(r.m)) : archived, sort)
 
@@ -54,12 +54,12 @@ export async function homeScreen($: EngineInterface, x: Ctx): Promise<JSX.Elemen
     numberKey += 1
     // A matter the server can't read: what happened, and Claude to repair it, instead of a page that can't open.
     if (m.problem) {
-      return row(`m-${m.path}`, m.ask ? `ask-row:${m.path}` : `open:${m.path}`, m.name, [m.next_line, m.ask ? `Press to have Claude repair it.` : ''].filter(Boolean).join(' '), { label: s.label, tone: s.tone }, undefined, m.ask ? 'Repair' : 'Open')
+      return row(`m-${m.path}`, m.ask ? `ask-row:${m.path}` : `open:${m.path}`, shownName(m), [m.next_line, m.ask ? `Press to have Claude repair it.` : ''].filter(Boolean).join(' '), { label: s.label, tone: s.tone }, undefined, m.ask ? 'Repair' : 'Open')
     }
     return row(
       `m-${m.path}`,
       `open:${m.path}`,
-      m.name,
+      shownName(m),
       [m.case_line, nextStep(m, s), m.updated_at ? `updated ${when(m.updated_at)}` : ''].filter(Boolean).join(' · '),
       { label: s.label, tone: s.tone },
       site === 'pane' && numberKey <= 9 ? String(numberKey) : undefined,
@@ -132,10 +132,10 @@ export async function homeScreen($: EngineInterface, x: Ctx): Promise<JSX.Elemen
       lastRow
         ? card('Pick up where you left off', [
             <Box key="last" flexDirection="column" gap="xs">
-              <Text size="heading" weight="semibold" color={HEAD}>{lastRow.m.name}</Text>
+              <Text size="heading" weight="semibold" color={HEAD}>{shownName(lastRow.m)}</Text>
               <Text color={MUTED} size="footnote">{[lastRow.s.label, nextStep(lastRow.m, lastRow.s), lastRow.m.updated_at ? `updated ${when(lastRow.m.updated_at)}` : ''].filter(Boolean).join(' · ')}</Text>
             </Box>,
-            lone('last-open', button(`main:open:${lastRow.m.path}`, `Open ${lastRow.m.name}`, () => { void perform($, `open:${lastRow.m.path}`) }, 'primary')),
+            lone('last-open', button(`main:open:${lastRow.m.path}`, `Open ${shownName(lastRow.m)}`, () => { void perform($, `open:${lastRow.m.path}`) }, 'primary')),
           ], undefined, 'card-last')
         : null,
       setupWarning,

@@ -1,7 +1,7 @@
 {
   "name": "senior-associate",
   "displayName": "Immigration Packet Builder",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Turn a client's documents into a USCIS filing packet: a document review, the forms, a researched cover letter, the assembled packet, and a final review that reads it the way a USCIS officer would. You also get a memo and a client request for anything still missing. Type /matters to open it.",
   "author": {
     "name": "Passim AI"

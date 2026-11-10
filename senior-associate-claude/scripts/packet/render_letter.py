@@ -1514,6 +1514,12 @@ def main(argv: list[str] | None = None) -> int:
                     else out_dir / f"{name}.render.json")
     if summary_path.suffix.lower() in (".docx", ".pdf", ".md"):
         raise ToolError("--summary-json must be a .json path, not the letter or its outputs.")
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+    from scripts.generated_files import kept_notice, preserve_edits, record_generated
+    receipt = out_dir / f".{name}.generated.json"
+    # A letter the attorney revised in Word is never overwritten: it is set aside, and the summary says so.
+    kept_edits = preserve_edits([docx_path, pdf_path], receipt)
 
     # Inline warnings were already collected while parsing; build with a parser that does not repeat them.
     quiet = InlineParser(_truthy(letter.front.get("smart_quotes"), True), Audit())
@@ -1566,10 +1572,13 @@ def main(argv: list[str] | None = None) -> int:
         "error_count": sum(1 for f in letter.audit.findings if f["severity"] == "error"),
         "findings": letter.audit.findings,
         "notes": letter.audit.notes,
+        "kept_edited_copies": [str(path) for path in kept_edits],
+        "kept_notice": kept_notice(kept_edits),
     }
     summary_path.parent.mkdir(parents=True, exist_ok=True)
     summary_path.write_text(json.dumps(summary, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     summary["summary_json"] = str(summary_path)
+    record_generated([docx_path, pdf_path], receipt)
     if args.json:
         print(json.dumps(summary, indent=2, ensure_ascii=False))
     else:
@@ -1587,6 +1596,8 @@ def print_summary(summary: dict) -> None:
     print(f"Letter:  {summary['pdf']} ({pages} page{'s' if pages != 1 else ''}, {summary['renderer']})")
     print(f"Docx:    {summary['docx']}")
     print(f"Summary: {summary['summary_json']}")
+    if summary.get("kept_notice"):
+        print(f"Edits:   {summary['kept_notice']}")
     count, errors = summary["finding_count"], summary["error_count"]
     status = "clean" if count == 0 else "NOT READY"
     print(f"Audit:   {status}: {count} finding{'s' if count != 1 else ''} ({errors} error{'s' if errors != 1 else ''}), "

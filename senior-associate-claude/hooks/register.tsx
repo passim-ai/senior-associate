@@ -26,7 +26,7 @@
 // the pieces every screen shares), and screens/ (one file per screen).
 import type { EngineInterface, Register, ResolveInput } from 'claude-code'
 import { draw } from './draw'
-import { BLOCKED, forgetTerms, isResearch, researchGate, toolInput } from './privacy'
+import { BLOCKED, forgetTerms, isResearch, isScreened, researchGate, toolInput } from './privacy'
 import { tableFor } from './kit'
 import { goTo, openPane } from './perform'
 import { adoptSpawn, ensurePoll, finishRun, markWaiting } from './runs'
@@ -108,12 +108,13 @@ export const register: Register = (on, options) => {
     return next(e)
   })
 
-  // Research inside Claude's agents never carries the client's details (privacy.ts). The check decides before anything
-  // runs, at both of the host's gates: tool.check (the permission verdict) and tool.call (the call itself), so a call
-  // that skips one still meets the other. A check that fails refuses research rather than let it through.
-  // Everything else passes untouched, and a matter's own agent asking for the attorney's OK is shown on its page.
+  // Research inside Claude's agents never carries the client's details, and a matter run's own agents use nothing else
+  // that could send words off the Mac (privacy.ts). The check decides before anything runs, at both of the host's
+  // gates: tool.check (the permission verdict) and tool.call (the call itself), so a call that skips one still meets
+  // the other. A check that fails refuses research rather than let it through. The host's local tools and local
+  // shell commands pass untouched, and a matter's own agent asking for the attorney's OK is shown on its page.
   on('tool.check', async ($, e, next) => {
-    if (isResearch(e.tool)) {
+    if (isScreened(e.tool)) {
       const reason = await researchGate($, e.tool, e.input, e.agentId)
       if (reason) return { decision: 'deny', reason }
     }
@@ -128,7 +129,7 @@ export const register: Register = (on, options) => {
     return result
   }).catch(($, e, next) => (e.agentId && isResearch(e.tool) ? { decision: 'deny', reason: BLOCKED } : next(e)))
   on('tool.call', async ($, e, next) => {
-    if (isResearch(e.tool)) {
+    if (isScreened(e.tool)) {
       // The tool's own arguments, not the call's envelope (its name, its id), are what the gate reads.
       const reason = await researchGate($, e.tool, toolInput(e as unknown as Record<string, unknown>), e.agentId)
       if (reason) return { deny: reason }

@@ -11,7 +11,7 @@
 import type { Elements, EngineInterface, ResolveInput } from 'claude-code'
 import type { Card, Draft, Note, Payload, Prefs, Run, Setup, View } from '../types'
 import { WORDMARK, WORDMARK_RATIO } from './brand'
-import { COMMON_TYPES } from './matter'
+import { COMMON_TYPES, shownName } from './matter'
 import { askClaude, perform } from './perform'
 import { session, setNote, typed } from './state'
 import { matterStatus } from './status'
@@ -366,8 +366,8 @@ export function makeKit($: EngineInterface, els: Els, site: 'pane' | 'inline', v
     const s = pillOf(c)
     return page(
       [
-        crumbs([{ key: 'crumb-all', label: 'Matters', id: 'all' }, c.name]),
-        title(c.name, [c.case_line, c.intake.filing_posture_label].filter(Boolean).join(' · '), pill(s.label, s.tone, 'title-pill')),
+        crumbs([{ key: 'crumb-all', label: 'Matters', id: 'all' }, shownName(c)]),
+        title(shownName(c), [c.case_line, c.intake.filing_posture_label].filter(Boolean).join(' · '), pill(s.label, s.tone, 'title-pill')),
         tabs(c, tab),
       ],
       body(...children),

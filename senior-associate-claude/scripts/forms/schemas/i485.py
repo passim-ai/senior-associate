@@ -502,7 +502,7 @@ COMMON_NOTES = [
     "A-Numbers, receipt numbers) stay blank when there is nothing to report, as do the items the form asks "
     "for only in some cases: Part 1 item 10 (passport) after an entry without inspection, item 12 when no "
     "I-94 was issued, and Part 4 item 8 when it would repeat item 7. The audit does not require them then.",
-    "Part 9 yes/no items: draft No only where nothing in the record points the other way, and explain "
+    "Part 9 yes/no items: leave blank until confirmed by the client; record the source and date, and explain "
     "every Yes in Part 14. Conditional items (20-21, 29, 35.b, 40, 75, 84) stay blank unless their trigger "
     "is Yes.",
     "Part 14 (question additional_information) is the one place for every continuation: address and "

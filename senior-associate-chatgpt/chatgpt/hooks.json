@@ -1,0 +1,7 @@
+{
+  "description": "Senior Associate privacy checks for supported local tools. Requires host trust; hosted web tools are outside hook coverage.",
+  "hooks": {
+    "SessionStart": [{"hooks": [{"type": "command", "command": "python3 \"${PLUGIN_ROOT}/chatgpt/privacy_hook.py\"", "timeout": 10}]}],
+    "PreToolUse": [{"hooks": [{"type": "command", "command": "python3 \"${PLUGIN_ROOT}/chatgpt/privacy_hook.py\"", "timeout": 10}]}]
+  }
+}

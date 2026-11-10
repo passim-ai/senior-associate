@@ -521,6 +521,12 @@ def plan_findings(
     )
     fact_index = load_fact_index(manifest_entry)
     schema_name = str(manifest_entry.get("question_schema") or "").strip()
+    unprintable_letters = {
+        part.strip()[:1]
+        for letters in dict(manifest_entry.get("unprintable_boxes") or {}).values()
+        for part in str(letters).split(",")
+        if part.strip()
+    }
 
     rendered_text = ""
     words = boxes = None
@@ -562,6 +568,9 @@ def plan_findings(
             value
             for value in list(question.get("visible_values", []))
             if len(re.sub(r"[^0-9A-Za-z]+", "", str(value))) >= 3
+            # A value build left off the form because its font can't print a letter in it (unprintable_findings
+            # reports those boxes, tied to the attorney's decision) isn't expected on the filing copy.
+            and not (unprintable_letters and unprintable_letters & set(str(value)))
         ]
         own_text = question_box_text(question, words, boxes) if visible_values else None
         shown_in = own_text if own_text is not None else rendered_text
@@ -582,6 +591,13 @@ def plan_findings(
                                     values=missing_visible))
 
         fact_ids = [str(item) for item in list(question.get("fact_ids", []))]
+        from answer_integrity import confirmed, sensitive_question
+        from form_question_schema import get_question_schema
+        spec = ((get_question_schema(schema_name) or {}).get("required_questions") or {}).get(str(question.get("key")), {})
+        if (spec.get("requires_client_confirmation") or sensitive_question(question, kind)) and not confirmed(question, fact_index):
+            findings.append(finding(kind, pdf_path, "Sensitive answer needs a documented client confirmation",
+                                    question_key=question.get("key"), fields=fields,
+                                    fix="Leave unsupported answers blank and ask the client; link the dated confirmation in fact_ids."))
         if fact_ids:
             fact_records = [fact_index[fact_id] for fact_id in fact_ids if fact_id in fact_index]
             if fact_records and all(
@@ -683,6 +699,27 @@ def edition_findings(*, kind: str, pdf_path: Path, manifest_entry: dict[str, obj
             )
         )
     return findings
+
+
+def unprintable_findings(*, kind: str, pdf_path: Path, manifest_entry: dict[str, object] | None) -> list[dict[str, object]]:
+    """The boxes build left blank because the form's own font can't print a letter in them. The finding is tied to
+    the attorney's decision build suggested, so the attorney hears of it and nothing is respelled silently."""
+    entry = dict(manifest_entry or {})
+    boxes = dict(entry.get("unprintable_boxes") or {})
+    if not boxes:
+        return []
+    found = finding(
+        kind,
+        pdf_path,
+        f"{len(boxes)} answer(s) are not on the form: its font can't print a letter in them",
+        fields=sorted(boxes),
+        letters=boxes,
+        fix="The attorney decides how each value goes on the form: by hand on the printed form, as the passport shows "
+        "it, or a spelling to type. Never transliterate on your own.",
+    )
+    if entry.get("unprintable_open_item"):
+        found["open_item"] = str(entry["unprintable_open_item"])
+    return [found]
 
 
 def matter_is_protected(matter: Path | None) -> bool:
@@ -962,6 +999,8 @@ def audit_form(kind: str, pdf_path: Path, values: dict[str, str], **context: obj
     """The form's own rules (AUDITORS[kind]) on its stored values; `context` is any other Form field."""
     form = Form(kind, pdf_path, values, **context)  # type: ignore[arg-type]
     AUDITORS[kind](form)
+    from consistency import check_consistency
+    check_consistency(form)
     return form.findings
 
 
@@ -3586,6 +3625,8 @@ def run_audit(
         form = Form(kind, pdf_path, values, xfa=xfa, acro=acro, manifest_entry=manifest_entry,
                     intent_manifest=intent_manifest)
         AUDITORS[kind](form)
+        from consistency import check_consistency
+        check_consistency(form)
         box_findings = box_rule_findings(kind=kind, pdf_path=pdf_path, widget_pdf=widget_pdf, values=values)
         too_long = {
             field_base_and_index(str(name))
@@ -3605,6 +3646,7 @@ def run_audit(
         form.findings += intent_findings(**here, actual_values=values, manifest_entry=manifest_entry)
         form.findings += final_output_findings(**here, manifest_entry=manifest_entry)
         form.findings += edition_findings(**here, manifest_entry=manifest_entry)
+        form.findings += unprintable_findings(**here, manifest_entry=manifest_entry)
         form.findings += safe_address_findings(**here, values=values, manifest_entry=manifest_entry, profile=profile,
                                                protected=protected)
         form_findings = form.findings
