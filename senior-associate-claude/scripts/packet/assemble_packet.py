@@ -1925,15 +1925,12 @@ def main(argv: list[str] | None = None) -> int:
     stamps = plan.get("stamps", True) and not args.no_stamps
     matter_root = find_matter_root(plan_path, out_pdf, base)
     if matter_root is not None and "output/deliverables" in out_pdf.as_posix():
-        from scripts.generated_files import check_generated
+        from scripts.generated_files import kept_notice, preserve_edits
         review_receipt = out_pdf.with_name("." + out_pdf.stem + ".generated.json")
-        try:
-            check_generated([out_pdf], review_receipt)
-            from scripts.draft_packets import RELEASE_MANIFEST, release_sources
-            if (matter_root / RELEASE_MANIFEST).exists():
-                release_sources(matter_root)
-        except ValueError as exc:
-            raise ToolError(str(exc)) from exc
+        # A packet the attorney marked up is never overwritten: it is set aside, and the summary says so.
+        kept_edits = preserve_edits([out_pdf], review_receipt)
+        if kept_edits:
+            warnings.append(kept_notice(kept_edits))
     else:
         review_receipt = None
 

@@ -56,6 +56,8 @@ APP_WRITTEN_NAMES = frozenset({
     "filed.json",
     "removed.json",
     "hash-cache.json",
+    "fingerprint-cache.json",
+    "filing-approval.json",
 })
 
 # A lease nobody has renewed for this long belongs to a run that is gone.

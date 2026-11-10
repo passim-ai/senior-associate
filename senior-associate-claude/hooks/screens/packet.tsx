@@ -4,13 +4,13 @@ import type { Card } from '../../types'
 import type { Ctx } from '../kit'
 import { ASK_NOTE, STAGE_ABOUT, STAGE_WORD, noteLine, noteTone, reviewOnly, trackSvg } from '../matter'
 import { askAboutThis, perform } from '../perform'
-import { HEAD, MUTED, STAGE_TEXT } from '../theme'
-import { brief, nowMs } from '../words'
+import { HEAD, MUTED, STAGE_TEXT, WARN } from '../theme'
+import { brief, dateOnly, nowMs, plural } from '../words'
 import { matterStatus, isBusy } from '../status'
 import { typed } from '../state'
 
 export async function packetScreen($: EngineInterface, x: Ctx, c: Card): Promise<JSX.Element> {
-  const { Box, Text, Input, field, isDesktop, svg, allRuns, actions, button, section, rule, link, links, matterPage } = x
+  const { Box, Text, Input, field, isDesktop, svg, allRuns, actions, button, lone, section, rule, link, links, matterPage } = x
   const prg = c.progress
   const notes = c.review_notes
   const NOTES_SHOWN = 40
@@ -19,17 +19,32 @@ export async function packetScreen($: EngineInterface, x: Ctx, c: Card): Promise
   // Any step that has run can be redone: it and every step after it. Not while Claude is at work on the matter.
   const redoable = (status: string) => !live && status !== 'pending'
   const files = c.outputs.packet || c.outputs.cover_letter || forms.length > 0
+  // The attorney's sign-off on this version: what makes it impossible (nothing assembled), what to weigh first.
+  const fr = c.filing_readiness ?? null
+  const open_points = fr?.risks ?? []
   return matterPage(c, 'packet',
-    c.filing_readiness && files ? section('Attorney filing review', [
-      <Text key="approval-state">{c.filing_readiness.approved
-        ? `Approved for filing by ${c.filing_readiness.attorney}. Approval applies only to this version.`
-        : 'Draft for attorney review. Completing the build does not approve it for filing.'}</Text>,
-      ...c.filing_readiness.blockers.map((text, i) => <Text key={`approval-block-${i}`} size="footnote">{text}</Text>),
-      ...(c.filing_readiness.risks ?? []).map((text, i) => <Text key={`approval-risk-${i}`}>Review risk: {text}</Text>),
-      (c.filing_readiness.risks ?? []).length && !c.filing_readiness.approved ? field('Reason for filing with these risks', label => <Input key="filing-risk-note" label={label} value={typed.answers[`${c.path}#filing-risk`] || undefined} onInput={value => { typed.answers[`${c.path}#filing-risk`] = value }} onSubmit={value => { typed.answers[`${c.path}#filing-risk`] = value }} />, 'filing-risk') : null,
-      !live && c.filing_readiness.eligible && !c.filing_readiness.approved
-        ? button('approve-filing', 'I reviewed this version and approve it for filing', () => { void perform($, 'approve-filing') }, 'primary') : null,
-      c.filing_readiness.approved ? button('open-approved-packet', 'Show approved filing copies', () => { void perform($, 'open-approved-packet') }, 'primary') : null,
+    fr && files ? section('Approve for filing', [
+      // Approved: this exact version, by whom and when, and what was open when they approved.
+      fr.approved
+        ? <Text key="approval-state">{`${fr.attorney ? `${fr.attorney} approved` : 'You approved'} this version for filing${fr.approved_at ? ` on ${dateOnly(fr.approved_at)}` : ''}. The clean copies, without the DRAFT marking, are in the matter’s folder under Approved for filing. If the packet or the client’s documents change, the new version needs approving again.`}</Text>
+        : fr.eligible
+          ? <Text key="approval-state">{open_points.length
+              ? `Every page of the packet is marked DRAFT until you approve it. You can approve it as it is; ${plural(open_points.length, 'point is', 'points are')} open first, and your reason for filing with ${open_points.length === 1 ? 'it' : 'them'} open is kept with the approval.`
+              : 'Every page of the packet is marked DRAFT until you approve it. Read it through, then approve: clean copies without the marking go in the matter’s folder. Nothing is filed or sent.'}</Text>
+          : <Text key="approval-state">This version can’t be approved yet.</Text>,
+      ...(fr.approved ? [] : fr.blockers).map((text, i) => <Text key={`approval-block-${i}`} color={WARN}>{text}</Text>),
+      open_points.length
+        ? <Box key="approval-points" flexDirection="column" gap="xs">
+            {fr.approved ? <Text dimColor size="footnote">Open when you approved:</Text> : null}
+            {open_points.map((text, i) => <Text key={`approval-risk-${i}`} size="footnote" dimColor={fr.approved ? true : undefined}>{`• ${text}`}</Text>)}
+            {fr.approved && fr.risk_note ? <Text dimColor size="footnote">{`Your reason: ${fr.risk_note}`}</Text> : null}
+          </Box>
+        : null,
+      open_points.length && fr.eligible && !fr.approved ? field(`Why you’re filing with ${open_points.length === 1 ? 'this' : 'these'} open`, label => <Input key="filing-risk-note" label={label} placeholder="e.g. The client’s deadline is Friday; the tax transcript follows by interfiling." rows={2} value={typed.answers[`${c.path}#filing-risk`] || undefined} onInput={value => { typed.answers[`${c.path}#filing-risk`] = value }} onSubmit={value => { typed.answers[`${c.path}#filing-risk`] = value }} />, 'filing-risk') : null,
+      live && fr.eligible && !fr.approved ? <Text key="approval-live" dimColor size="footnote">Claude is working on this matter now; approve once it has finished.</Text> : null,
+      !live && fr.eligible && !fr.approved
+        ? lone('approve-filing', button('approve-filing', 'Approve this version for filing', () => { void perform($, 'approve-filing') }, 'primary')) : null,
+      fr.approved ? lone('open-approved-packet', button('open-approved-packet', 'Show the approved copies', () => { void perform($, 'open-approved-packet') }, 'primary')) : null,
     ], 'sec-approval') : null,
     files
       ? section('Files for this matter', [

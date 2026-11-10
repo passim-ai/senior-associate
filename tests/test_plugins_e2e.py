@@ -62,8 +62,8 @@ async def exercise(kind):
             assert not ready['approved'] and ready['risks']
             assert 'DRAFT' in PdfReader(packet).pages[0].extract_text()
             try: await call('approve_filing',matter_path=str(matter),digest=ready['digest'])
-            except ValueError as exc: assert 'risk' in str(exc)
-            else: raise AssertionError('approval without risk reason accepted')
+            except ValueError as exc: assert 'Explain your decision' in str(exc)
+            else: raise AssertionError('approval without a reason for the open points accepted')
             approved=await call('approve_filing',matter_path=str(matter),digest=ready['digest'],risk_note='Synthetic test acknowledges the fictional risk.')
             assert approved['matter']['filing_readiness']['approved']
             exports=list((matter/'output/deliverables/Approved for filing').rglob('Filing Packet.pdf'))

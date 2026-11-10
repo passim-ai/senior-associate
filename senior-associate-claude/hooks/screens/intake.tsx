@@ -2,15 +2,15 @@
 import type { EngineInterface } from 'claude-code'
 import type { Card } from '../../types'
 import type { Ctx } from '../kit'
-import { chosenCase, metaChanged } from '../matter'
+import { chosenCase, metaChanged, shownName } from '../matter'
 import { typed, updateDraft } from '../state'
 import { WARN } from '../theme'
 import { nowMs } from '../words'
-import { setMeta } from '../perform'
+import { CIRCUITS, saveJurisdiction } from '../perform'
 import { matterStatus, isBusy } from '../status'
 
 export async function intakeScreen($: EngineInterface, x: Ctx, c: Card): Promise<JSX.Element> {
-  const { Text, Input, field, p, allRuns, d, open, missingCase, actions, card, subpage, caseChooser, postureChips, filingChoices } = x
+  const { Box, Text, Input, field, chips, p, allRuns, d, open, missingCase, actions, card, subpage, caseChooser, postureChips, filingChoices } = x
   const types = p.catalog.matter_types
   const chosen = chosenCase(p, d)
   const posture = d.posture || 'new filing packet'
@@ -21,13 +21,13 @@ export async function intakeScreen($: EngineInterface, x: Ctx, c: Card): Promise
   const label = d.typeId === 'other' ? (typed.other || d.other).trim() : types.find(t => t.id === d.typeId)?.label ?? ''
   const busyHere = isBusy(matterStatus(c, allRuns[c.path], nowMs()))
   return subpage(
-    { title: c.name, subtitle: 'Change what is being filed', back: { id: 'intake-cancel', label: c.name }, here: 'Change what is being filed' },
+    { title: shownName(c), subtitle: 'Change what is being filed', back: { id: 'intake-cancel', label: shownName(c) }, here: 'Change what is being filed' },
     card(null, [
       <Text key="now" weight="semibold">{`Now: ${[c.case_line, c.intake.filing_posture_label].filter(Boolean).join(' · ') || 'not chosen yet'}`}</Text>,
       <Text key="what">{started
         ? 'The steps start over for the new case, and your documents stay. The current packet, memo and open items are kept in the matter folder, not deleted.'
         : 'Nothing has run yet, so this only changes what Claude will build.'}</Text>,
-      <Text key="name" dimColor>{`The matter keeps its name, ${c.name}.`}</Text>,
+      <Text key="name" dimColor>{`The matter keeps its name, ${shownName(c)}.`}</Text>,
     ]),
     card('What is being filed?', caseChooser(d, open, missingCase ? 'Choose one below, then press the button.' : '', {
       submitLabel: 'Use', onSubmit: value => { void updateDraft($, dd => ({ ...dd, other: value })) },
@@ -35,11 +35,14 @@ export async function intakeScreen($: EngineInterface, x: Ctx, c: Card): Promise
     // Protected by its case type: a protected catalog entry, or (the server says) the case as it is recorded now.
     card('How it is filed', filingChoices(d, Boolean(types.find(t => t.id === d.typeId)?.protected) || (sameCase && c.meta.protected_reason === 'case_type')), undefined, 'card-filing'),
     card('New filing or a response?', [postureChips(d)]),
-    card('Jurisdiction for this matter', [
-      <Text key="jurisdiction-help" dimColor>Confirm the relevant forum and circuit from the matter’s venue and posture, not the attorney’s office address.</Text>,
-      ...(['forum', 'circuit', 'jurisdiction_basis'] as const).map(key => field(
-        key === 'forum' ? 'Forum' : key === 'circuit' ? 'Circuit (ca1–ca11, dc, federal, or none)' : 'Why this jurisdiction applies',
-        label => <Input key={key} label={label} value={c.meta[key] || undefined} onSubmit={value => { void setMeta($, c, { [key]: value }) }} />, `jurisdiction-${key}`)),
+    card('Where the case is decided', [
+      <Text key="jurisdiction-help" dimColor>Claude checks the case law of the federal circuit that governs this matter. Choose it from where the client lives or where the case is heard, not from your office address. Each choice saves as you make it.</Text>,
+      field('Who decides it', label => <Input key="forum" label={label} placeholder="e.g. USCIS" submitLabel="Save" value={c.meta.forum || undefined} onSubmit={value => { void saveJurisdiction($, c, { forum: value }) }} />, 'jurisdiction-forum'),
+      <Box key="circuit" flexDirection="column" gap="xs">
+        <Text size="footnote" weight="medium">Federal circuit</Text>
+        {chips('circuits', CIRCUITS.map(o => ({ id: `circuit:${o.id}`, label: o.label, chosen: (c.meta.circuit || '') === o.id })))}
+      </Box>,
+      field('Why that circuit applies', label => <Input key="jurisdiction_basis" label={label} placeholder="e.g. The client lives in Houston" submitLabel="Save" value={c.meta.jurisdiction_basis || undefined} onSubmit={value => { void saveJurisdiction($, c, { jurisdiction_basis: value }) }} />, 'jurisdiction-jurisdiction_basis'),
     ]),
     busyHere
       ? <Text key="intake-busy">Claude is working on this matter right now. Wait for it to finish, or stop it on the matter page, then come back.</Text>

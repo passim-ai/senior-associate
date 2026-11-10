@@ -1,7 +1,7 @@
 // New matter: the client's name, what is being filed, and how.
 import type { EngineInterface } from 'claude-code'
 import type { Ctx } from '../kit'
-import { chosenCase, folderName, freeName } from '../matter'
+import { chosenCase, folderName, freeName, shownName } from '../matter'
 import { createMatter, perform } from '../perform'
 import { typed } from '../state'
 import { WARN } from '../theme'
@@ -13,6 +13,8 @@ export async function newMatterScreen($: EngineInterface, x: Ctx): Promise<JSX.E
   const example = folderName(entered || 'Garcia', chosen?.short ?? '')
   const dupe = entered ? freeName(p, example) : { taken: null, next: example }
   const response = /\b(RFE|NOID)\b/.exec(d.posture || 'new filing packet')?.[1] ?? ''
+  // A protected client (by the case type, or marked so below): the folder is not named for them.
+  const shielded = Boolean(p.catalog.matter_types.find(t => t.id === d.typeId)?.protected) || Boolean(d.protect)
   return subpage(
     { title: 'New matter', subtitle: 'Name the client and choose what is being filed. Claude takes it from there.', back: { id: 'all', label: 'Matters' }, here: 'New matter', foot: 'Back to matters' },
     card('Who is the client?', [
@@ -27,10 +29,12 @@ export async function newMatterScreen($: EngineInterface, x: Ctx): Promise<JSX.E
       />, 'field-name'),
       dupe.taken
         ? <Box key="dupe" flexDirection="column" gap="xs">
-            <Text color={WARN}>{`You already have ${dupe.taken.name}. This one will be named “${dupe.next}”.`}</Text>
+            <Text color={WARN}>{`You already have ${shownName(dupe.taken)}. This one will be named “${dupe.next}”.`}</Text>
             {lone('dupe-open', button(`open:${dupe.taken.path}`, 'Open the existing matter', () => { void perform($, `open:${dupe.taken!.path}`) }, 'link'))}
           </Box>
-        : <Text key="hint" dimColor size="footnote">The matter folder will be named “{example}”.</Text>,
+        : shielded
+          ? <Text key="hint" dimColor size="footnote">{`Here it will be called “${example}”. Its folder in Finder gets a neutral name instead, because this client is protected.`}</Text>
+          : <Text key="hint" dimColor size="footnote">The matter folder will be named “{example}”.</Text>,
     ]),
     card('What is being filed?', caseChooser(d, open, missingCase ? 'Choose one below, then press Create matter.' : '', {
       submitLabel: 'Create', onSubmit: () => { void createMatter($, typed.name) },

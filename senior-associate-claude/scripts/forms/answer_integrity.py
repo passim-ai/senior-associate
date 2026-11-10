@@ -2,7 +2,9 @@
 import re
 from datetime import date
 
-SENSITIVE = re.compile(r"arrest|convict|criminal|crime|inadmissib|remov(?:al|ed)|deport|security|terror|persecut|fraud|misrepresent|immigration.violat|unlawful|smuggl|traffick", re.I)
+# "Security" means the security grounds, never a Social Security number: that is an identity number read from a
+# document, and asking for a dated client confirmation of it would flag almost every form.
+SENSITIVE = re.compile(r"arrest|convict|criminal|crime|inadmissib|remov(?:al|ed)|deport|(?<!social )security|terror|persecut|fraud|misrepresent|immigration.violat|unlawful|smuggl|traffick", re.I)
 
 
 def sensitive_question(spec: dict, form: str = "") -> bool:

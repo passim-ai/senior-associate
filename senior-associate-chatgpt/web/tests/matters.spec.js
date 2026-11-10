@@ -218,7 +218,7 @@ test('attorney approval binds the displayed version, requires risk reasons, and 
   await page.evaluate(async path=>window.fixture({path,change_source:true}),fixture.path);
   await ui.getByRole('button',{name:'Refresh',exact:true}).click();
   await expect(ui.getByRole('button',{name:'Show approved filing copies'})).toHaveCount(0);
-  await expect(ui.getByText(/The packet or its sources changed/)).toBeVisible();
+  await expect(ui.getByText(/changed after the final review/)).toBeVisible();
 });
 
 test('jurisdiction settings persist and are part of filing review', async ({page}) => {

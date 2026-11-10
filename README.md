@@ -129,4 +129,4 @@ It is a drafting aid, not legal advice. Nothing is filed or sent for you, and yo
 
 ## Reliability and data handling
 
-See [data handling and limits](senior-associate-claude/docs/DATA-HANDLING.md), [verification procedure](senior-associate-claude/docs/VERIFICATION.md), and [the local evaluation](docs/implementation-2026-11-09.md). A completed review packet is a draft. Attorney approval binds the filing export to the reviewed version; substantive changes require review and approval again.
+See [data handling and limits](senior-associate-claude/docs/DATA-HANDLING.md), [verification procedure](senior-associate-claude/docs/VERIFICATION.md), [the local evaluation](docs/implementation-2026-11-09.md), and [the fixes made to it](docs/fixes-2026-11-09.md). A completed review packet is a draft. Attorney approval binds the filing export to the reviewed version; substantive changes require review and approval again.

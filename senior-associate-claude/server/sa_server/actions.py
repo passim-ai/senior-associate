@@ -85,6 +85,18 @@ def _apply_intake_settings(matter: Path, entry: dict[str, Any] | None, protected
         update_meta(matter, now=ctx.now(), **changes)
 
 
+def _free_shown_name(ctx: Context, name: str, folder: Path) -> str:
+    """The name a protected matter is shown under, told apart from any matter already shown under it: its folder
+    has a neutral name, so the folder's own "(2)" never does that."""
+    wanted = " ".join(str(name).split())[:160]
+    taken = {(read_meta(other).get("client_name") or other.name).casefold() for other in matter_folders(ctx) if other != folder}
+    free, n = wanted, 2
+    while free.casefold() in taken:
+        free = f"{wanted} ({n})"
+        n += 1
+    return free
+
+
 def do_create(ctx: Context, name: str, matter_type: str, filing_posture: str = "new filing packet", *,
               protected: bool | None = None, filing_method: str | None = None) -> dict[str, Any]:
     """Make a matter folder with its workflow record and settings. A creation that fails partway (the setup step
@@ -116,7 +128,7 @@ def do_create(ctx: Context, name: str, matter_type: str, filing_posture: str = "
         add_event(folder, "created", "Matter created.", actor="attorney", now=ctx.now())
         _apply_intake_settings(folder, t if t.get("id") else None, protected, method, ctx)
         if shielded:
-            update_meta(folder, now=ctx.now(), client_name=name)
+            update_meta(folder, now=ctx.now(), client_name=_free_shown_name(ctx, name, folder))
     except BaseException:
         shutil.rmtree(folder, ignore_errors=True)
         raise
@@ -253,7 +265,8 @@ def do_open_output(ctx: Context, matter_path: str, which: str = "packet", name: 
     if which == "approved_packet":
         current = MatterRead(ctx, matter).filing_readiness
         if not current["approved"]:
-            raise UserError("This version has not been approved for filing, or approval is stale.")
+            raise UserError("This version of the packet isn't approved yet. Approve it on the Packet tab, and the clean "
+                            "copies open from there.")
         from scripts.draft_packets import export_approved
         destination = export_approved(matter, current["digest"])
         open_path(destination)
@@ -527,7 +540,7 @@ def do_change_intake(ctx: Context, matter_path: str, matter_type: str, filing_po
 
 def do_approve_filing(ctx: Context, matter_path: str, digest: str, risk_note: str = "") -> dict[str, Any]:
     from scripts.filing_readiness import approve
-    from .readmodel import MatterRead
+    from .readmodel import MatterRead, review_notes
     from .profile import load_profile
 
     matter = resolve_matter(ctx, matter_path)
@@ -535,7 +548,8 @@ def do_approve_filing(ctx: Context, matter_path: str, digest: str, risk_note: st
         current = MatterRead(ctx, matter)
         try:
             approve(matter, expected_digest=digest, attorney=load_profile(ctx).get("attorney_name", ""),
-                    stages=current.stages, ledger=current.ledger, risk_note=risk_note)
+                    stages=current.stages, ledger=current.ledger, risk_note=risk_note,
+                    notes=review_notes(current.findings), posture=str(current.intake.get("filing_posture") or ""))
         except ValueError as exc:
             raise UserError(str(exc)) from exc
     add_event(matter, "filing_approved", "You approved this version for filing.", actor="attorney", now=ctx.now())

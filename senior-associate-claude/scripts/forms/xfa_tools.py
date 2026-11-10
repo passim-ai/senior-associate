@@ -901,42 +901,79 @@ def write_filled_pdf(
     )
 
 
-def check_font_coverage(reader: PdfReader, updates: dict[str, object]) -> None:
-    """Refuse unsupported glyphs before pypdf can silently substitute or corrupt them.
+def _form_fonts(reader: PdfReader) -> tuple[Any, Any]:
+    """The form's AcroForm dictionary and the fonts its text boxes draw with."""
+    acro = reader.trailer["/Root"]["/AcroForm"].get_object()
+    resources = acro.get("/DR", {}).get_object() if hasattr(acro.get("/DR", {}), "get_object") else acro.get("/DR", {})
+    fonts = resources.get("/Font", {})
+    return acro, fonts.get_object() if hasattr(fonts, "get_object") else fonts
+
+
+def _unprintable(spec: Any, value: str, acro: Any, fonts: Any) -> set[str]:
+    """The characters of `value` this text box's own font cannot draw.
 
 The pinned pypdf font decoder supplies the field's actual encoding. Unknown CID
 fonts require a Unicode map; encoding UTF-16 alone does not prove glyph coverage.
 """
     from pypdf._cmap import get_encoding
-    acro = reader.trailer["/Root"]["/AcroForm"].get_object()
-    resources = acro.get("/DR", {}).get_object() if hasattr(acro.get("/DR", {}), "get_object") else acro.get("/DR", {})
-    fonts = resources.get("/Font", {})
-    fonts = fonts.get_object() if hasattr(fonts, "get_object") else fonts
+    chars = {c for c in value if ord(c) > 127}
+    if not chars:
+        return set()
+    da = str(spec.get("/DA") or acro.get("/DA") or "")
+    match = re.search(r"(/[^\s]+)\s+[\d.]+\s+Tf", da)
+    resource = fonts.get(match[1]) if match else None
+    supported: set[str] = set()
+    if resource is not None:
+        font = resource.get_object()
+        encoding, character_map = get_encoding(font)
+        supported.update(v for v in character_map.values() if isinstance(v, str))
+        if isinstance(encoding, dict):
+            supported.update(encoding.values())
+        elif font.get("/Subtype") != "/Type0" and encoding not in {"utf-16-be", "utf-16"}:
+            for c in chars:
+                try:
+                    c.encode(encoding, errors="strict")
+                    supported.add(c)
+                except (UnicodeError, LookupError):
+                    pass
+    return chars - supported
+
+
+def unprintable_boxes(source_pdf: Path, fields: dict[str, object]) -> dict[str, str]:
+    """The boxes of a mapping whose text holds a letter the form's own font cannot print, each with the letters:
+    {"Pt1Line1_FamilyName[0]": "ễ (U+1EC5)"}.
+
+    Build leaves those boxes blank and raises an open item, so one name doesn't stop the whole form; nothing is
+    ever transliterated. check_font_coverage remains the last check before anything is written."""
+    reader = PdfReader(str(source_pdf))
+    try:
+        acro, fonts = _form_fonts(reader)
+    except (KeyError, AttributeError):
+        return {}
+    text_boxes: dict[str, list[Any]] = defaultdict(list)
+    for full_name, spec in (reader.get_fields() or {}).items():
+        if spec.get("/FT") == "/Tx":
+            text_boxes[qualified_base_and_index(full_name)[0]].append(spec)
+    found: dict[str, str] = {}
+    for box, value in fields.items():
+        if not isinstance(value, str) or value.isascii():
+            continue
+        missing: set[str] = set()
+        # Every visible box of that name: a value the form repeats (a name in each page's header) prints in each.
+        for spec in text_boxes.get(field_base_and_index(str(box))[0], []):
+            missing |= _unprintable(spec, value, acro, fonts)
+        if missing:
+            found[str(box)] = ", ".join(f"{c} (U+{ord(c):04X})" for c in sorted(missing))
+    return found
+
+
+def check_font_coverage(reader: PdfReader, updates: dict[str, object]) -> None:
+    """Refuse unsupported glyphs before pypdf can silently substitute or corrupt them."""
+    acro, fonts = _form_fonts(reader)
     for name, spec in (reader.get_fields() or {}).items():
         if spec.get("/FT") != "/Tx" or name not in updates:
             continue
-        value = str(updates[name] or "")
-        chars = {c for c in value if ord(c) > 127}
-        if not chars:
-            continue
-        da = str(spec.get("/DA") or acro.get("/DA") or "")
-        match = re.search(r"(/[^\s]+)\s+[\d.]+\s+Tf", da)
-        resource = fonts.get(match[1]) if match else None
-        supported: set[str] = set()
-        if resource is not None:
-            font = resource.get_object()
-            encoding, character_map = get_encoding(font)
-            supported.update(v for v in character_map.values() if isinstance(v, str))
-            if isinstance(encoding, dict):
-                supported.update(encoding.values())
-            elif font.get("/Subtype") != "/Type0" and encoding not in {"utf-16-be", "utf-16"}:
-                for c in chars:
-                    try:
-                        c.encode(encoding, errors="strict")
-                        supported.add(c)
-                    except (UnicodeError, LookupError):
-                        pass
-        missing = chars - supported
+        missing = _unprintable(spec, str(updates[name] or ""), acro, fonts)
         if missing:
             codes = ", ".join(f"U+{ord(c):04X}" for c in sorted(missing))
             raise ValueError(f"Field {leaf_field_name(name)} cannot safely render {codes}. Nothing was written. "

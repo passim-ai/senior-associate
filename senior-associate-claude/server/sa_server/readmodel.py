@@ -589,6 +589,13 @@ def effective_meta(matter: Path, meta: dict[str, Any], intake: dict[str, str]) -
     return {**meta, "protected": bool(shield["protected"]), "protected_reason": str(shield["reason"])}
 
 
+def shown_name(matter: Path, meta: dict[str, Any]) -> str:
+    """The name the app shows a matter under. A protected matter's folder has a neutral name ("Matter 3F9A21C0B7"),
+    because a folder name shows in Finder; on the attorney's own screen it goes by the name they gave it, which the
+    matter's settings keep. Requests to Claude and its agents still name the folder."""
+    return as_text(meta.get("client_name")).strip() or matter.name
+
+
 def case_line(intake: dict[str, str], protected: bool) -> str:
     """The case as a list row shows it. A list is read at a glance, so a protected case shows only its form numbers."""
     if not protected:
@@ -623,7 +630,7 @@ class MatterRead:
         self.output_files = walk_output(matter)
         # Findings matter for the list only when there's no open items list to read the questions from.
         self.findings = findings_for(matter, self.output_files)
-        self.filing_readiness = readiness(matter, self.stages, self.ledger)
+        self._readiness: dict[str, Any] | None = None
         self.needs = needs_you(self.track, self.findings, self.ledger, self.ledger_state, matter.name)
         self.intake = intake_of(self.track)
         # The settings with protection as the one rule has it: the flag, or a case type that can only be protected.
@@ -635,11 +642,20 @@ class MatterRead:
         if legacy or not light:
             self.changed_at = last_change(matter, self.track, self.output_files)
 
+    @property
+    def filing_readiness(self) -> dict[str, Any]:
+        """Where the packet stands for the attorney's sign-off (scripts/filing_readiness.py). Read for a card and for
+        the approval itself, never for a list row: it hashes the packet and the client's documents. It doesn't change
+        the matter's status: Ready to file is the workflow's word, and approving that version is the next step."""
+        if self._readiness is None:
+            self._readiness = readiness(self.matter, self.stages, self.ledger, notes=review_notes(self.findings),
+                                        posture=as_text(self.intake.get("filing_posture")))
+        return self._readiness
+
     def phase(self, doc_count: int) -> str:
-        phase = phase_for(self.track, doc_count, self.needs, self.ledger, filed=bool(self.filed),
+        return phase_for(self.track, doc_count, self.needs, self.ledger, filed=bool(self.filed),
                          last_change_at=self.changed_at, now=self.now, lease=self.lease, lease_file=self.lease_file,
                          ledger_state=self.ledger_state)
-        return "draft" if phase == "complete" and not self.filing_readiness["approved"] else phase
 
 
 def matter_card(ctx: Context, matter: Path) -> dict[str, Any]:
@@ -662,6 +678,7 @@ def matter_card(ctx: Context, matter: Path) -> dict[str, Any]:
     answers = read_answers(matter)
     card = {
         "name": matter.name,
+        "title": shown_name(matter, r.meta),
         "path": str(matter),
         "phase": phase,
         "phase_label": label,
@@ -762,6 +779,7 @@ def list_row(ctx: Context, matter: Path) -> dict[str, Any]:
     row = {
         "path": str(matter),
         "name": matter.name,
+        "title": shown_name(matter, r.meta),
         "case_line": case_line(r.intake, bool(r.meta["protected"])),
         "phase": phase,
         "label": PHASE_LABELS[phase],

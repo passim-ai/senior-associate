@@ -521,6 +521,12 @@ def plan_findings(
     )
     fact_index = load_fact_index(manifest_entry)
     schema_name = str(manifest_entry.get("question_schema") or "").strip()
+    unprintable_letters = {
+        part.strip()[:1]
+        for letters in dict(manifest_entry.get("unprintable_boxes") or {}).values()
+        for part in str(letters).split(",")
+        if part.strip()
+    }
 
     rendered_text = ""
     words = boxes = None
@@ -562,6 +568,9 @@ def plan_findings(
             value
             for value in list(question.get("visible_values", []))
             if len(re.sub(r"[^0-9A-Za-z]+", "", str(value))) >= 3
+            # A value build left off the form because its font can't print a letter in it (unprintable_findings
+            # reports those boxes, tied to the attorney's decision) isn't expected on the filing copy.
+            and not (unprintable_letters and unprintable_letters & set(str(value)))
         ]
         own_text = question_box_text(question, words, boxes) if visible_values else None
         shown_in = own_text if own_text is not None else rendered_text
@@ -690,6 +699,27 @@ def edition_findings(*, kind: str, pdf_path: Path, manifest_entry: dict[str, obj
             )
         )
     return findings
+
+
+def unprintable_findings(*, kind: str, pdf_path: Path, manifest_entry: dict[str, object] | None) -> list[dict[str, object]]:
+    """The boxes build left blank because the form's own font can't print a letter in them. The finding is tied to
+    the attorney's decision build suggested, so the attorney hears of it and nothing is respelled silently."""
+    entry = dict(manifest_entry or {})
+    boxes = dict(entry.get("unprintable_boxes") or {})
+    if not boxes:
+        return []
+    found = finding(
+        kind,
+        pdf_path,
+        f"{len(boxes)} answer(s) are not on the form: its font can't print a letter in them",
+        fields=sorted(boxes),
+        letters=boxes,
+        fix="The attorney decides how each value goes on the form: by hand on the printed form, as the passport shows "
+        "it, or a spelling to type. Never transliterate on your own.",
+    )
+    if entry.get("unprintable_open_item"):
+        found["open_item"] = str(entry["unprintable_open_item"])
+    return [found]
 
 
 def matter_is_protected(matter: Path | None) -> bool:
@@ -3616,6 +3646,7 @@ def run_audit(
         form.findings += intent_findings(**here, actual_values=values, manifest_entry=manifest_entry)
         form.findings += final_output_findings(**here, manifest_entry=manifest_entry)
         form.findings += edition_findings(**here, manifest_entry=manifest_entry)
+        form.findings += unprintable_findings(**here, manifest_entry=manifest_entry)
         form.findings += safe_address_findings(**here, values=values, manifest_entry=manifest_entry, profile=profile,
                                                protected=protected)
         form_findings = form.findings

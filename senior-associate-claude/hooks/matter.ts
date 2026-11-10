@@ -64,6 +64,10 @@ export function progressSig(c: Card): string {
 }
 
 
+// The name a matter goes by on screen. A protected matter's folder has a neutral name; the app shows the name the
+// attorney gave it. What goes to Claude (a question, a run's description) still names the folder.
+export const shownName = (m: { name: string; title?: string }): string => m.title || m.name
+
 export const replyKey = (c: Card) => `${c.path}#reply` // one answer box for every question, when a report's questions couldn't be told apart
 
 export type Need = {
@@ -360,10 +364,10 @@ export function folderName(name: string, short: string): string {
 export function freeName(p: Payload | null, name: string): { taken: MatterRow | null; next: string } {
   const rows = p?.matters ?? []
   const lower = (s: string) => s.toLowerCase()
-  const taken = rows.find(m => lower(m.name) === lower(name)) ?? null
+  const taken = rows.find(m => lower(shownName(m)) === lower(name)) ?? null
   if (!taken) return { taken: null, next: name }
   let k = 2
-  while (rows.some(m => lower(m.name) === lower(`${name} (${k})`))) k++
+  while (rows.some(m => lower(shownName(m)) === lower(`${name} (${k})`))) k++
   return { taken, next: `${name} (${k})` }
 }
 

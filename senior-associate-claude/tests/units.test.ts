@@ -4,7 +4,7 @@
 import type { Card, CardStatus, Lease, Run } from '../types'
 import { expect, test } from 'claude-code/testing'
 import { neededBeforeFiling, neededParts, reportQuestions } from '../hooks/matter'
-import { holdsTerm, isResearch, onlyCitations, readTerms } from '../hooks/privacy'
+import { holdsTerm, isResearch, isScreened, onlyCitations, reachesNetwork, readTerms } from '../hooks/privacy'
 import { notInBrief } from '../hooks/runs'
 import { sortRows } from '../hooks/screens/home'
 import { timelineDays } from '../hooks/screens/timeline'
@@ -149,14 +149,54 @@ test('the research gate: BIA Edge and the web tools only, and a term matches how
   expect(isResearch('mcp__claude_ai_BIA_Edge__check_validity')).toBe(true)
   expect(isResearch('mcp__passim__lookup')).toBe(true)
   expect(isResearch('WebSearch')).toBe(true)
-  expect(isResearch('mcp__github__create_issue')).toBe(true)
+  // BIA Edge under whatever name its connector's server has, by its methods.
+  expect(isResearch('mcp__0c7d41aa-3028__search_cases')).toBe(true)
+  // Another connector isn't research: a matter run's agents don't use it at all, and nobody else's are touched.
+  expect(isResearch('mcp__github__create_issue')).toBe(false)
+  expect(isScreened('mcp__github__create_issue')).toBe(true)
+  expect(isScreened('Bash')).toBe(true)
   expect(isResearch('Read')).toBe(false)
+  // The host's local tools are never looked at: an agent loads its skill and its tools like any other.
+  for (const local of ['Read', 'Write', 'Skill', 'ToolSearch', 'Agent', 'TaskCreate', 'TodoWrite']) expect(isScreened(local)).toBe(false)
   const terms = ['Ana Example', 'A123456789', '555-0142']
   expect(holdsTerm({ query: 'Is ana example eligible for a waiver?' }, terms)).toBe(true)
   expect(holdsTerm({ query: 'A-123-456-789 removal history' }, terms)).toBe(true)
   expect(holdsTerm({ query: 'call 555 0142' }, terms)).toBe(true)
   expect(holdsTerm({ query: 'Matter of Example, 25 I&N Dec. 1 (BIA 2010): good faith marriage' }, terms)).toBe(false)
   expect(holdsTerm({ query: 'What evidence shows a bona fide marriage?' }, terms)).toBe(false)
+})
+
+test('a shell command reaches the network only when it names an address or runs a program that connects', () => {
+  // The skills' own commands, as they write them: a variable, a line break, a pipe. All local.
+  for (const local of [
+    'RW="/plugin/skills/senior-associate/scripts/run_matter_workflow.py"; uv run --script "$RW" lease acquire "/matters/Garcia I-130 I-485" --run-id r1 --kind build',
+    'uv run --script "/plugin/scripts/packet/render_letter.py" "/matters/Garcia I-130 I-485/output/working/vault/cover-letter/main/cover letter.md" \\\n  --out-dir "output/deliverables"',
+    'cd "/matters/Garcia I-130 I-485" && ls output/deliverables | head -5',
+    'mv "output/deliverables/Filing Packet (DRAFT).pdf" "output/deliverables/Filing Packet.pdf"',
+    'uv run --with pillow-heif --script /plugin/scripts/extract_documents.py "/matters/Garcia I-130 I-485"',
+    'python3 -c "import json; print(json.load(open(\'x.json\'))[\'count\'])"',
+    'cat curl-notes.txt',
+  ]) expect(reachesNetwork(local)).toBe(false)
+  for (const out of [
+    'curl -s https://www.uscis.gov/i-485 -o /tmp/i-485.html',
+    'wget -q example.com/form.pdf',
+    'open "https://www.uscis.gov/i-130"',
+    'python3 -c "import urllib.request as u; u.urlopen(x)"',
+    'echo hi | nc example.com 80',
+    'ssh host ls',
+    'git push origin main',
+  ]) expect(reachesNetwork(out)).toBe(true)
+})
+
+test('a name that is also an everyday word counts only as a name is written', () => {
+  const t = readTerms({ names: ['May', 'Long', 'An'], full_names: ['An Long May'] })
+  expect(holdsTerm({ query: 'the applicant may adjust as long as an immigrant visa is available' }, t)).toBe(false)
+  expect(holdsTerm({ query: 'May the officer deny for a long absence? An RFE is likely.' }, t)).toBe(false)
+  expect(holdsTerm({ query: 'extreme hardship to Long and to May if removed' }, t)).toBe(true)
+  expect(holdsTerm({ query: 'an long may hardship' }, t)).toBe(true) // the full name, however it is written
+  // A name that isn't an everyday word is refused in any case, as before.
+  expect(holdsTerm({ query: 'wu hardship' }, readTerms({ names: ['Wu'] }))).toBe(true)
+  expect(holdsTerm({ query: 'GARCIA waiver' }, readTerms({ names: ['Garcia'] }))).toBe(true)
 })
 
 test('the gate matches the server’s names, full names and identifiers, without accents, and passes a precedent’s name', () => {

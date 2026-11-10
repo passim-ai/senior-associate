@@ -1,7 +1,13 @@
-"""Filing approval is an attorney action on an exact, reviewed set of bytes.
+"""Filing approval: the attorney's sign-off on one exact version of the packet.
 
-This is a local workflow safeguard, not an authentication boundary against a process
-that can rewrite the matter folder. Never let an agent grant its own approval.
+The attorney can always approve an assembled packet. What stands in the way is said beside the button, in plain
+words (`risks`), and approving with any of it open takes a written reason, which is kept with the approval. Only
+two things make approval impossible (`blockers`): there is no assembled packet, or its clean copy is missing or
+changed. Once a version is approved it stays approved until the packet or the client's documents change; a check
+that ages afterwards (the research is a week old) never takes an approval back.
+
+This is a local workflow safeguard, not an authentication boundary against a process that can rewrite the matter
+folder. Never let an agent grant its own approval.
 """
 from __future__ import annotations
 
@@ -11,184 +17,338 @@ import os
 from pathlib import Path
 from typing import Any
 
+from scripts.generated_files import KEPT_DIR
 from scripts.matter_state import read_json, sha256_file, write_json_atomic, now_iso
 
 APPROVAL = Path("output/working/workflow/filing-approval.json")
 REVIEW_RECEIPT = Path("output/working/workflow/final-review-receipt.json")
+HASHES = Path("output/working/workflow/fingerprint-cache.json")
+CURRENCY = Path("output/working/workflow/legal currency review.json")
+THEORY = Path("output/working/workflow/case_theory_evidence_map.json")
+RESPONSE_PLAN = Path("output/working/workflow/notice response plan.json")
 MATERIAL = {"error", "blocker", "critical", "high", "major", "manual_review"}
 ADVERSE = {"deny_likely", "noid_likely", "rfe_likely", "reject_likely", "attorney_hold"}
 RESOLVED = {"resolved", "closed", "fixed", "cured"}
 SKIP_DIRS = {".git", "__pycache__", "node_modules", ".venv"}
-SKIP_PREFIXES = ("output/tmp/", "output/privacy/", "output/working/earlier/", "output/working/workspaces/",
-                 "output/working/workflow/snapshots/", "output/working/removed documents/",
-                 "output/deliverables/Approved for filing/")
-SKIP_PATHS = {str(APPROVAL), str(REVIEW_RECEIPT), "output/deliverables/filed.json"} | {
-    "output/working/workflow/" + name for name in (".lock", "run-lease.json", "hash-cache.json", "events.jsonl")}
+DELIVERABLES = "output/deliverables"
+FILING_SOURCE = "output/working/filing-source"
+# Under the deliverables folder but not part of what is filed.
+NOT_FILED_DIRS = {f"{DELIVERABLES}/Approved for filing", f"{DELIVERABLES}/{KEPT_DIR}"}
+# What the handoff writes for the attorney after the final review: the memo, the client request (in any language),
+# the filing checklist and the list of open items. They describe the packet; they aren't the packet.
+HANDOFF_PREFIXES = ("Attorney Memo", "Client Request", "Filing Checklist")
+HANDOFF_NAMES = {"open-items.json", "filed.json"}
+
+LINKED = ("This matter holds a link to a file or folder kept somewhere else. Put the file itself in the matter, "
+          "then try again.")
+UNREADABLE = "Immigration Packet Builder couldn't read every file in this matter. Try again in a moment."
+# How many of one kind of point are listed before the rest are counted.
+LISTED = 6
+
+OUTCOME_SAYS = {
+    "reject_likely": "The officer's review expects USCIS to reject the filing at intake as it stands.",
+    "deny_likely": "The officer's review expects a denial as it stands.",
+    "noid_likely": "The officer's review expects a notice of intent to deny as it stands.",
+    "rfe_likely": "The officer's review expects a request for evidence as it stands.",
+    "attorney_hold": "The officer's review says to hold this for your decision.",
+}
 
 
-def fingerprint(matter: Path, *, review_inputs: bool = False) -> dict[str, str]:
-    """Hash sources and substantive work, never activity logs or generated approval copies.
+class _Hashes:
+    """Each covered file's hash, kept while its size and modified time stay the same, so the matter page's quiet
+    refresh reads a file again only when it changed."""
 
-The review receipt excludes handoff text and ledgers, which are prepared after review.
-The attorney approval includes them. Symlinks fail closed rather than hashing outside.
-"""
+    def __init__(self, matter: Path) -> None:
+        self.matter = matter
+        data = read_json(matter / HASHES).data
+        files = data.get("files") if isinstance(data, dict) and data.get("version") == 1 else None
+        self.entries: dict[str, dict[str, Any]] = {k: v for k, v in (files or {}).items() if isinstance(v, dict)}
+        self.dirty = False
+
+    def sha(self, rel: str) -> str:
+        path = self.matter / rel
+        st = path.stat()
+        known = self.entries.get(rel)
+        if known and known.get("size") == st.st_size and known.get("mtime_ns") == st.st_mtime_ns and known.get("sha256"):
+            return str(known["sha256"])
+        value = sha256_file(path)
+        self.entries[rel] = {"size": st.st_size, "mtime_ns": st.st_mtime_ns, "sha256": value}
+        self.dirty = True
+        return value
+
+    def save(self, present: set[str]) -> None:
+        stale = set(self.entries) - present
+        for rel in stale:
+            del self.entries[rel]
+        if not (self.dirty or stale) or not (self.matter / HASHES).parent.is_dir():
+            return
+        try:
+            write_json_atomic(self.matter / HASHES, {"version": 1, "files": self.entries})
+        except OSError:
+            pass  # a cache that can't be written only means hashing again next time
+
+
+def _covered_dir(rel: str) -> bool:
+    if rel != "output" and not rel.startswith("output/"):
+        return True  # the client's documents, wherever the attorney keeps them in the matter
+    if rel in NOT_FILED_DIRS:
+        return False
+    return (rel in {"output", "output/working", DELIVERABLES, FILING_SOURCE}
+            or rel.startswith((DELIVERABLES + "/", FILING_SOURCE + "/")))
+
+
+def _covered_file(rel: str, name: str) -> bool:
+    if not rel.startswith("output/"):
+        return True
+    if rel.startswith(FILING_SOURCE + "/"):
+        return name != "release.json"
+    if not rel.startswith(DELIVERABLES + "/"):
+        return False
+    at_top = rel == f"{DELIVERABLES}/{name}"
+    return not (at_top and (name in HANDOFF_NAMES or name.startswith(HANDOFF_PREFIXES)))
+
+
+def fingerprint(matter: Path) -> dict[str, str]:
+    """What a review or an approval covers: the client's documents and the files that are filed (the packet, the
+    letter, the forms, the upload files, and the packet's clean copies).
+
+    Claude's working files, the app's own records, the memo and the client request aren't part of it, so saving an
+    answer, archiving the matter or cleaning up never undoes a review or an approval. A linked file or folder is
+    refused rather than followed out of the matter."""
+    cache = _Hashes(matter)
     files: dict[str, str] = {}
     for parent, dirs, names in os.walk(matter, followlinks=False):
-        dirs[:] = sorted(d for d in dirs if d not in SKIP_DIRS and not d.startswith(".")
-                         and not ((Path(parent) / d).relative_to(matter).as_posix() + "/").startswith(SKIP_PREFIXES))
-        for d in dirs:
+        here = Path(parent).relative_to(matter).as_posix()
+        here = "" if here == "." else here + "/"
+        keep: list[str] = []
+        for d in sorted(dirs):
+            if d in SKIP_DIRS or d.startswith(".") or not _covered_dir(here + d):
+                continue
             if (Path(parent) / d).is_symlink():
-                raise ValueError("A linked folder cannot be included in a filing approval.")
+                raise ValueError(LINKED)
+            keep.append(d)
+        dirs[:] = keep
         for name in sorted(names):
-            if name == ".DS_Store" or name.startswith((".", "~$")):
+            if name.startswith((".", "~$")) or not _covered_file(here + name, name):
                 continue
-            path = Path(parent) / name
-            rel = path.relative_to(matter).as_posix()
-            if rel in SKIP_PATHS:
-                continue
-            if review_inputs and ((rel.startswith("output/working/workflow/") and name not in {"legal currency review.json", "case_theory_evidence_map.json", "notice response plan.json", "attorney-instructions.md", "attorney-answers.json", "matter-meta.json"}) or
-                                  "attorney-handoff/" in rel or name in {
-                                      "open-items.json", "Attorney Memo.md", "Attorney Memo.pdf", "Client Request.md",
-                                      "Client Request.pdf", "Filing Checklist.md", "Filing Checklist.pdf"}):
-                continue
-            if path.is_symlink():
-                raise ValueError("A linked file cannot be included in a filing approval.")
-            files[rel] = sha256_file(path)
+            if (Path(parent) / name).is_symlink():
+                raise ValueError(LINKED)
+            files[here + name] = cache.sha(here + name)
+    cache.save(set(files))
     return files
 
 
+def _version(files: dict[str, str]) -> tuple[dict[str, str], list[str]]:
+    """The client's documents by where they are, and Claude's files by what they hold: renaming the packet (the
+    handoff drops "(DRAFT)" once nothing blocks filing) isn't a change to it."""
+    documents = {rel: sha for rel, sha in files.items() if not rel.startswith("output/")}
+    made = sorted(sha for rel, sha in files.items() if rel.startswith("output/"))
+    return documents, made
+
+
 def digest(files: dict[str, str]) -> str:
-    return hashlib.sha256(json.dumps(files, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+    documents, made = _version(files)
+    return hashlib.sha256(json.dumps([documents, made], sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
 
 def record_review(matter: Path) -> None:
-    write_json_atomic(matter / REVIEW_RECEIPT, {"reviewed_at": now_iso(), "files": fingerprint(matter, review_inputs=True)})
+    """The final review passed on what the matter holds now. A matter that can't be read through (a linked folder)
+    gets no receipt, and approval says why; passing the review itself is never refused for it."""
+    try:
+        files = fingerprint(matter)
+    except (OSError, ValueError):
+        (matter / REVIEW_RECEIPT).unlink(missing_ok=True)
+        return
+    write_json_atomic(matter / REVIEW_RECEIPT, {"reviewed_at": now_iso(), "files": files, "digest": digest(files)})
 
 
-def review_problems(matter: Path, risks: list[str] | None = None) -> list[str]:
-    risks = risks if risks is not None else []
-    problems: list[str] = []
+def _count(n: int, one: str, many: str) -> str:
+    return f"{n} {one if n == 1 else many}"
+
+
+def _capped(lines: list[str], rest: str) -> list[str]:
+    lines = list(dict.fromkeys(lines))
+    if len(lines) <= LISTED:
+        return lines
+    return lines[:LISTED] + [f"…and {len(lines) - LISTED} more {rest}."]
+
+
+def _findings_files(matter: Path) -> list[Path]:
     roots = [matter / "output/working/vault", matter / "output/vault"]
-    paths = sorted({p for root in roots if root.exists() for p in root.rglob("*findings.json")})
-    final = [p for p in paths if p.name == "final review findings.json"]
-    if len(final) != 1:
-        problems.append("A single current final review is required before filing approval.")
-    for path in paths:
-        result = read_json(path)
-        data = result.data
-        if not result.ok or not isinstance(data, dict) or not isinstance(data.get("findings"), list):
-            problems.append(f"The review record {path.name} is missing or damaged.")
-            continue
-        if path in final:
-            outcome = data.get("overall_outcome")
-            if outcome not in ADVERSE | {"approvable"}:
-                problems.append("The final review has no recognized overall assessment.")
-            elif outcome != "approvable":
-                risks.append("Final review assessment: " + outcome.replace("_", " "))
-        for finding in data["findings"]:
-            if not isinstance(finding, dict):
-                problems.append("A review finding is damaged.")
-                continue
-            if str(finding.get("status") or "").lower() in RESOLVED or finding.get("resolved") is True:
-                continue
-            if str(finding.get("severity") or "").lower() in MATERIAL or str(finding.get("outcome") or "").lower() in ADVERSE:
-                risks.append(str(finding.get("title") or finding.get("summary") or "An unresolved material review finding remains."))
-    receipt = read_json(matter / REVIEW_RECEIPT)
-    if not receipt.ok or not isinstance(receipt.data, dict) or receipt.data.get("files") != fingerprint(matter, review_inputs=True):
-        problems.append("The packet or its sources changed, or the final review has no content receipt. Run final review again.")
-    return list(dict.fromkeys(problems))
+    return sorted({p for root in roots if root.exists() for p in root.rglob("*findings.json")})
 
 
+def _review_points(matter: Path, notes: list[dict[str, Any]] | None, files: dict[str, str], reviewed: bool) -> list[str]:
+    """What the reviews left open. `notes` are the open review notes as the app words them (readmodel.review_notes);
+    without them the findings files are read as they are."""
+    points: list[str] = []
+    final = [p for p in _findings_files(matter) if p.name == "final review findings.json"]
+    if not final:
+        if reviewed:
+            points.append("The final review's record is missing, so its notes aren't counted here.")
+        return points
+    newest = max(final, key=lambda p: p.stat().st_mtime)
+    data = read_json(newest).data
+    if not isinstance(data, dict) or not isinstance(data.get("findings"), list):
+        points.append("The final review's record can't be read, so its notes aren't counted here.")
+    elif str(data.get("overall_outcome") or "") in OUTCOME_SAYS:
+        points.append(OUTCOME_SAYS[str(data["overall_outcome"])])
+    if notes is not None:
+        listed = [f"Review note: {n.get('title')}" for n in notes
+                  if n.get("title") and (n.get("severity_word") in {"important", "check by hand"} or n.get("outcome_word"))]
+    else:
+        listed = []
+        for path in _findings_files(matter):
+            found = read_json(path).data
+            for finding in (found.get("findings") if isinstance(found, dict) and isinstance(found.get("findings"), list) else []):
+                if not isinstance(finding, dict):
+                    continue
+                if str(finding.get("status") or "").lower() in RESOLVED or finding.get("resolved") is True:
+                    continue
+                if str(finding.get("severity") or "").lower() in MATERIAL or str(finding.get("outcome") or "").lower() in ADVERSE:
+                    listed.append("Review note: " + str(finding.get("title") or finding.get("summary") or "a reviewer flagged something."))
+    points.extend(_capped(listed, "review notes on the Packet tab"))
+    receipt = read_json(matter / REVIEW_RECEIPT).data
+    covered = receipt.get("files") if isinstance(receipt, dict) else None
+    if not isinstance(covered, dict) or _version(covered) != _version(files):
+        points.append("The packet or the client's documents changed after the final review, so the review didn't "
+                      "cover this exact version. Re-check as a USCIS officer would runs it again.")
+    return points
 
-def form_audit_problems(matter: Path) -> list[str]:
-    """A reviewer or merits acknowledgment cannot excuse a deterministic form error."""
-    forms = list((matter / "output/deliverables/Forms").glob("*.pdf"))
-    audits = list((matter / "output/working/vault/forms").glob("*/prepared forms audit.json"))
-    if forms and not audits:
-        return ["Run the prepared-forms audit before filing approval."]
-    problems: list[str] = []
+
+def _forms_points(matter: Path) -> list[str]:
+    """What the automatic check of the filled forms still reports. An error already tied to an open item is on
+    Questions, and counted there."""
+    forms = sorted((matter / DELIVERABLES / "Forms").glob("*.pdf"))
+    audits = sorted((matter / "output/working/vault/forms").glob("*/prepared forms audit.json"))
+    if not forms:
+        return []
+    if not audits:
+        return ["The filled forms haven't had their automatic check."]
+    points: list[str] = []
+    errors: list[str] = []
     checked: set[str] = set()
     for path in audits:
         data = read_json(path).data
-        if not isinstance(data, dict) or not isinstance(data.get("results"), list):
-            problems.append("The prepared-forms audit is damaged or incomplete.")
+        results = data.get("results") if isinstance(data, dict) else None
+        if not isinstance(results, list):
+            points.append("The record of the automatic forms check can't be read.")
             continue
-        for result in data["results"]:
-            if not isinstance(result, dict) or not isinstance(result.get("findings"), list):
-                problems.append("A prepared form lacks a complete audit result.")
+        found = list(data.get("findings") or []) if isinstance(data.get("findings"), list) else []
+        for result in results:
+            if not isinstance(result, dict):
                 continue
             checked.add(Path(str(result.get("file") or "")).name)
-            for finding in result["findings"]:
-                if not isinstance(finding, dict):
-                    problems.append("A form audit finding is damaged.")
-                elif str(finding.get("severity") or "").lower() in MATERIAL:
-                    problems.append("Form audit: " + str(finding.get("title") or "An unresolved form error remains."))
-    for form in forms:
-        if form.name not in checked:
-            problems.append("The prepared-forms audit does not cover " + form.name + ".")
-    return list(dict.fromkeys(problems))
+            # An older record kept each form's findings with its result.
+            found.extend(result.get("findings") or [] if isinstance(result.get("findings"), list) else [])
+        for finding in found:
+            if not isinstance(finding, dict) or str(finding.get("severity") or "").lower() != "error" or finding.get("open_item"):
+                continue
+            form = str(finding.get("form") or "").upper()
+            title = str(finding.get("title") or "an error remains")
+            errors.append(f"Forms check{', ' + form if form else ''}: {title}.".replace("..", "."))
+    points.extend(_capped(errors, "from the automatic forms check"))
+    unchecked = [form.name for form in forms if form.name not in checked]
+    if unchecked:
+        points.append(f"The automatic forms check didn't cover {', '.join(unchecked[:4])}{' and others' if len(unchecked) > 4 else ''}.")
+    return points
 
 
-def readiness(matter: Path, stages: list[dict[str, Any]], ledger: dict[str, Any] | None) -> dict[str, Any]:
-    problems: list[str] = []
-    risks: list[str] = []
-    ids = {s["id"]: s["status"] for s in stages}
-    if not stages or any(s["status"] != "passed" for s in stages) or any(ids.get(k) != "passed" for k in ("final_review", "attorney_handoff")):
-        return {"eligible": False, "approved": False, "digest": "", "risks": [], "attorney": "", "approved_at": "",
-                "blockers": ["Complete all required stages, including final review and the attorney handoff."]}
-    if ledger is None or ledger.get("packet_status") != "ready_to_file":
-        problems.append("The open-items record does not mark the packet ready for attorney approval.")
-    if any(it.get("blocks_filing") for it in (ledger or {}).get("open", [])):
-        problems.append("Items needed before filing remain open.")
+def _currency_point(matter: Path) -> str:
+    from scripts.legal_currency import currency_problems
+    record = read_json(matter / CURRENCY).data
+    if not isinstance(record, dict):
+        return "The check that the law the letter cites is still current wasn't recorded."
+    problems = currency_problems(record)
+    if not problems:
+        return ""
+    checked = str(record.get("checked_at") or "")[:10]
+    if any("seven days" in problem for problem in problems):
+        return ("The check that the law the letter cites is still current is more than a week old"
+                + (f" (last done {checked})." if checked else "."))
+    return "The check that the law the letter cites is still current is incomplete; the memo's Sources checked says what was covered."
+
+
+def _response_points(matter: Path, posture: str) -> list[str]:
+    theory = read_json(matter / THEORY).data
+    posture = posture or (str(theory.get("filing_posture") or "") if isinstance(theory, dict) else "")
+    if not any(word in posture.lower() for word in ("rfe", "noid", "response")):
+        return []
+    from scripts.response_review import response_problems
+    return _capped([f"Response to the notice: {text}" for text in response_problems(matter, read_json(matter / RESPONSE_PLAN).data)],
+                   "points on the response to the notice")
+
+
+def _result(*, blockers: list[str] | None = None, risks: list[str] | None = None, version: str = "",
+            record: dict[str, Any] | None = None) -> dict[str, Any]:
+    record = record or {}
+    return {"eligible": not blockers and bool(version), "approved": bool(record), "digest": version,
+            "blockers": list(blockers or []), "risks": list(dict.fromkeys(risks or [])),
+            "attorney": str(record.get("attorney") or ""), "approved_at": str(record.get("approved_at") or ""),
+            "risk_note": str(record.get("risk_note") or "")}
+
+
+def readiness(matter: Path, stages: list[dict[str, Any]], ledger: dict[str, Any] | None, *,
+              notes: list[dict[str, Any]] | None = None, posture: str = "") -> dict[str, Any]:
+    """Where the packet stands for the attorney's sign-off: whether it can be approved, whether this exact version
+    is, and what to weigh first."""
+    from scripts.draft_packets import release_sources
     try:
-        problems.extend(review_problems(matter, risks))
-        problems.extend(form_audit_problems(matter))
-        from scripts.draft_packets import release_sources
-        try:
-            release_sources(matter)
-        except ValueError as exc:
-            problems.append(str(exc))
-        from scripts.legal_currency import currency_problems
-        currency = read_json(matter / "output/working/workflow/legal currency review.json")
-        problems.extend(currency_problems(currency.data))
-        theory = read_json(matter / "output/working/workflow/case_theory_evidence_map.json")
-        if not theory.ok or not isinstance(theory.data, dict) or not theory.data.get("reconciled_at") or not theory.data.get("eligibility_elements"):
-            problems.append("Reconcile the case theory and evidence map to this filing before final review.")
-        posture = str((theory.data or {}).get("filing_posture", "")) if isinstance(theory.data, dict) else ""
-        if any(word in posture.lower() for word in ("rfe", "noid", "response")):
-            from scripts.response_review import response_problems
-            response = read_json(matter / "output/working/workflow/notice response plan.json")
-            problems.extend(response_problems(matter, response.data))
+        entries = release_sources(matter)
         files = fingerprint(matter)
-        packet_files = [p for p in files if p.startswith("output/deliverables/") and p.lower().endswith(".pdf")]
-        if not packet_files:
-            problems.append("There is no PDF deliverable to approve.")
-        version = digest(files)
-    except (OSError, ValueError) as exc:
-        problems.append(str(exc))
-        version = ""
-    record = read_json(matter / APPROVAL)
-    approved = bool(not problems and version and record.ok and isinstance(record.data, dict)
-                    and record.data.get("digest") == version and record.data.get("attorney")
-                    and (not risks or record.data.get("risk_note")))
-    return {"eligible": not problems, "approved": approved, "digest": version,
-            "blockers": list(dict.fromkeys(problems)), "risks": list(dict.fromkeys(risks)),
-            "attorney": record.data.get("attorney", "") if approved else "",
-            "approved_at": record.data.get("approved_at", "") if approved else ""}
+    except ValueError as exc:
+        return _result(blockers=[str(exc)])
+    except OSError:
+        return _result(blockers=[UNREADABLE])
+    version = digest(files)
+    approval = read_json(matter / APPROVAL).data
+    if isinstance(approval, dict) and approval.get("digest") == version and approval.get("attorney"):
+        # What was open when the attorney approved is on the record, with the reason given.
+        return _result(version=version, record=approval, risks=[str(r) for r in approval.get("risks") or []])
+
+    risks: list[str] = []
+    unfinished = [str(s.get("label") or s.get("id")) for s in stages if s.get("status") not in ("passed", "skipped")]
+    if not stages:
+        risks.append("Claude's record of this matter's steps is missing.")
+    elif unfinished:
+        risks.append(f"Not every step has finished: {', '.join(unfinished)} still to do.")
+    if ledger is None:
+        risks.append("Claude's list of open items is missing or can't be read.")
+    else:
+        needed = sum(1 for item in ledger.get("open") or [] if isinstance(item, dict) and item.get("blocks_filing"))
+        if needed:
+            risks.append(f"{_count(needed, 'open item on Questions is', 'open items on Questions are')} marked needed before filing.")
+        elif not unfinished and ledger.get("packet_status") not in (None, "", "ready_to_file"):
+            risks.append("Claude's memo still calls this a draft packet; it says why.")
+    reviewed = any(s.get("id") == "final_review" and s.get("status") == "passed" for s in stages)
+    risks.extend(_review_points(matter, notes, files, reviewed))
+    risks.extend(_forms_points(matter))
+    currency = _currency_point(matter)
+    if currency:
+        risks.append(currency)
+    risks.extend(_response_points(matter, posture))
+    marked = sorted(Path(rel).name for rel, entry in entries.items() if files.get(rel) and files[rel] != entry.get("draft_sha256"))
+    if marked:
+        risks.append(f"{', '.join(marked)} was changed after Claude assembled it (marked up or saved again, perhaps). "
+                     "The clean copies come from the packet as assembled, without those changes.")
+    return _result(version=version, risks=risks)
 
 
-def approve(matter: Path, *, expected_digest: str, attorney: str, stages: list[dict[str, Any]], ledger: dict[str, Any] | None, risk_note: str = "") -> None:
-    current = readiness(matter, stages, ledger)
+def approve(matter: Path, *, expected_digest: str, attorney: str, stages: list[dict[str, Any]], ledger: dict[str, Any] | None,
+            risk_note: str = "", notes: list[dict[str, Any]] | None = None, posture: str = "") -> None:
+    current = readiness(matter, stages, ledger, notes=notes, posture=posture)
     if not attorney.strip():
-        raise ValueError("Save the reviewing attorney's name in Your details first.")
+        raise ValueError("Add the attorney's name in Your details first: the approval is recorded under it.")
     if not current["eligible"]:
-        raise ValueError("Filing approval is blocked: " + " ".join(current["blockers"]))
+        raise ValueError(" ".join(current["blockers"]) or UNREADABLE)
     if not expected_digest or current["digest"] != expected_digest:
-        raise ValueError("The matter changed since you opened it. Refresh and review the changes before approving.")
+        raise ValueError("The matter changed since this page was drawn. Look at what changed, then approve again.")
+    if current["approved"]:
+        return
     if current["risks"] and not risk_note.strip():
-        raise ValueError("Explain your decision to file with the listed review risks before approving this version.")
+        raise ValueError("Explain your decision to file with these points open, then approve. Your reason is kept with the approval.")
     from scripts.draft_packets import export_approved
     export_approved(matter, current["digest"])
-    write_json_atomic(matter / APPROVAL, {"schema_version": 1, "attorney": attorney.strip(),
+    write_json_atomic(matter / APPROVAL, {"schema_version": 2, "attorney": attorney.strip(),
                                         "approved_at": now_iso(), "digest": current["digest"],
                                         "files": fingerprint(matter), "risks": current["risks"], "risk_note": risk_note.strip()})

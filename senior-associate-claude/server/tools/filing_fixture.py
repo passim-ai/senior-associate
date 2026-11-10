@@ -7,7 +7,7 @@ from scripts.matter_state import write_json_atomic as write, sha256_file
 from scripts.filing_readiness import record_review, approve, readiness
 
 
-def approve_fixture(matter, stages, ledger):
+def approve_fixture(matter, stages, ledger, *, approved=True):
     draft=matter/'output/deliverables/Filing Packet.pdf'
     if not draft.exists():
         draft.parent.mkdir(parents=True,exist_ok=True);draft.write_bytes(b'%PDF synthetic server fixture')
@@ -19,4 +19,6 @@ def approve_fixture(matter, stages, ledger):
     write(matter/'output/working/workflow/case_theory_evidence_map.json',{'reconciled_at':'synthetic','eligibility_elements':['synthetic']})
     write(matter/"output/working/vault/forms/main/prepared forms audit.json", {"results":[{"file":f.name,"findings":[]} for f in (matter/"output/deliverables/Forms").glob("*.pdf")]})
     record_review(matter)
-    approve(matter,expected_digest=readiness(matter,stages,ledger)['digest'],attorney='Synthetic Attorney',stages=stages,ledger=ledger)
+    # A packet that passed its reviews is ready to file; approving that version is the attorney's own next step.
+    if approved:
+        approve(matter,expected_digest=readiness(matter,stages,ledger)['digest'],attorney='Synthetic Attorney',stages=stages,ledger=ledger)

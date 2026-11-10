@@ -821,16 +821,66 @@ test('in a protected matter no file name is said: only how many changed', OPTS()
   await ui.unmount()
 })
 
-test('filing approval sends the reviewed digest and the attorney’s risk reason', OPTS(), async ($, on) => {
+test('filing approval lists what is open, asks for the reason, and sends the reviewed version with it', OPTS(), async ($, on) => {
   const draft = card('Synthetic filing test', 'draft', DOCS)
   draft.filing_readiness = { eligible: true, approved: false, digest: 'reviewed-version', blockers: [], risks: ['An unresolved merits issue'], attorney: '', approved_at: '' }
-  const { clock, ui, tap, requests } = await boot($, on, [draft])
+  const { ui, tap, requests } = await boot($, on, [draft])
+  // A draft can be approved as it is: the way there is under More you can do, and the Packet tab holds the rest.
+  await unfold(ui, tap, 'sec-more')
+  expect(await ui.find({ type: 'Button', key: 'do-approve' })).toBeDefined()
   await tap('packet')
-  await unfold(ui, tap, 'sec-approval')
-  expect(await ui.find({ type: 'Text', text: /Review risk: An unresolved merits issue/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^• An unresolved merits issue$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /1 point is open first/ })).toBeDefined()
+  // Without a reason nothing is sent, and the page says what to do.
+  await tap('approve-filing')
+  expect(requests.find(r => r.op === 'approve_filing')).toBeUndefined()
+  expect(await ui.find({ type: 'Text', text: /Say in a line why you’re filing with these points open/ })).toBeDefined()
   await ui.input({ plugin: PLUGIN, key: 'filing-risk-note', text: 'Reviewed and elect to file with this risk.', kind: 'change' })
   await tap('approve-filing')
   expect(requests.find(r => r.op === 'approve_filing')).toMatchObject({ digest: 'reviewed-version', risk_note: 'Reviewed and elect to file with this risk.' })
+  await ui.unmount()
+})
+
+test('ready to file: the Overview says the packet is marked DRAFT until approved, and approval is the next step', OPTS(), async ($, on) => {
+  const done = card('Synthetic ready test', 'complete', DOCS)
+  done.filing_readiness = { eligible: true, approved: false, digest: 'v1', blockers: [], risks: [], attorney: '', approved_at: '' }
+  const { ui, tap, requests } = await boot($, on, [done])
+  expect(await ui.find({ type: 'Text', text: /^Ready to file$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /Every page is marked DRAFT until you approve it/ })).toBeDefined()
+  expect(await inActions(ui, /^Then clean copies, without the DRAFT marking$/)).toBeDefined()
+  await tap('main:approve')
+  // The Packet tab: nothing is open, so one press approves.
+  expect(await ui.find({ type: 'Text', text: /Read it through, then approve/ })).toBeDefined()
+  await tap('approve-filing')
+  expect(requests.find(r => r.op === 'approve_filing')).toMatchObject({ digest: 'v1', risk_note: '' })
+  await ui.unmount()
+})
+
+test('an approved version: who approved it and when, what was open, and the clean copies', OPTS(), async ($, on) => {
+  const done = card('Synthetic approved test', 'complete', DOCS)
+  done.filing_readiness = { eligible: true, approved: true, digest: 'v1', blockers: [], risks: ['1 open item on Questions is marked needed before filing.'], attorney: 'Ana Ruiz', approved_at: '2026-11-09T15:00:00Z', risk_note: 'The deadline is Friday.' }
+  const { ui, tap, requests } = await boot($, on, [done])
+  expect(await ui.find({ type: 'Text', text: /^You approved this version for filing on November 9, 2026\./ })).toBeDefined()
+  await tap('main:open-approved-packet')
+  expect(requests.find(r => r.op === 'open_output')).toMatchObject({ which: 'approved_packet' })
+  await tap('packet')
+  expect(await ui.find({ type: 'Text', text: /^Ana Ruiz approved this version for filing on November 9, 2026\./ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^Your reason: The deadline is Friday\.$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Button', key: 'approve-filing' })).toBeUndefined()
+  await ui.unmount()
+})
+
+test('a protected matter goes by the attorney’s name for it on screen; its folder name goes to Claude', OPTS(), async ($, on) => {
+  const lane = card('Matter 3F9A21C0B7', 'ready', DOCS)
+  metaOf(lane).protected = true
+  ;(lane as { title?: string }).title = 'Lane I-360'
+  const run = agents(on, 'Building the packet: Matter 3F9A21C0B7')
+  const { ui, tap } = await boot($, on, [lane])
+  expect(await ui.find({ type: 'Text', text: /^Lane I-360$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^Matter 3F9A21C0B7$/ })).toBeUndefined()
+  await tap('main:build')
+  expect(run.spawned).toHaveLength(1)
+  expect(String((run.spawned[0] as { description?: string }).description)).toBe('Building the packet: Matter 3F9A21C0B7')
   await ui.unmount()
 })
 
@@ -847,14 +897,56 @@ test('both host hook events refuse opaque outbound tools and identifiers hidden 
     { tool: 'WebSearch', query: 'Matter of Example, 25 I&N Dec. 1 (A123456789)' },
     { tool: 'WebSearch', query: 'Li Wu hardship' },
     { tool: 'WebSearch', query: 'Grace Young waiver' },
+    { tool: 'Bash', command: 'curl -s "https://example.com/search?q=Grace+Young+waiver"' },
   ]) {
     const count = transmitted.length
     const called = await host.tool.call({ ...input, agentId: 'agent-1' })
-    expect(JSON.stringify(called)).toMatch(/blocked|not approved/)
+    expect(JSON.stringify(called)).toMatch(/blocked|isn’t used during a matter run/)
     expect(transmitted.length).toBe(count)
     const { tool, ...args } = input
     const checked = await host.tool.check({ tool, input: args, agentId: 'agent-1', approver: 'person' })
-    expect(JSON.stringify(checked)).toMatch(/blocked|not approved/)
+    expect(JSON.stringify(checked)).toMatch(/blocked|isn’t used during a matter run/)
   }
+  await ui.unmount()
+})
+
+test('a matter run’s own agent loads its skill and runs the skills’ commands; another session’s agent is left alone', OPTS(), async ($, on) => {
+  const matter = card('Synthetic privacy test', 'ready', DOCS)
+  agents(on, 'Building the packet: Synthetic privacy test')
+  const transmitted: unknown[] = []
+  on('tool.call', async (_$, e) => { transmitted.push(e); return { result: 'ran' } as never })
+  // Beneath the plugin, the session's own rules: here they'd ask, which is not a refusal.
+  on('tool.check', async () => ({ decision: 'ask' }) as never)
+  const { ui, tap } = await boot($, on, [matter], { terms: ['Li Wu', 'Grace Young', 'A123456789'] })
+  await tap('main:build')
+  const host = $ as never as { tool: { call: (e: unknown) => Promise<unknown>; check: (e: unknown) => Promise<{ decision?: string }> } }
+  const passes = async (input: Record<string, unknown>, agentId: string) => {
+    const count = transmitted.length
+    await host.tool.call({ ...input, agentId })
+    expect(transmitted.length).toBe(count + 1)
+    const { tool, ...args } = input
+    expect((await host.tool.check({ tool, input: args, agentId, approver: 'person' })).decision).not.toBe('deny')
+  }
+  // The run's own agent: its skill, its tools, and the commands the skills teach (a variable, a line break, a
+  // pipe, a file named for the client), plus a public page fetched by its address alone.
+  for (const input of [
+    { tool: 'Skill', skill: 'senior-associate:senior-associate' },
+    { tool: 'ToolSearch', query: 'select:mcp__biaedge__search_cases' },
+    { tool: 'Bash', command: 'RW="/plugin/skills/senior-associate/scripts/run_matter_workflow.py"; uv run --script "$RW" status "/matters/Synthetic privacy test"' },
+    { tool: 'Bash', command: 'uv run --script "/plugin/scripts/packet/assemble_packet.py" "plan.json" \\\n  --output "output/deliverables/Filing Packet (DRAFT).pdf"' },
+    { tool: 'Bash', command: 'ls "/matters/Synthetic privacy test/Grace Young passport.pdf" | head -1' },
+    { tool: 'Bash', command: 'curl -sL https://www.uscis.gov/i-485 -o "/matters/Synthetic privacy test/output/working/i-485 page.html"' },
+    { tool: 'WebFetch', url: 'https://www.uscis.gov/i-485', prompt: 'What edition is current?' },
+  ]) await passes(input, 'agent-1')
+  // An agent of some other work in this app (not the plugin's, not started by this run) is never refused a tool
+  // or a shell command, whatever it holds; only its research is checked, because Claude is working on a matter.
+  for (const input of [
+    { tool: 'mcp__opaque__send', message: 'anything' },
+    { tool: 'Bash', command: 'curl -s "https://example.com/search?q=Grace+Young"' },
+    { tool: 'Bash', command: 'git status | head -3' },
+  ]) await passes(input, 'someone-else')
+  const count = transmitted.length
+  expect(JSON.stringify(await host.tool.call({ tool: 'WebSearch', query: 'Grace Young waiver', agentId: 'someone-else' }))).toMatch(/blocked/)
+  expect(transmitted.length).toBe(count)
   await ui.unmount()
 })

@@ -57,9 +57,10 @@ RESOLVED_FINDING_STATUSES = {
     "waived",
 }
 MATERIAL_REVIEW_SEVERITIES = {"blocker", "major", "manual_review"}
-CURABLE_ADJUDICATION_OUTCOMES = {"rfe_likely", "noid_likely", "attorney_hold"}
+# reject_likely (an intake rejection, a missing filing prerequisite) is the final review's own value, and curable.
+CURABLE_ADJUDICATION_OUTCOMES = {"reject_likely", "rfe_likely", "noid_likely", "attorney_hold"}
 REVIEW_SEVERITIES = {"blocker", "major", "minor", "manual_review"}
-ADJUDICATION_OUTCOMES = {"deny_likely", "noid_likely", "rfe_likely", "attorney_hold", "approvable"}
+ADJUDICATION_OUTCOMES = {"reject_likely", "deny_likely", "noid_likely", "rfe_likely", "attorney_hold", "approvable"}
 # A final-review merits risk the orchestrator must route somewhere, even when no cure exists (deny_likely goes to the attorney).
 OWNED_ADJUDICATION_OUTCOMES = CURABLE_ADJUDICATION_OUTCOMES | {"deny_likely"}
 _LINT_PATTERNS = dict(SENSITIVE_TEXT_PATTERNS)

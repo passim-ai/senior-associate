@@ -772,8 +772,6 @@ class StatusTests(unittest.TestCase):
         write_state(self.matter, ALL_PASSED)
         good = self.ledger({"id": "action-sign", "type": "attorney_action", "title": "Sign the G-28", "blocks_filing": False,
                             "status": "open"}, packet_status="ready_to_file")
-        self.assertEqual(self.card()["phase"], "draft")
-        self.approve_current()
         self.assertEqual(self.card()["phase"], "complete")
         text = good.read_text()
         for damaged in (text.replace('"open"', '"open",', 1), "", '{"packet_status": "ready_to_file"}', "[]"):
@@ -800,10 +798,8 @@ class StatusTests(unittest.TestCase):
         self.assertEqual(self.card()["phase"], "draft")
         from scripts.matter_state import record_attorney_action
         record_attorney_action(self.matter, "resolve", "action-sign")
-        self.assertEqual(self.card()["phase"], "draft")  # resolving an item is not filing approval
-        self.approve_current()
         card = self.card()
-        self.assertEqual(card["phase"], "complete")
+        self.assertEqual(card["phase"], "complete")  # marked done by the attorney: nothing needed is open
         self.assertEqual(card["open_items"]["resolved"][0]["resolution"], "Marked done by the attorney.")
         record_attorney_action(self.matter, "reopen", "action-sign")
         self.assertEqual(self.card()["phase"], "draft")
@@ -820,9 +816,20 @@ class StatusTests(unittest.TestCase):
         write_state(self.matter, ALL_PASSED)
         write(self.matter / "output/deliverables/Filing Packet.pdf", "%PDF-1.4 packet")
         self.ledger(optional, packet_status="ready_to_file")
+        # Ready to file is the workflow's word; approving that exact version is the attorney's own step, on top of it.
+        card = self.card()
+        self.assertEqual((card["phase"], card["phase_label"]), ("complete", "Ready to file"))
+        self.assertEqual((card["filing_readiness"]["eligible"], card["filing_readiness"]["approved"]), (False, False))
+        self.assertEqual(card["filing_readiness"]["blockers"], ["There's no assembled packet to approve yet. Build the packet first."])
         self.approve_current()
         card = self.card()
-        self.assertEqual((card["phase"], card["phase_label"]), ("complete", "Approved for filing"))
+        self.assertEqual((card["phase"], card["phase_label"]), ("complete", "Ready to file"))
+        self.assertEqual((card["filing_readiness"]["approved"], card["filing_readiness"]["attorney"]), (True, "Synthetic Attorney"))
+        # The app's own records (an answer saved, the matter archived) never take the approval back.
+        actions.do_save_answer(self.ctx, str(self.matter), "decide-i765", "Include an I-765?", "Yes")
+        actions.do_archive(self.ctx, str(self.matter))
+        actions.do_archive(self.ctx, str(self.matter), archived=False)
+        self.assertTrue(self.card()["filing_readiness"]["approved"])
         self.assertEqual(card["counts"]["needed_before_filing"], 0)
         self.assertEqual(card["counts"]["decisions_open"], 1)  # still asked, beside the packet
         self.assertEqual([(n["key"], n["blocks_filing"]) for n in card["needs_you"]], [("decide-i765", False)])
@@ -1748,6 +1755,13 @@ class CreateTests(unittest.TestCase):
         self.assertIn("Confidential matter (8 U.S.C. 1367)", prompts_mod.prompt_for(self.ctx, Path(card["path"]), "build"))
         self.assertEqual(card["timeline"][-1]["text"], "Matter created.")
 
+    def test_a_protected_matters_shown_name_is_told_apart_and_an_ordinary_matter_goes_by_its_folder(self) -> None:
+        first = actions.do_create(self.ctx, "Ramos I-360 I-485", "i360_i485_vawa")["matter"]
+        again = actions.do_create(self.ctx, "Ramos I-360 I-485", "i360_i485_vawa")["matter"]
+        self.assertEqual((first["title"], again["title"]), ("Ramos I-360 I-485", "Ramos I-360 I-485 (2)"))
+        plain = actions.do_create(self.ctx, "Ortiz N-400", "n400")["matter"]
+        self.assertEqual((plain["name"], plain["title"]), ("Ortiz N-400", "Ortiz N-400"))
+
     def test_a_vawa_matter_is_named_by_its_form_numbers_and_files_a_self_petition(self) -> None:
         shorts = {t["id"]: t["short"] for t in catalog.MATTER_TYPES}
         self.assertEqual((shorts["i360_vawa"], shorts["i360_i485_vawa"]), ("I-360", "I-360 I-485"))
@@ -1756,6 +1770,9 @@ class CreateTests(unittest.TestCase):
         folder = Path(payload["selected"])
         self.assertRegex(folder.name, r"^Matter [A-F0-9]{10}$")
         self.assertEqual(payload["matter"]["meta"]["client_name"], "Ramos I-360 I-485")
+        # On the attorney's own screen it goes by the name they gave it; requests to Claude name the neutral folder.
+        self.assertEqual((payload["matter"]["name"], payload["matter"]["title"]), (folder.name, "Ramos I-360 I-485"))
+        self.assertEqual(readmodel.matters_list(self.ctx)[0]["title"], "Ramos I-360 I-485")
         self.assertEqual(payload["matter"]["intake"]["matter_type"], "I-360/I-485 VAWA self-petition and adjustment packet")
         theory = json.loads((folder / "output/working/workflow/case_theory_evidence_map.json").read_text())
         self.assertEqual(theory["expected_forms"][:3], ["G-28", "I-360", "I-485"])

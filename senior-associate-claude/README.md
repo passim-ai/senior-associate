@@ -58,7 +58,7 @@ You can also ask in the chat: "Build the packet for the Garcia matter", "What do
 | Needs your answer | Claude needs a decision from you. | Answer, then Update the packet |
 | Waiting on the client | Every open question is the client's. | Copy the client request; add files when they arrive |
 | Draft packet | Built, but some things are needed before filing. | See what's left |
-| Ready to file | Passed the final review, including the officer's review. Nothing needed before filing is open. | Read the memo and the packet; Mark as filed |
+| Ready to file | Passed the final review, including the officer's review. Nothing needed before filing is open. The packet is marked DRAFT until you approve it. | Read the memo and the packet; Approve for filing; Mark as filed |
 | Filed | You marked it filed. | Nothing (Undo if that was a mistake) |
 | Can't open | Immigration Packet Builder can't read the matter's folder. | Press it to have Claude repair it |
 
@@ -116,4 +116,4 @@ The contract every skill follows is `skills/senior-associate/references/matter-c
 
 </details>
 
-Review packets are visibly marked as drafts. The Packet screen lists procedural blockers and merits risks separately; attorney approval records the exact version and the reason for filing with any remaining merits risks. Approved filing copies are exported without draft markings. See [data handling](docs/DATA-HANDLING.md) and [verification](docs/VERIFICATION.md).
+Every packet Claude assembles is marked DRAFT above each page until you approve it. On the Packet tab, **Approve for filing** lists whatever is still open (items needed before filing, review notes, form-check errors); you can approve as it is, with a line on why, and the approval records that exact version, what was open and your reason. The approved copies, without the marking, go in the matter's folder under Approved for filing. A change to the packet or the client's documents needs approving again. See [data handling](docs/DATA-HANDLING.md) and [verification](docs/VERIFICATION.md).
