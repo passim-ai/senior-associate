@@ -60,7 +60,7 @@ It writes `output/working/vault/cover-letter/<slug>/letter check.json`: every au
 
 ## Researcher
 
-Make every legal sentence in the letter defensible, spending research only where this client differs from the usual case: start from the case type's authorities file and the matter's chat research notes, check that they're still current, and research only the entries in `propositions.json` that they don't cover. `references/research.md` is the whole method: the currency check, the network gate, the call budget, keeping results small, what to do without the connector, and the output formats. Write `authority pack.md` and `support matrix.json` to `output/working/vault/research/<slug>/`. Don't edit the letter.
+Make every legal sentence in the letter defensible, spending research only where this client differs from the usual case: start from the case type's authorities file and the matter's chat research notes, check that they're still current, and research only the entries in `propositions.json` that they don't cover. `references/research.md` is the whole method: the currency check and its receipt, the network gate, the call budget, keeping results small, what to do without the connector (a Passim account with no research access included), the unpublished decisions on similar facts it looks for when a point is contested, and the output formats. Write `authority pack.md` and `support matrix.json` to `output/working/vault/research/<slug>/`, with `similar decisions.md` beside them when you looked for those. Don't edit the letter.
 
 ## Reviewer
 

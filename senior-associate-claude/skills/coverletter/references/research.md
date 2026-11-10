@@ -29,16 +29,21 @@ Run this once per matter, before citing anything from the file. It usually takes
 
 Record the window checked, the calls made, and what changed in the authority pack. Also write `output/working/workflow/legal currency review.json` using the contract below. List every returned hit with an `applied`, `not_applicable`, or `already_covered` disposition and a reason; do not silently discard inconvenient results. An incomplete source check remains unresolved and prevents filing approval. Refresh the receipt within seven days before approval; this is an operational freshness rule, not a guarantee against intervening law.
 
-The receipt has `checked_at` (ISO date), `jurisdiction` (`forum`, `circuit`, `basis` from the matter and attorney confirmation), `checks` (one entry per `agency_policy`, `regulations`, `agency_decisions`, `controlling_circuit`, `adverse_treatment`, each with `status: checked`, a source/query description, checked window and `hits`), `relied_on_court_orders` (each with `url`, `docket_checked_at`, and precise `scope`), and `unresolved` (empty only when actually resolved). A hit has `id`, source URL, `disposition`, and `reason`. Preserve treatment limitations in the authority pack and support matrix. Never mark an unchecked source as checked. Use `circuit: none` only with an attorney-supported explanation of why no circuit issue applies.
+The receipt has `connector` (`{"available": true}` when BIA Edge answered; see "Without the connector" for the other case), `checked_at` (ISO date), `jurisdiction` (`forum`, `circuit`, `basis` from the matter and attorney confirmation), `checks` (one entry per `agency_policy`, `regulations`, `agency_decisions`, `controlling_circuit`, `adverse_treatment`, each with `status: checked`, a source/query description, checked window and `hits`), `relied_on_court_orders` (each with `url`, `docket_checked_at`, and precise `scope`), and `unresolved` (empty only when actually resolved). A hit has `id`, source URL, `disposition`, and `reason`. Preserve treatment limitations in the authority pack and support matrix. Never mark an unchecked source as checked. Use `circuit: none` only with an attorney-supported explanation of why no circuit issue applies.
 
 ## Without the connector
 
-When BIA Edge isn't available (not installed, not signed in, or the network gate refuses it):
+BIA Edge isn't available when it isn't installed, isn't signed in, the network gate refuses it, or the attorney's Passim account has no research access. The last one arrives as an error from the connector itself: it says no Passim research results were returned, and why (a free trial that ended, no plan chosen, a payment that failed). That is the account's state, not a fault to work around. Don't retry, don't try another of its tools, and don't reach for the same law through a web search. Everything below applies from that call on.
+
+When BIA Edge isn't available:
 
 - Cite the authorities file and the chat research notes as verified on their dates, and say in the authority pack that the currency check couldn't be run.
 - Verify statutes, regulations, the Policy Manual and the form instructions at the official sources (uscode.house.gov, ecfr.gov, uscis.gov) and record the URL and date, as usual.
 - Add no case law beyond the authorities file and the notes. A case found another way can't be checked for later treatment, and a case cited without that check is how a letter ends up relying on overruled law. When a case would materially help, add an `attorney_decision` item (the case, what it holds, and that its treatment couldn't be checked; recommend leaving it out unless it carries an element) and keep it out of the letter.
 - If the attorney approves a case anyway, its support-matrix row says `"validity": "treatment not checked"`, and you add a non-blocking `attorney_action` item, "Check that <case> is still good law before filing". The reviewer flags any such row whose item is missing.
+- Still write `legal currency review.json`, so the matter records what was not checked. Set `"connector": {"available": false, "reason": "..."}` with the reason `not_connected` (not installed or not signed in), `no_access` (the account has no research access) or `refused` (the network gate). Give every check `"status": "not_checked"` with what it would have covered, and one `unresolved` entry saying that the cited cases' later treatment and any change since the authorities file's verified date were not checked.
+- In the support matrix, give each proposition you would have researched under section 3 `"case_law": "not researched"` and a `note` saying what the research would have looked for. The app lists these for the attorney, in the proposition's own words, so write each proposition as a legal point with no client's name in it.
+- Say it once in your reply to the senior associate, in plain words: the letter was researched without BIA Edge, and why. Don't add an open item for it; the app and the memo say it from the receipt.
 
 ## 3. Research only what the file doesn't cover
 
@@ -51,6 +56,43 @@ That is this client's adverse facts, waivers, unusual postures (an RFE's specifi
 5. **Recommend:** cite as is, narrow the proposition, or drop it.
 
 Use the BIA Edge connector for case law and for statute, regulation, and Policy Manual text; its records link to the official sources. Phrase queries as legal propositions ("good-faith marriage evidence when spouses kept separate residences for work"), never with client names, dates of birth, or A-numbers. Run the network gate before the first query (`uv run --script "${CLAUDE_PLUGIN_ROOT}/scripts/network_gate.py" "<matter>" --action mcp_research --role cover_letter_researcher --json`; the matter contract's "Network gate" has the rules).
+
+## Similar decisions, for the memo
+
+With BIA Edge available, look for how the agency has decided cases like this one whenever the letter argues a contested, fact-weighing point: a waiver's hardship or discretion, the stated ground of an RFE or NOID, a refiling after a denial, a relationship with adverse facts, a national interest prong. A routine filing with nothing contested has no such point; skip this and say so in the pack.
+
+Unpublished BIA and AAO decisions are not precedent, and none of them goes in the letter. They tell the attorney how the argument has fared and on what evidence, which is what the memo is for.
+
+1. Call `get_research_playbook` with `section="unpublished_routing"` once and follow it. Its two rules decide everything here: unpublished decisions exist only where an administrative appeal produces them, and the search is aimed at a proposition, never at the benefit. Make its issue map from this client's contested points, three at most, and search only the rows that have a body of decisions. When no row has one, record that and stop: many filings have none.
+2. For each row, one `search_unpublished_cases` call with an explicit `source` (`aao` or `bia`), the proposition with its fact vocabulary as the query, and `limit` 5. Leave `favorable_only` off: a denial that turned on a missing document tells the attorney as much as a grant.
+3. Read the passage that decides the point in the two or three results closest to this client's facts (`search_passages` with the result's `document_id`, or `fetch` of its item id, keeping what comes back small). A decision whose text you couldn't read isn't listed. If every result is about a different benefit, the aim was wrong: fix the proposition and search once more, or record that nothing on point was found.
+4. Write `similar decisions.md` beside the authority pack, in this form. The app counts the `###` headings, so use one per decision and nowhere else.
+
+```markdown
+# Similar decisions
+Unpublished decisions, not precedent; none is cited in the letter. Searched <date> with BIA Edge (AAO decisions loaded through <date>, unpublished BIA decisions through <date>).
+
+## <The proposition tested, as a legal point>
+### <AAO or BIA>, <decision date>, <form or posture>: <sustained | dismissed | remanded>
+<Two sentences: the facts and evidence that decided it, and what that means for this packet.> <URL>
+
+## Searched, nothing on point
+- <Each proposition searched without a usable result, or why no contested point here has unpublished decisions.>
+```
+
+The coverage dates come from the search results or one `get_corpus_info` call with `section="case_sources"`. Use the source link each record gives; when it gives none, write "(no verified external source URL)". Never copy a name or an A-number out of a decision. These calls are outside section 5's budget: twelve at most (the playbook, a search per row, the reads), and usually half that.
+
+## Checking again before filing
+
+Weeks pass between a build and a filing. The app's "Check the law again" and an attorney's request in chat run the currency check alone, outside any stage:
+
+1. Read the support matrix and the last `legal currency review.json`. With no matrix, the letter hasn't been researched: say so and stop.
+2. Run section 2 on the matrix as it stands: one batch `check_validity` over every case row, the updates since the last receipt's `checked_at` (floor of 30 days), and the spot-checks they call for.
+3. Write the new receipt under the same contract. Carry over `jurisdiction`, re-check any `relied_on_court_orders`, and keep an `unresolved` entry that is still unresolved. Set `checked` and `validity` on each matrix row you re-checked, and add one line to the authority pack's "Sources and calls": the date, the calls, and what changed.
+4. Change nothing else: not the letter, not the packet, not an authority's wording. When something the letter relies on has changed, add an `attorney_decision` item that says what changed, which point of the letter it touches, and what you recommend (usually redoing the research step, so the letter is corrected and reviewed again).
+5. Without BIA Edge, change nothing and say so; the last receipt stands as it was.
+
+Reply in two or three sentences: what was checked, as of what date, and whether anything changed.
 
 ## 4. Keep results small
 
@@ -91,7 +133,9 @@ Aim for 20 connector calls or fewer per letter: about five for the currency chec
 ]}
 ```
 
-`recommendation` is `cite`, `narrow` (give the narrower wording in `note`), or `drop`. `weight` is `controlling`, `persuasive`, or `background`. `source` is optional and appears only on rows taken from an authorities file or the chat research notes.
+**`similar decisions.md`**, for the memo, when you looked for them ("Similar decisions, for the memo").
+
+`recommendation` is `cite`, `narrow` (give the narrower wording in `note`), or `drop`. `case_law` appears only as `"not researched"`, on a proposition left without case-law research because BIA Edge wasn't available. `weight` is `controlling`, `persuasive`, or `background`. `source` is optional and appears only on rows taken from an authorities file or the chat research notes.
 
 ## Refreshing an authorities file
 

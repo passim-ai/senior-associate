@@ -390,7 +390,9 @@ export async function startRun($: EngineInterface, card: Card, kind: string, rep
   }
   if (!agentId) {
     await giveBackStart($, card.path, runId)
-    await setNote($, `The ${runKind(kind).noun} didn’t start. Press ${runKind(kind).button} again.`)
+    // "Check the law again" and "Review the documents again" already end in the word.
+    const button = runKind(kind).button
+    await setNote($, `The ${runKind(kind).noun} didn’t start. Press ${button} ${/again$/.test(button) ? 'once more' : 'again'}.`)
     return
   }
   const s = stepOf(card)
@@ -458,6 +460,7 @@ export function finishedText(r: Run, c: Card | null): string {
   const questions = needs.filter(n => n.who === 'attorney').length
   const phase = matterStatus(c, null, nowMs()).phase
   if (phase === 'needs_you' && questions) return `${name}: Claude needs your answer on ${plural(questions, 'question', 'questions')}.`
+  if (r.kind === 'recheck') return `${name}: the law the letter cites has been checked again.`
   if (phase === 'complete') return `${name} is ready to file.`
   const needed = neededBeforeFiling(c).total
   if (phase === 'draft') return needed ? `${name}: draft packet ready. ${plural(needed, 'item is', 'items are')} needed before filing.` : `${name}: draft packet ready.`

@@ -419,7 +419,14 @@ class CardTests(unittest.TestCase):
 
     def test_every_prompt_tells_the_run_where_questions_go(self) -> None:
         prompts = prompts_mod.prompts_for(self.ctx, self.matter, {"matter_type": "I-130/I-485 immediate relative packet"})
-        self.assertEqual(set(prompts), {"build", "continue", "update", "review_docs", "review_again", "redo", "stress_test", "closeout"})
+        self.assertEqual(set(prompts), {"build", "continue", "update", "review_docs", "review_again", "redo", "stress_test", "recheck", "closeout"})
+        self.assertEqual(set(prompts), set(prompts_mod.PROMPT_KINDS))
+        self.assertEqual(set(prompts), set(actions.RUN_KINDS))
+        # The law check is the researcher's, outside the steps, and changes neither the letter nor the packet.
+        self.assertTrue(prompts["recheck"].startswith("Check the law the cover letter cites for Garcia I-130 I-485 again"))
+        self.assertIn("senior-associate:cover-letter-researcher", prompts["recheck"])
+        self.assertIn("changes neither the letter nor the packet", prompts["recheck"])
+        self.assertIn("If the cover letter was researched on this run without BIA Edge", prompts["build"])
         for text in prompts.values():
             self.assertIn("each with a short `question`", text)
             self.assertIn("at most four sentences", text)
@@ -1064,6 +1071,51 @@ class RunLeaseTests(unittest.TestCase):
 
     def cli(self, **request: object) -> dict:
         return cli_mod.run_cli(request, self.ctx)
+
+    def test_the_law_check_takes_the_matter_like_any_run_and_the_timeline_says_what_it_was(self) -> None:
+        started = self.cli(op="start_run", matter=self.path, kind="recheck")
+        self.assertEqual(started["lease"]["kind"], "other")
+        self.assertIn(f"Your run id is {started['run_id']}.", started["prompt"])
+        self.assertIn("Checking again before filing", started["prompt"])
+        with self.assertRaises(UserError):
+            self.cli(op="start_run", matter=self.path, kind="update")
+        self.cli(op="release_run", matter=self.path, run_id=started["run_id"], outcome="done")
+        texts = [e["text"] for e in readmodel.timeline_for(self.matter)]
+        self.assertIn("Claude started checking the law the letter cites again.", texts)
+        self.assertTrue(any(t.startswith("Claude finished checking the law the letter cites again in ") for t in texts))
+
+    def test_the_app_opens_only_the_web_pages_the_server_names(self) -> None:
+        opened: list[str] = []
+        with mock.patch.object(actions, "open_path", side_effect=lambda target: opened.append(str(target))):
+            self.assertEqual(self.cli(op="open_link", which="passim_trial"), {"opened": "passim_trial"})
+            self.cli(op="open_link", which="passim_account")
+            self.cli(op="open_link", which="passim_review")
+            self.cli(op="open_link", which="connectors")
+            for which in ("", "https://example.test/", "file:///etc/passwd", "passim_trial?x=1"):
+                with self.subTest(which), self.assertRaises(UserError):
+                    self.cli(op="open_link", which=which)
+        self.assertEqual(opened, [
+            "https://account.passimai.com/billing/start?ref=packet-builder",
+            "https://account.passimai.com/billing/start?intent=enroll&ref=packet-builder",
+            "https://account.passimai.com/billing/access",
+            "https://claude.ai/customize/connectors",
+        ])
+        # Where the visit came from, and nothing else: no matter, no name, no folder.
+        for url in opened[:2]:
+            self.assertNotIn("Doe", url)
+            self.assertRegex(url, r"^https://account\.passimai\.com/billing/start\?(intent=enroll&)?ref=packet-builder$")
+
+    def test_the_card_carries_the_research_summary_once_the_letter_is_researched(self) -> None:
+        self.assertIsNone(readmodel.matter_card(self.ctx, self.matter)["research"])
+        write(self.matter / V / "research/main/support matrix.json", {"propositions": [{"id": "P1", "proposition": "A point.", "recommendation": "cite", "adverse": [],
+              "support": [{"authority": "Matter of Example, 30 I&N Dec. 1 (BIA 2026)", "citation": "30 I&N Dec. 1", "validity": "current as of the file", "checked": "2026-10-30", "source": "authorities/i130_i485.md A4"}]}]})
+        write(self.matter / "output/working/workflow/legal currency review.json", {"connector": {"available": False, "reason": "no_access"}, "checks": [], "unresolved": ["Not checked."]})
+        research = readmodel.matter_card(self.ctx, self.matter)["research"]
+        self.assertEqual((research["state"], research["reason"], research["headline"]), ("without", "no_access", "Researched without BIA Edge"))
+        self.assertEqual(research["lines"][0], "When the letter was researched, the Passim account had no research access.")
+        # A matrix the summary can't read never breaks the card.
+        write(self.matter / V / "research/main/support matrix.json", {"propositions": [{"support": "not a list"}]})
+        self.assertIsNone(readmodel.matter_card(self.ctx, self.matter)["research"])
 
     def test_a_start_takes_the_matter_and_a_second_start_is_refused(self) -> None:
         started = self.cli(op="start_run", matter=self.path, kind="build")

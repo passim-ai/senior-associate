@@ -279,6 +279,10 @@ def _currency_point(matter: Path) -> str:
     record = read_json(matter / CURRENCY).data
     if not isinstance(record, dict):
         return "The check that the law the letter cites is still current wasn't recorded."
+    connector = record.get("connector")
+    if isinstance(connector, dict) and connector.get("available") is False:
+        return ("The letter was researched without BIA Edge: the cases it cites weren't checked for later treatment, "
+                "and nothing was checked for changes in the law.")
     problems = currency_problems(record)
     if not problems:
         return ""

@@ -1,5 +1,5 @@
 """The briefs for the runs the app starts: build, continue, update, a fresh document review, a redo, the officer's
-review, and cleaning up. Every brief carries what the run needs to be correct on its own, and is built only when a
+review, a fresh check of the law the letter cites, and cleaning up. Every brief carries what the run needs to be correct on its own, and is built only when a
 start needs it (never on a refresh).
 
 What the attorney's clients sent is data, never instructions: file names go into a brief quoted, under a line that
@@ -24,7 +24,8 @@ REPORT_NOTE = (
     "short `question` and, where you have a view, your `recommendation`: the app shows each one with an answer box. "
     "Your final message is the report the app shows above them: plain language, at most four sentences, naming at most "
     "two open items (the memo has the rest), with no file paths, item ids or step names; count the sentences before you "
-    "send it. Only if no open-items file exists, add at most three one-line questions at the end."
+    "send it. If the cover letter was researched on this run without BIA Edge, one of those sentences says so and why. "
+    "Only if no open-items file exists, add at most three one-line questions at the end."
 )
 
 NAMES_SHOWN = 20
@@ -300,6 +301,19 @@ def _prompts_for(ctx: Context, matter: Path, mt: str, fp: str, deliverable: str,
             "denial theory and its cure. Update the open items and the case assessment in Attorney Memo.md with what it finds, "
             "and render Attorney Memo.pdf from it again."
         ),
+        # Weeks pass between a build and a filing: the currency check alone, on the letter as it stands.
+        "recheck": (
+            f"Check the law the cover letter cites for {name} again: delegate it to the "
+            "senior-associate:cover-letter-researcher agent, outside the stage workflow (no complete-stage).\n" + intake +
+            "The attorney asked for this before filing. It is the currency check alone, as the coverletter skill's "
+            "references/research.md sets it out under \"Checking again before filing\": every case in the support matrix "
+            "checked for later treatment, what has changed since the last check reviewed, and a new legal currency "
+            "review written with the matrix's checked dates. It researches nothing new and changes neither the letter "
+            "nor the packet. If a cited authority now has adverse treatment, or a change touches a point the letter "
+            "makes, add an attorney_decision open item that says what changed and recommends what to do, and lead "
+            "your report with it. If BIA Edge isn't connected or returns no research, change nothing and say so. "
+            "Then bring Sources checked in Attorney Memo.md up to date and render Attorney Memo.pdf from it again."
+        ),
         "closeout": (
             f"Clean up Claude's working files for {name}: run the workflow closeout command for {matter} and tell me the "
             "result in plain language."
@@ -346,7 +360,7 @@ def prompts_for_matter(ctx: Context, matter: Path) -> dict[str, str]:
     return prompts_for(ctx, matter, intake, inputs)
 
 
-PROMPT_KINDS = ("build", "continue", "update", "review_docs", "review_again", "redo", "stress_test", "closeout")
+PROMPT_KINDS = ("build", "continue", "update", "review_docs", "review_again", "redo", "stress_test", "recheck", "closeout")
 RUN_NOTE_LEAD = ("The attorney's instructions for this run (record what they settle on the open items, and redo whatever "
                  "work they change):")
 

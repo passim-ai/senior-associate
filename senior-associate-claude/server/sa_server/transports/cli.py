@@ -85,6 +85,7 @@ OPS: dict[str, Callable[[Context, str, Request], dict[str, Any]]] = {
     "add_documents": lambda ctx, path, q: actions.do_add_documents(ctx, path),
     "add_folder": lambda ctx, path, q: actions.do_add_folder(ctx, path),
     "open_folder": lambda ctx, path, q: actions.do_open_folder(ctx, path),
+    "open_link": lambda ctx, path, q: actions.do_open_link(ctx, q("which")),
     "open_output": lambda ctx, path, q: actions.do_open_output(ctx, path, q("which", "packet"), q("name")),
     "open_document": lambda ctx, path, q: actions.do_open_document(ctx, path, q("path")),
     "remove_document": lambda ctx, path, q: actions.do_remove_document(ctx, path, q("path")),

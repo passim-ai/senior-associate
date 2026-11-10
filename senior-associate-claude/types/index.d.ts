@@ -175,9 +175,39 @@ export type NeedItem = {
 /** What the sample matter's page tells a new attorney (samples/<id>/sample.json). */
 export type SampleGuide = { id: string; title?: string; intro?: string; try?: string; caught_title?: string; caught?: string[]; after?: string }
 
+/** What the research behind the cover letter covered, in the server's words (scripts/research_summary.py): `checked`
+ *  with BIA Edge, researched `without` it, or researched with no check of the law on record (`unrecorded`). */
+export type Research = {
+  state: 'checked' | 'without' | 'unrecorded'
+  /** Why it was researched without BIA Edge: no_access, not_connected, refused, or ''. */
+  reason: string
+  /** "Checked November 9, 2026 with BIA Edge", "Researched without BIA Edge". */
+  headline: string
+  lines: string[]
+  caveat: string
+  checked_at: string
+  /** Days since the law was last checked; null when it never was. */
+  age_days: number | null
+  authorities: number
+  cases: number
+  /** Points left without case-law research because BIA Edge wasn't available, in the research's own words. */
+  not_researched: string[]
+  not_researched_count: number
+  /** What the check left open (an unconfirmed circuit, say). */
+  unresolved: string[]
+  /** Unpublished decisions on similar facts, summarized in the memo. */
+  similar: number
+}
+
+/** What Passim last answered through BIA Edge when the account behind it had no research access: its own words, when,
+ *  and whether choosing a plan resolves it (`plan`) or the account needs looking at. Cleared by the next answer with results. */
+export type Access = { message: string; at: string; plan: boolean; server: string }
+
 export type Card = {
   /** Where the packet stands for the attorney's sign-off: `blockers` make approval impossible (nothing assembled); `risks` are what to weigh first, and approving with any open takes a reason. */
   filing_readiness?: { eligible: boolean; approved: boolean; digest: string; blockers: string[]; risks?: string[]; attorney: string; approved_at: string; risk_note?: string }
+  /** The research behind the letter; null before the letter has been researched. */
+  research?: Research | null
   /** The matter's folder name: how requests to Claude name it. */
   name: string
   /** The name the app shows it under (see MatterRow.title). */
@@ -270,7 +300,10 @@ export type Profile = Partial<Record<
 >>
 
 /** One line of the setup check (the server's `doctor`). */
-export type Check = { id: string; label: string; ok: boolean; required: boolean; level?: 'required' | 'recommended' | 'optional' | string; detail: string; fix?: string; ask?: string }
+export type Check = { id: string; label: string; ok: boolean; required: boolean; level?: 'required' | 'recommended' | 'optional' | string; detail: string; fix?: string; ask?: string
+  /** A web page that settles it, opened in the attorney's browser: one of the server's named links, and the press's words. */
+  link?: { id: string; label: string }
+}
 
 export type Setup = {
   checks: Check[]
@@ -398,6 +431,10 @@ declare module 'claude-code' {
       sort: string
       /** The matters with a start on its way, from the press until the agent starts or is refused. */
       launching: string[]
+      /** Passim's last answer that the account has no research access; null once research answers again. */
+      access: Access | null
+      /** Whether the BIA Edge connector is in this session, as last looked; null before the first look. */
+      library: { connected: boolean } | null
     }
   }
 }

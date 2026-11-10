@@ -13,8 +13,11 @@ import { markdown } from '../md'
 import { ASK_LABEL, brief, clock, dateOnly, duration, nowMs, plural, when, whenPhrase } from '../words'
 import { matterStatus } from '../status'
 
+// What Check the law again does, wherever it is offered.
+export const RECHECK_ABOUT = 'About 5 minutes. Checks every case the letter cites for later treatment, and looks for changes in the law since the last check. Nothing in the packet changes; if something the letter relies on has changed, it goes on Questions.'
+
 export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise<JSX.Element> {
-  const { Box, Text, Input, isDesktop, narrow, svg, allRuns, pr, d, savedAnswers, st, g, open, missingCase, asked, actions, button, lone, link, links, card, barCard, columns, disclosure, eyebrow, rule, field, savedMark, matterPage, noProfile, tip, confirmBox, caseChooser, postureChips } = x
+  const { Box, Text, Input, isDesktop, narrow, svg, allRuns, pr, d, savedAnswers, g, open, missingCase, asked, actions, button, lone, link, links, card, barCard, columns, disclosure, eyebrow, rule, field, savedMark, matterPage, noProfile, tip, confirmBox, caseChooser, postureChips, research } = x
   const prg = c.progress
   const ledger = c.open_items ?? null
   const needs = needsOf(c)
@@ -125,7 +128,7 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
       lines.push(<Text key="stall">Nothing has changed for 20 minutes. Claude may be waiting for your OK in the chat, or it stopped.</Text>)
     }
     if (working) {
-      const left = STEP_KINDS.has(kind) ? prg.minutes_left : REVIEW_KINDS.has(kind) ? 8 : kind === 'stress_test' ? 15 : null
+      const left = STEP_KINDS.has(kind) ? prg.minutes_left : REVIEW_KINDS.has(kind) ? 8 : kind === 'stress_test' ? 15 : kind === 'recheck' ? 5 : null
       const elapsed = nowMs() - Date.parse(working.startedAt)
       lines.push(<Text key="w2">{[`Started ${clock(working.startedAt)}`, elapsed < 60000 ? 'just started' : `running ${duration(elapsed)}`, left !== null && !stalled ? minutesWords(left) : ''].filter(Boolean).join(' · ')}</Text>)
       if (!stalled) foot.push(<Text key="w3" dimColor size="footnote">Keep Claude open until it finishes. You can use Claude for other things meanwhile; you’ll get a notification when it’s done.</Text>)
@@ -384,6 +387,7 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
       if (built) offer('change', 'Tell Claude what to change', 'A correction, or a different approach. Claude redoes only the steps it affects, checks the packet again, and updates the memo.')
       if (built) offer('steps', 'Redo a step…', 'On the Packet tab, choose a step. Claude redoes it and every step after it; the steps before it stay as they are.')
       if (c.outputs.packet) offer('stress', 'Re-check as a USCIS officer would', 'About 15 minutes. A fresh, full officer’s review of the packet as it is now, not only of what changed; it updates Questions and the memo.')
+      if (c.research && research?.ok) offer('recheck', 'Check the law again', RECHECK_ABOUT)
       // A draft can be approved as it is: the attorney decides what to file, and what is still open goes on the record.
       if (fr && phase !== 'complete' && phase !== 'filed') {
         if (fr.approved) offer('open-approved-packet', 'Show the approved copies', 'The clean copies of the version you approved, without the DRAFT marking.')
@@ -455,8 +459,36 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
       ], undefined, 'card-sample')
     : null
 
+  // ----- the research behind the letter: what was checked and when, or that BIA Edge wasn't used -----
+  const rs = c.research ?? null
+  const stale = rs?.state === 'checked' && rs.age_days !== null && rs.age_days > 7
+  const researchCard = rs
+    ? card('Research', [
+        <Text key="rs-head" weight="semibold" color={rs.state === 'checked' && !stale ? HEAD : WARN}>{`${rs.headline}${stale ? ` · ${rs.age_days} days ago` : ''}`}</Text>,
+        ...rs.lines.map((line, i) => <Text key={`rs-line-${i}`} size="footnote">{line}</Text>),
+        rs.not_researched.length
+          ? <Box key="rs-missing" flexDirection="column" gap="xs">
+              {rs.not_researched.map((text, i) => <Text key={`rs-miss-${i}`} size="footnote">{`• ${text}`}</Text>)}
+              {rs.not_researched_count > rs.not_researched.length ? <Text dimColor size="footnote">{`…and ${rs.not_researched_count - rs.not_researched.length} more.`}</Text> : null}
+            </Box>
+          : null,
+        rs.unresolved.length ? <Text key="rs-open" size="footnote">{`Still open: ${rs.unresolved[0]}`}</Text> : null,
+        rs.caveat ? <Text key="rs-caveat" dimColor size="caption">{rs.caveat}</Text> : null,
+        // Researched without BIA Edge, and it still isn't usable: what it is, or what Passim said, and the way there.
+        rs.state === 'without' && research && !research.ok ? <Text key="rs-library" size="footnote">{research.detail}</Text> : null,
+        links('rs-acts', [
+          rs.state === 'without' && research && !research.ok && research.link
+            ? button(`research-link:${research.link.id}`, `${research.link.label} ›`, () => { void perform($, `open-link:${research.link!.id}`) }, 'link') : null,
+          // BIA Edge is usable now: the research step can be done over with it, and the letter revised and reviewed after.
+          rs.state === 'without' && research?.ok && !busyNow
+            ? button('research-redo', 'Redo the research with BIA Edge ›', () => { void perform($, 'redo:cover_letter_researcher') }, 'link') : null,
+          rs.state !== 'without' && research?.ok && !busyNow
+            ? button('research-recheck', 'Check the law again ›', () => { void perform($, 'recheck') }, stale || rs.state === 'unrecorded' ? 'link' : 'quiet') : null,
+        ]),
+      ], rs.state === 'without' ? WARN : undefined, 'card-research')
+    : null
+
   // ----- asking Claude about the matter: a question, research, or a change, answered in the chat -----
-  const research = st?.checks.find(ch => ch.id === 'research')
   const suggestions = suggestedQuestions(c)
   const askColumn = (
     <Box key="ask-col" flexDirection="column" gap="md">
@@ -464,7 +496,14 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
       <Text dimColor size="footnote">{busyNow
         ? 'Ask anything while Claude works. Changes you ask for wait until it finishes, or go into your instructions for the steps it hasn’t reached.'
         : 'A question, some research, or a change you want made. Claude reads this matter’s documents and work, looks up the law in BIA Edge, and makes the changes you ask for. It answers in the chat.'}</Text>
-      {research && !research.ok ? <Text key="ask-research" color={WARN} size="footnote">Connect BIA Edge in Claude’s Connectors so Claude can cite case law.</Text> : null}
+      {research && !research.ok
+        ? <Box key="ask-research" flexDirection="column" gap="xs">
+            <Text color={WARN} size="footnote">{research.link?.id !== 'passim_trial'
+              ? 'BIA Edge returned no research for your Passim account, so Claude can’t cite case law.'
+              : 'Connect BIA Edge in Claude’s Connectors so Claude can cite case law.'}</Text>
+            {research.link ? lone('ask-link', button(`ask-link:${research.link.id}`, `${research.link.label} ›`, () => { void perform($, `open-link:${research.link!.id}`) }, 'link')) : null}
+          </Box>
+        : null}
       {/* Keyed by the round, so the box is drawn afresh, and empty, once a question has gone. */}
       <Box key={`ask-${session.askRound}`} flexDirection="column" gap="xs">
         {field('Your question', l => <Input
@@ -614,6 +653,7 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
     sampleCard,
     metrics,
     columns('overview-cols', [attentionColumn, askColumn]),
+    researchCard,
     <Box key="folded" flexDirection="column" gap="md">
       {rule('folded-rule-1')}
       {!c.needs_intake && phase !== 'filed'

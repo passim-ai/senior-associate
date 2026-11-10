@@ -54,14 +54,19 @@ Assumptions and choices made along the way that the attorney should know about: 
 ## Filing logistics
 On paper: where to file (from the current USCIS page, with URL and date checked); each fee and its payment form, from `fees.py`, with the G-1055 edition used; the physical items to gather before mailing (wet signatures, passport photos, the sealed medical exam envelope, the card or bank details on the payment forms); and the order of assembly. Online: how each form goes (the fees tool's `channels`, and any form that goes on paper and why), the upload files and `Upload map.md`, the fees to pay in the online account, the wet signatures to scan, and the I-693 scan with the original kept. A split filing has both lists, one per packet. `filing.md` has the rules behind each; point to the filing checklist for the step-by-step list.
 
+## How similar cases were decided
+Only when the research left `similar decisions.md` with decisions in it. Open with "Unpublished decisions, not precedent; none is cited in the letter." Then up to five, one line each: the body and date, how it came out, and the fact or document it turned on, with its link. End with one sentence on what they mean for this packet's weakest point.
+
 ## Sources checked
-Official pages and authorities relied on, with URLs and dates. Call the case-law service BIA Edge.
+Open with the research summary, word for word as the tool prints it, so the memo and the matter page say the same thing: `uv run --script "<plugin root>/scripts/research_summary.py" "<matter>"`. Then the official pages and authorities relied on, with URLs and dates. Call the case-law service BIA Edge.
 
 ## How this was checked
 One or two sentences: which reviews were done independently of the work they checked, what they sent back and that it was fixed, and that the reviewers' full notes are kept with the working notes.
 ```
 
 "Needed before filing" lists the open items with `blocks_filing: true`, one line each, named by their titles so the memo and the matter page read the same. Each group's count is the number of its items, and the counts add up to the number in the status line. Client questions count under "From the client"; a setup problem counts under "For you to do". Leave out an empty group. The photos, signatures and payment details aren't needed before filing (the contract's "Physical filing items"); they go under "Filing logistics". The I-693 item, while it's open and blocks filing, is listed under "Needed before filing", in "For you to do", and counted in the status line like any other blocking item; "Filing logistics" still says how the envelope is enclosed or the scan uploaded.
+
+"How similar cases were decided" is left out entirely when the research found none or didn't look; when it looked and found nothing on point, one line under "Sources checked" says so. When the research summary says the letter was researched without BIA Edge, say in the bottom line's last sentence that the cited law wasn't checked for later treatment or change, and leave it there: it isn't an open item.
 
 Keep the memo as long as the matter needs and no longer. A clean, complete packet might need a page; a difficult one might need five.
 

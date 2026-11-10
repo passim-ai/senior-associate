@@ -100,6 +100,10 @@ test('the real server’s matters, state by state: running steps, a stale lease,
   // The client request in Spanish too: it can be copied in either language.
   await visit('draft')
   expect(await inActions(ui, /^2 needed before filing$/)).toBeDefined()
+  // The research behind the letter, as the real server sums it up; no BIA Edge in this session, so nothing offers the check again.
+  expect(await ui.find({ type: 'Text', text: /^Checked October 27, 2026 with BIA Edge$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^Later treatment was checked for the case, and nothing adverse was found\.$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Button', key: 'research-recheck' })).toBeUndefined()
   await tap('memo')
   await tap('request')
   expect(await ui.find({ type: 'Button', key: 'main:copy-request-lang:Spanish' })).toBeDefined()

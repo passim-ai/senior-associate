@@ -20,8 +20,8 @@ import { setupScreen } from './screens/setup'
 import { timelineScreen } from './screens/timeline'
 import { welcomeScreen } from './screens/welcome'
 import { ensurePoll } from './runs'
-import { load, refresh } from './server'
-import { PANE, readAnswers, readBusy, readCaseMissing, readConfirm, readDocked, readDraft, readExpanded, readFilter, readGate, readNote, readPayload, readPrefs, readRedoAt, readRuns, readLaunching, readSetup, readSort, readView, session } from './state'
+import { load, refresh, researchCheck } from './server'
+import { PANE, readAccess, readAnswers, readBusy, readCaseMissing, readConfirm, readDocked, readDraft, readExpanded, readFilter, readGate, readLibrary, readNote, readPayload, readPrefs, readRedoAt, readRuns, readLaunching, readSetup, readSort, readView, session } from './state'
 import { clockNow } from './words'
 import { CARD } from './theme'
 
@@ -30,7 +30,7 @@ export async function draw($: EngineInterface, els: Els, site: 'pane' | 'inline'
   await clockNow($)
   // docked is read so the inline rows redraw when the side panel opens.
   ensurePoll($)
-  const [v, p, n, busy, allRuns, pr, q, d, savedAnswers, st, g, open, missingCase, , redoing, asked, sort, launching] = await Promise.all([
+  const [v, p, n, busy, allRuns, pr, q, d, savedAnswers, st, g, open, missingCase, , redoing, asked, sort, launching, access, library] = await Promise.all([
     readView($),
     readPayload($),
     readNote($),
@@ -49,6 +49,8 @@ export async function draw($: EngineInterface, els: Els, site: 'pane' | 'inline'
     readConfirm($),
     readSort($),
     readLaunching($),
+    readAccess($),
+    readLibrary($),
   ])
   // The main actions wait while a Mac picker is open or a start is on its way.
   const b = busy || (Boolean(p?.matter) && launching.includes(p!.matter!.path))
@@ -96,7 +98,10 @@ export async function draw($: EngineInterface, els: Els, site: 'pane' | 'inline'
     ? <Text key="tip" dimColor size="footnote">Tip: Open as side panel keeps this beside your chat while Claude works.</Text>
     : null
 
-  const x: Ctx = { ...els, ...kit, site, v, p, n, b, allRuns, pr, q, d, savedAnswers, st, g, open, missingCase, redoing, asked, folder, noProfile, tip, sort }
+  // Where case-law research stands: BIA Edge in this session or not, and whether Passim last answered that the
+  // account has no access. Before the first look, what the setup check last said, if it has run.
+  const research = library ? researchCheck(library.connected, library.connected ? access : null) : st?.checks.find(ch => ch.id === 'research') ?? null
+  const x: Ctx = { ...els, ...kit, site, v, p, n, b, allRuns, pr, q, d, savedAnswers, st, g, open, missingCase, redoing, asked, folder, noProfile, tip, sort, research }
   if (v === 'setup') return setupScreen($, x)
   if (v === 'welcome') return welcomeScreen($, x)
   if (v === 'help') return helpScreen($, x)
