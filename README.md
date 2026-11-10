@@ -85,14 +85,26 @@ In **Auto** mode (chosen under the prompt box), Claude can't start a build from 
 
 ## Case-law research (BIA Edge)
 
-Immigration Packet Builder finds case law for the cover letter through the **BIA Edge** connector in your Claude account. To connect it once:
+Immigration Packet Builder finds case law for the cover letter through the **BIA Edge** connector in your Claude account. BIA Edge is Passim's immigration law library for Claude: Board and court decisions, unpublished BIA and AAO decisions, and a check of each case's later treatment. It is a separate subscription, $29 a month, with 14 days free for a new account (a card is required). The app's Setup screen has **Start a free trial**, which opens Passim's sign-up page in your browser.
+
+To connect it once:
 
 1. In the Claude app, click **Customize** in the sidebar and open **Connectors**. You can also go to [claude.ai/customize/connectors](https://claude.ai/customize/connectors).
 2. Add BIA Edge. On Team and Enterprise plans, an admin adds connectors.
 
 Code tab sessions signed in with the same Claude account can then use it. A build sends BIA Edge legal questions, never client documents, names or identifying details. When you talk a matter through with Claude, it includes your client's facts in a research question only when you ask it to; that's your call.
 
-Without BIA Edge, the cover letter still cites the statute, the regulations, the USCIS Policy Manual and the precedents in Immigration Packet Builder's own reference files. Claude adds other case law only with your approval, as an item to check before filing.
+With BIA Edge, each build:
+
+- checks every case the letter cites for later treatment, and looks for changes in the law since the reference files were last verified;
+- researches the points that are particular to this client, with the adverse authority an officer could cite;
+- when a point is contested, looks for unpublished BIA and AAO decisions on similar facts and summarizes them in your memo. They are not precedent and are never cited in the letter.
+
+The matter's page shows a **Research** card that says what was checked and when. **Check the law again**, there and on the Packet tab, repeats the check before you file; it takes about five minutes and changes nothing in the packet.
+
+Without BIA Edge, the cover letter still cites the statute, the regulations, the USCIS Policy Manual and the precedents in Immigration Packet Builder's own reference files. Claude adds other case law only with your approval, as an item to check before filing. The Research card then says the letter was researched without BIA Edge: which points got no case-law research, and that nothing was checked after the reference files' date. The approval page lists it as a point to weigh.
+
+If your Passim account has no research access (a trial that ended, a payment that failed), BIA Edge returns Passim's notice instead of research. The app shows that notice on the Setup screen and the matter's page, with a link to your account, until research answers again.
 
 ## Ask Claude to change things
 

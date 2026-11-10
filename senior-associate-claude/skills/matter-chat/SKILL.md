@@ -44,7 +44,8 @@ Use the BIA Edge connector for case law, statutes, regulations, and Policy Manua
 - **Log it.** Before the first query in the conversation, run the gate, which records that research ran:
   `uv run --script "${CLAUDE_PLUGIN_ROOT}/scripts/network_gate.py" "<matter>" --action mcp_research --role attorney --actor matter_chat --json`
   Add `--sends-client-data --confirmed` only for a query that carries client facts the attorney explicitly asked you to include; that request is the confirmation, and the gate's log records it. If the gate reports the action blocked, someone set this matter's privacy mode to restricted outside the app. Tell the attorney in one line, and do what they decide.
-- **Without the connector,** answer from the authorities file and official sources, and say that case-law research needs BIA Edge connected in Claude's Connectors.
+- **Without the connector,** answer from the authorities file and official sources, and say that case-law research needs BIA Edge connected in Claude's Connectors. When the connector answers that no Passim research results were returned, the attorney's Passim account has no research access: say so once, in Passim's own words, give the link it returned, and go on without it. Don't retry and don't look for the same case law another way.
+- **"Check the law again"** before filing is the currency check alone: `research.md`, "Checking again before filing". It changes the receipt and the matrix's dates, never the letter.
 
 ## Keep the research
 

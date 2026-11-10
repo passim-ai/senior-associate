@@ -1,6 +1,16 @@
 # What's new in Immigration Packet Builder
 
-Your version appears at the foot of every Immigration Packet Builder screen ("Help · Immigration Packet Builder 1.3.0"). After an update, quit Claude with ⌘Q and reopen it.
+Your version appears at the foot of every Immigration Packet Builder screen ("Help · Immigration Packet Builder 1.4.0"). After an update, quit Claude with ⌘Q and reopen it.
+
+## 1.4.0 (November 2026)
+
+**See what the letter's law rests on.** Each matter's Overview has a **Research** card. It says when the law in the cover letter was last checked, how many authorities and cases support the letter, whether any case carries a limit, and how many points were researched for this client. The memo's Sources checked opens with the same summary. If a letter was researched without BIA Edge, the card says so and lists the points that got no case-law research, and the Packet tab lists it among the points to weigh before you approve.
+
+**Check the law again before you file.** Weeks can pass between a build and a filing. **Check the law again**, on the Research card, the Packet tab and under More you can do, checks every cited case for later treatment and looks for changes in the law since the last check. It takes about five minutes with BIA Edge and changes nothing in the letter or the packet. If something the letter relies on has changed, it's added to Questions.
+
+**How similar cases were decided.** When the letter argues a contested point, such as a waiver's hardship or the stated ground of an RFE, Claude looks for unpublished BIA and AAO decisions on similar facts and summarizes up to five in the memo, with links. They are not precedent and are never cited in the letter.
+
+**BIA Edge.** Setup now says what BIA Edge is (Passim's immigration law library for Claude) and what it costs: $29 a month, with 14 days free for a new account (a card is required). **Start a free trial** opens Passim's sign-up page in your browser. If your Passim account has no research access, because a trial ended or a payment failed, the build goes on without case-law research and says so, and the app shows Passim's notice on Setup and the matter's page with a link to your account. Nothing in Immigration Packet Builder requires BIA Edge, and the app sends Passim nothing about you or your matters.
 
 ## 1.3.0 (November 2026)
 

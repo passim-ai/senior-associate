@@ -3,9 +3,9 @@ import type { EngineInterface } from 'claude-code'
 import type { BackTo, Card, Payload, Profile, View } from '../types'
 import { PROFILE_FIELDS, REVIEW_KINDS, STEP_KINDS, asksAttorney, builtPast, carried, chosenCase, folderName, metaChanged, needsOf, profileIsEmpty, reportQuestions, requestTranslations, requiredMissing, retryKind, reviewOnly, shownName } from './matter'
 import { clearAnswers, composeAnswers, saveAnswer, startRun, stopRun, toChat, withdrawStart } from './runs'
-import { act, call, closePicker, doctor, load, ownMatters, refresh, setPayload } from './server'
+import { act, call, closePicker, doctor, load, lookForLibrary, ownMatters, refresh, setPayload } from './server'
 import { EMPTY_DRAFT, MATTER_VIEWS, PANE, go, readConfirm, readDraft, readGate, readNote, readOrigins, readPayload, readPrefs, readRedoAt, readRuns, readSetup, readView, remember, session, setNote, typed, updateCaseMissing, updateConfirm, updateDocked, updateDraft, updateExpanded, updateFilter, updateGate, updateLaunching, updateOrigins, updateRedoAt, updateRuns, updateSetup, updateSort, updateView } from './state'
-import { ASK_LABEL, brief, friendly, nowMs, plainText } from './words'
+import { ASK_LABEL, LINK_TOAST, brief, friendly, nowMs, plainText } from './words'
 import { afterAdding, isBusy, matterStatus } from './status'
 
 export async function createMatter($: EngineInterface, raw: string) {
@@ -255,7 +255,7 @@ const OPENS: Record<string, [which: string, toast: string]> = {
 // The presses that start Claude. One start at a time: the guard is taken at the press, before anything is awaited, so a
 // second press (a double click, the other placement of the app) says so instead of starting a second agent. The
 // matter page dims its start buttons while it is held.
-const STARTS = new Set(['build', 'gate-build', 'review', 'review-again', 'continue', 'update', 'redo-start', 'stress', 'closeout-yes', 'retry-run', 'stop-retry', 'setup-continue'])
+const STARTS = new Set(['build', 'gate-build', 'review', 'review-again', 'continue', 'update', 'redo-start', 'stress', 'recheck', 'closeout-yes', 'retry-run', 'stop-retry', 'setup-continue'])
 
 export async function perform($: EngineInterface, id: string): Promise<void> {
   if (STARTS.has(id)) {
@@ -397,6 +397,12 @@ async function press($: EngineInterface, id: string): Promise<void> {
       return toggle($, id)
   }
   if (id.startsWith('copy-request-lang:')) return copyRequest($, undefined, id.slice(18))
+  // One of the server's named web pages (Passim's sign-up, the Passim account, Claude's Connectors), in the browser.
+  if (id.startsWith('open-link:')) {
+    const which = id.slice(10)
+    await act($, { op: 'open_link', which }, LINK_TOAST[which] ?? 'Opening it in your browser.')
+    return
+  }
   if (id.startsWith('ask-row:')) {
     const row = p?.matters.find(m => m.path === id.slice(8))
     if (row?.ask) await askClaude($, row.ask)
@@ -705,6 +711,15 @@ async function press($: EngineInterface, id: string): Promise<void> {
     }
     case 'stress':
       return startRun($, c, 'stress_test')
+    case 'recheck': {
+      // The check is BIA Edge's to do: without it (not connected, or an account with no access) say so, with the way there.
+      const library = await lookForLibrary($)
+      if (!library.ok) {
+        await setNote($, `Checking the law again needs BIA Edge. ${library.detail}`, 'warn', undefined, library.link ? { id: `open-link:${library.link.id}`, label: library.link.label } : undefined)
+        return
+      }
+      return startRun($, c, 'recheck')
+    }
     case 'closeout':
       await updateConfirm($, () => 'closeout')
       return

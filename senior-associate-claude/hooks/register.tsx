@@ -28,6 +28,7 @@ import type { EngineInterface, Register, ResolveInput } from 'claude-code'
 import { draw } from './draw'
 import { BLOCKED, forgetTerms, isResearch, isScreened, researchGate, toolInput } from './privacy'
 import { tableFor } from './kit'
+import { noteAccess } from './library'
 import { goTo, openPane } from './perform'
 import { adoptSpawn, ensurePoll, finishRun, markWaiting } from './runs'
 import { doctor, load, refresh } from './server'
@@ -135,6 +136,12 @@ export const register: Register = (on, options) => {
       if (reason) return { deny: reason }
     }
     const result = await next(e)
+    // Passim's answer that the account has no research access is kept for the page; any other answer is not read.
+    try {
+      await noteAccess($, e.tool, result)
+    } catch {
+      // the page misses it this once; the call's own result stands
+    }
     if (e.agentId && liveAgents.has(e.agentId)) {
       try {
         await markWaiting($, e.agentId, false)

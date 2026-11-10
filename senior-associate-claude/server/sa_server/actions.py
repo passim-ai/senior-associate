@@ -43,7 +43,7 @@ def run_ensure(ctx: Context, matter: Path, matter_type: str, filing_posture: str
     return ""
 
 
-def open_path(path: Path) -> None:
+def open_path(path: Path | str) -> None:
     if platform.system() == "Darwin":
         subprocess.Popen(["open", str(path)])
     elif platform.system() == "Windows":
@@ -247,6 +247,28 @@ def do_add_folder(ctx: Context, matter_path: str) -> dict[str, Any]:
     payload = _added_payload(ctx, matter, add_folder(ctx, matter, folder))
     payload["source_folder"] = str(folder)
     return payload
+
+
+# The web pages the app opens in the attorney's browser, by name. The app never opens an address it is handed:
+# only these. The Passim ones carry where the visit came from (ref=packet-builder, counted in total by Passim's
+# sign-up pages) and nothing about the attorney, the Mac or any matter.
+PASSIM_ACCOUNT = "https://account.passimai.com"
+LINKS = {
+    "passim_trial": f"{PASSIM_ACCOUNT}/billing/start?ref=packet-builder",
+    "passim_account": f"{PASSIM_ACCOUNT}/billing/start?intent=enroll&ref=packet-builder",
+    # Where Passim itself points an account that a plan doesn't fix (access disabled, no approved account).
+    "passim_review": f"{PASSIM_ACCOUNT}/billing/access",
+    "connectors": "https://claude.ai/customize/connectors",
+}
+
+
+def do_open_link(ctx: Context, which: str) -> dict[str, Any]:
+    url = LINKS.get(which)
+    if not url:
+        raise UserError("That action isn't available in this version. Restart Claude and try again.")
+    open_path(url)
+    log(f"opened a web page ({which})")
+    return {"opened": which}
 
 
 def do_open_folder(ctx: Context, matter_path: str) -> dict[str, Any]:
@@ -621,6 +643,7 @@ RUN_KINDS: dict[str, tuple[str, str]] = {
     "review_again": ("review", "reviewing the documents again"),
     "redo": ("redo", "redoing {stage} and the steps after it"),
     "stress_test": ("officer", "reading the packet as a USCIS officer would"),
+    "recheck": ("other", "checking the law the letter cites again"),
     "closeout": ("other", "cleaning up working files"),
 }
 OUTCOMES = {"done", "stopped", "failed"}

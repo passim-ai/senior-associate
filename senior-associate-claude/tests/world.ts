@@ -114,6 +114,7 @@ export function card(name: string, phase: string, docs: string[], o: { stage?: (
       review_again: 'Review the documents again.',
       redo: 'Redo {{stage_label}} ({{stage_id}}).',
       stress_test: 'Officer review.',
+      recheck: 'Check the law again.',
       closeout: 'Clean up.',
     },
   }
@@ -283,6 +284,8 @@ export type Options = { checks?: unknown[]; profile?: Record<string, string>; ca
   /** The server's sample matter: added on the first open of an empty Matters folder (ensure_sample), once, and by
    *  add_sample. */
   sample?: boolean
+  /** The tools the session has, by name: BIA Edge's are how the app knows the connector is there. */
+  tools?: string[]
 }
 
 // The server and the host's side effects, stood in for. `seed` seeds the list.
@@ -307,7 +310,7 @@ export function world(on: On, seed: Matter[] = [], stored: Record<string, unknow
   on('ui.toast', async (_$, e) => { toasts.push(e.text); return { value: undefined } })
   on('ui.copy', async (_$, e) => { copied.push(e.text); return { value: { isCopied: true } } })
   on('fs.exists', async () => ({ value: true }))
-  on('tool.list', async () => ({ value: [] }))
+  on('tool.list', async () => ({ value: (o.tools ?? []).map(name => ({ name })) }))
   on('store.get', async (_$, e) => ({ value: store[e.key] }))
   on('store.set', async (_$, e) => { store[e.key] = e.value; return { value: undefined } })
   on('process.run', async (_$, e) => {
@@ -407,6 +410,10 @@ export function world(on: On, seed: Matter[] = [], stored: Record<string, unknow
       return answer({ ...withProfile(payload(current, matters, catalog, leases)), added, cancelled: false, message: o.addMessage ?? `Added ${added.length} files.` })
     }
     if (request.op === 'open_output' || request.op === 'open_folder' || request.op === 'open_document') return answer({ opened: 'x' })
+    // One of the server's named web pages, opened in the browser: only the ones it knows.
+    if (request.op === 'open_link') {
+      return ['passim_trial', 'passim_account', 'passim_review', 'connectors'].includes(request.which ?? '') ? answer({ opened: request.which }) : answer({ error: 'That action isn’t available in this version. Restart Claude and try again.' }, 1)
+    }
     // Going back: take a document out and put it back, reopen an item, change what is being filed.
     if (request.op === 'remove_document' || request.op === 'restore_document') {
       const m = find(request.matter_path)!

@@ -9,7 +9,7 @@
 // bordered Box with no height and no padding; and a text in a row can be squeezed into a sliver, so whatever sits
 // beside something else may shrink (minWidth 0) and the row wraps.
 import type { Elements, EngineInterface, ResolveInput } from 'claude-code'
-import type { Card, Draft, Note, Payload, Prefs, Run, Setup, View } from '../types'
+import type { Card, Check, Draft, Note, Payload, Prefs, Run, Setup, View } from '../types'
 import { WORDMARK, WORDMARK_RATIO } from './brand'
 import { COMMON_TYPES, shownName } from './matter'
 import { askClaude, perform } from './perform'
@@ -474,4 +474,6 @@ export type Ctx = Els & Kit & {
   tip: JSX.Element | null
   /** The matters list's order: updated (the default), name, case or status. */
   sort: string
+  /** Where case-law research stands now (server.ts researchCheck); null before anything has looked. */
+  research: Check | null
 }

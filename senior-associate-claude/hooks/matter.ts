@@ -24,6 +24,7 @@ const KINDS: Record<string, RunKind> = {
   review_again: { doing: 'Reviewing the documents again', noun: 'document review', done: 'Document review', button: 'Review the documents again', ask: n => `Review ${n}’s documents again with Immigration Packet Builder, in the background. Don’t build the packet.` },
   redo: { doing: 'Redoing steps', noun: 'redo', done: 'Redo', button: 'Redo from here', ask: n => `Redo part of the packet for ${n} with Immigration Packet Builder, in the background.` },
   stress_test: { doing: 'Running the officer’s review', noun: 'officer’s review', done: 'Officer’s review', button: 'Re-check as a USCIS officer would', ask: n => `Give the ${n} packet the officer’s review with Immigration Packet Builder, in the background.` },
+  recheck: { doing: 'Checking the law again', noun: 'check of the law', done: 'Check of the law', button: 'Check the law again', ask: n => `Check the law the ${n} cover letter cites again with Immigration Packet Builder, in the background.` },
   closeout: { doing: 'Cleaning up working files', noun: 'clean-up', done: 'Clean-up', button: 'Clean up working files', ask: n => `Clean up Claude’s working files for ${n} with Immigration Packet Builder, in the background.` },
 }
 export const runKind = (kind: string): RunKind => KINDS[kind] ?? KINDS.build!

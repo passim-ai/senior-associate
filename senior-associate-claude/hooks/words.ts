@@ -146,6 +146,19 @@ export function friendly(raw: string): string {
   return 'That didn’t work, and nothing was changed. Try again. If it keeps happening, restart Claude and type /matters.'
 }
 
+// BIA Edge, wherever the app offers it: what it is, and Passim's list price as passimai.com/pricing gives it.
+export const LIBRARY_ABOUT = 'BIA Edge is Passim’s immigration law library for Claude: Board and court decisions, unpublished BIA and AAO decisions, and a check of each case’s later treatment.'
+export const LIBRARY_PRICE = '$29 a month, with 14 days free for a new account (a card is required).'
+export const TRIAL_LABEL = 'Start a free trial'
+export const ACCOUNT_LABEL = 'Open your Passim account'
+// Where each of the server's named links goes, as the toast says it.
+export const LINK_TOAST: Record<string, string> = {
+  passim_trial: 'Opening Passim in your browser.',
+  passim_account: 'Opening your Passim account in your browser.',
+  passim_review: 'Opening your Passim account in your browser.',
+  connectors: 'Opening Claude’s Connectors in your browser.',
+}
+
 export const STILL_WORKING = 'Still finishing your last action. Try again in a moment.'
 export const ASK_LABEL = 'Ask Claude to do it'
 

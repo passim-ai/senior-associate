@@ -1,9 +1,9 @@
 // The server, one action at a time: every load, refresh and local action goes through here.
 import type { EngineInterface } from 'claude-code'
-import type { Card, Check, MatterRow, Payload, Setup, View } from '../types'
+import type { Access, Card, Check, MatterRow, Payload, Setup, View } from '../types'
 import { progressSig, stepOf, stepText } from './matter'
-import { MATTER_VIEWS, loadPrefs, markSeen, readPayload, readPrefs, readRuns, readSetup, readView, remember, session, setNote, stillWorking, updateBusy, updatePayload, updateRuns, updateSetup, updateView } from './state'
-import { NO_UV, friendly, nowIso } from './words'
+import { MATTER_VIEWS, loadPrefs, markSeen, readAccess, readLibrary, readPayload, readPrefs, readRuns, readSetup, readView, remember, session, setNote, stillWorking, updateBusy, updateLibrary, updatePayload, updateRuns, updateSetup, updateView } from './state'
+import { ACCOUNT_LABEL, LIBRARY_ABOUT, LIBRARY_PRICE, NO_UV, TRIAL_LABEL, dateOnly, friendly, nowIso } from './words'
 
 // The pickers are macOS windows that can open behind Claude; while one is open the app can only wait.
 export const WAITING: Record<string, string> = {
@@ -97,6 +97,11 @@ export async function doctor($: EngineInterface): Promise<Setup | null> {
 
 // Case-law research isn't the server's to see: it is whether the BIA Edge connector is in this session.
 export async function withResearch($: EngineInterface, checks: Check[]): Promise<Check[]> {
+  return [...checks, await lookForLibrary($)]
+}
+
+// Look for BIA Edge among the session's tools now, keep the answer for the page, and say where research stands.
+export async function lookForLibrary($: EngineInterface): Promise<Check> {
   let connected = false
   try {
     const tools = await $.tool.list()
@@ -104,14 +109,26 @@ export async function withResearch($: EngineInterface, checks: Check[]): Promise
   } catch {
     connected = false
   }
-  return [...checks, {
-    id: 'research',
-    label: 'Case-law research',
-    ok: connected,
-    required: false,
-    level: 'optional',
-    detail: connected ? 'BIA Edge is connected, so letters can cite case law.' : 'Connect BIA Edge in Claude’s Connectors so letters can cite case law.',
-  }]
+  try {
+    if ((await readLibrary($))?.connected !== connected) await updateLibrary($, () => ({ connected }))
+  } catch {
+    // the page keeps its last look
+  }
+  // Connected is not the same as usable: Passim may have answered that the account has no research access.
+  const access = connected ? await readAccess($).then(a => a, () => null) : null
+  return researchCheck(connected, access)
+}
+
+// The Setup screen's line on case-law research, and what the matter's page reads to know whether Claude can research.
+export function researchCheck(connected: boolean, access: Access | null): Check {
+  const base = { id: 'research', label: 'Case-law research', required: false, level: 'optional' }
+  if (!connected) {
+    return { ...base, ok: false, detail: `${LIBRARY_ABOUT} ${LIBRARY_PRICE}`, fix: 'Once you have an account, connect BIA Edge in Claude’s Connectors so letters can cite case law.', link: { id: 'passim_trial', label: TRIAL_LABEL } }
+  }
+  if (access) {
+    return { ...base, ok: false, detail: `BIA Edge is connected, but Passim returned no research on ${dateOnly(access.at)}: “${access.message}”`, fix: 'Until research answers again, letters are written without case-law research.', link: access.plan ? { id: 'passim_account', label: ACCOUNT_LABEL } : { id: 'passim_review', label: 'Review your Passim account' } }
+  }
+  return { ...base, ok: true, detail: 'BIA Edge is connected, so letters can cite case law.' }
 }
 
 // Every change the app makes to the page's payload is numbered, so a quiet refresh that set out before an action
@@ -153,6 +170,9 @@ export async function load($: EngineInterface, request: Record<string, unknown>,
     session.refreshFails = 0
     if (p.matter) await remember($, { onboarded: true, lastMatter: p.matter.path })
     if (p.matter) await follow($, p.matter)
+    // Opening a matter looks for BIA Edge again (the first load of a session always does), so its page knows
+    // whether research is there without the setup check having run.
+    if (p.matter && (request.op === 'state' || (await readLibrary($)) === null)) await lookForLibrary($)
     if (p.matter && MATTER_VIEWS.includes(next)) await markSeen($, p.matter.path)
     if (p.warning) await setNote($, friendly(p.warning))
     else {

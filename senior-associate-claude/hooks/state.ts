@@ -3,7 +3,7 @@
 import { atom, read, update } from 'claude-code'
 import type { Atom } from 'claude-code'
 import type { EngineInterface } from 'claude-code'
-import type { Draft, Note, BackTo, Payload, Prefs, Profile, Run, Setup, View } from '../types'
+import type { Access, Draft, Note, BackTo, Payload, Prefs, Profile, Run, Setup, View } from '../types'
 import { MATTERS_ASK, NEW_FOLDER, NO_UV, STILL_WORKING, UV_ASK } from './words'
 
 export const PANE = 'senior-associate'
@@ -77,6 +77,11 @@ const launching = atom({ ...S, key: 'launching' } as const, [] as string[])
 // The matters list's order, kept for the session.
 const sort = atom({ ...S, key: 'sort' } as const, 'updated')
 
+// Passim's last answer, through BIA Edge, that the account has no research access (library.ts).
+const access = atom({ ...S, key: 'access' } as const, null as Access | null)
+// Whether the BIA Edge connector is in this session, looked up when a matter opens and at the setup check.
+const library = atom({ ...S, key: 'library' } as const, null as { connected: boolean } | null)
+
 type Value<A> = A extends Atom<infer T> ? T : never
 
 // $.state is read and written in this file alone: the engine lists the values each module touches by reading
@@ -124,6 +129,19 @@ export function updateSort($: EngineInterface, change: Parameters<typeof update<
 export function readConfirm($: EngineInterface) { return read($, confirm) }
 export function updateConfirm($: EngineInterface, change: Parameters<typeof update<Value<typeof confirm>>>[2]) { return update($, confirm, change) }
 
+export function readAccess($: EngineInterface) { return read($, access) }
+export function readLibrary($: EngineInterface) { return read($, library) }
+export function updateLibrary($: EngineInterface, change: Parameters<typeof update<Value<typeof library>>>[2]) { return update($, library, change) }
+// Kept between sessions too, so the page still says it tomorrow; with its date, because it is what Passim said then.
+export async function setAccess($: EngineInterface, value: Access | null) {
+  await update($, access, () => value)
+  try {
+    await $.store.set('access', value)
+  } catch {
+    // the session still has it
+  }
+}
+
 // ---------- what the app remembers between sessions ----------
 
 
@@ -142,6 +160,14 @@ export async function loadPrefs($: EngineInterface) {
     }
   } catch {
     // a fresh install has nothing stored
+  }
+  try {
+    const kept = (await $.store.get('access')) as Partial<Access> | null | undefined
+    if (kept && typeof kept === 'object' && typeof kept.message === 'string' && typeof kept.at === 'string') {
+      await update($, access, () => ({ message: kept.message!, at: kept.at!, plan: kept.plan === true, server: typeof kept.server === 'string' ? kept.server : '' }))
+    }
+  } catch {
+    // nothing kept
   }
 }
 

@@ -142,6 +142,24 @@ def build_matters(root: Path) -> dict[str, str]:
     write(draft / "output/deliverables/Attorney Memo.md", "# Memo\n\nDraft packet.")
     write(draft / "output/deliverables/Client Request.md", "Please send the I-94.")
     write(draft / "output/deliverables/Client Request (Spanish).md", "Por favor envíe el I-94.")
+    # The research behind the letter, checked with BIA Edge the day before: the card carries its summary.
+    write(draft / "output/working/vault/research/main/support matrix.json", {"slug": "main", "propositions": [
+        {"id": "S1", "proposition": "The joint petition is filed in the 90 days before the second anniversary of conditional residence.",
+         "recommendation": "cite", "adverse": [], "support": [
+             {"authority": "INA § 216(d)(2)(A)", "citation": "8 U.S.C. § 1186a(d)(2)(A)", "validity": "current statute", "checked": "2026-10-27",
+              "source": "authorities/i751_joint.md A2"}]},
+        {"id": "P1", "proposition": "A marriage is bona fide when the couple intended to establish a life together at its inception.",
+         "recommendation": "cite", "adverse": [{"authority": "Matter of Phillis, 15 I&N Dec. 385 (BIA 1975)", "citation": "15 I&N Dec. 385"}],
+         "support": [
+             {"authority": "Matter of Laureano, 19 I&N Dec. 1 (BIA 1983)", "citation": "19 I&N Dec. 1", "document_id": 1,
+              "validity": "ImmCite treatment_available; precedential citing decisions reviewed, none adverse", "checked": "2026-10-27"}]},
+    ]})
+    write(draft / "output/working/workflow/legal currency review.json", {
+        "connector": {"available": True}, "checked_at": "2026-10-27",
+        "jurisdiction": {"forum": "USCIS", "circuit": "ca5", "basis": "synthetic"},
+        "checks": [{"category": c, "status": "checked", "source": "synthetic", "hits": []} for c in
+                   ("agency_policy", "regulations", "agency_decisions", "controlling_circuit", "adverse_treatment")],
+        "relied_on_court_orders": [], "unresolved": []})
     m["draft"] = draft.name
 
     complete = matter("Indigo Ready I-130", "Passport.pdf")

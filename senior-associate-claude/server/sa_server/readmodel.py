@@ -17,6 +17,7 @@ from scripts.matter_state import (EVENTS_FILE, LEASE_FILE, apply_attorney_action
                                   read_open_items)
 from scripts.network_gate import lease_is_unattended
 from scripts.filing_readiness import readiness
+from scripts.research_summary import research_summary
 
 from .catalog import (DEFAULT_STAGE_MINUTES, DEFAULT_WORKFLOW, FINDINGS_FILE_STAGES, PHASE_LABELS, STAGE_LABELS,
                       STAGE_MINUTES, SUPERSEDED_BY_FINAL_REVIEW, WORKFLOW_TEMPLATES, catalog, posture_entry, type_entry)
@@ -658,6 +659,14 @@ class MatterRead:
                          ledger_state=self.ledger_state)
 
 
+def _research(matter: Path, now: datetime) -> dict[str, Any] | None:
+    """The research summary (scripts/research_summary.py). A record it can't read is no summary, never a broken card."""
+    try:
+        return research_summary(matter, today=now.astimezone().date())
+    except Exception:  # noqa: BLE001 - the researcher's files are free-form; the card must still draw
+        return None
+
+
 def matter_card(ctx: Context, matter: Path) -> dict[str, Any]:
     r = MatterRead(ctx, matter)
     track, stages = r.track, r.stages
@@ -707,6 +716,8 @@ def matter_card(ctx: Context, matter: Path) -> dict[str, Any]:
         "outputs": outputs,
         "open_items": r.ledger,
         "filing_readiness": r.filing_readiness,
+        # What the research behind the letter covered, and whether BIA Edge was used; None before any research.
+        "research": _research(matter, r.now),
         "answers": answers,
         "memo_text": _read_text(Path(outputs["memo"]["path"])) if outputs["memo"] else "",
         "client_request_text": _read_text(Path(outputs["client_request"]["path"]), 20000) if outputs["client_request"] else "",

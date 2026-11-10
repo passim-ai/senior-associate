@@ -8,8 +8,9 @@ import { ERROR, HEAD, MUTED, OK, WARN } from '../theme'
 import { ASK_LABEL, MATTERS_ASK, NEW_FOLDER } from '../words'
 
 export async function setupScreen($: EngineInterface, x: Ctx): Promise<JSX.Element> {
-  const { Box, Text, st, actions, button, links, card, rule, subpage } = x
-  const checks = st?.checks ?? []
+  const { Box, Text, st, actions, button, links, card, rule, subpage, research } = x
+  // The research line as it stands now: Passim may have answered about the account since the check ran.
+  const checks = (st?.checks ?? []).map(ch => (ch.id === 'research' && research ? research : ch))
   const missing = requiredMissing(st)
   const pending = st?.pending ?? null
   const recommended = (ch: Check) => (ch.level ? ch.level === 'recommended' : /profile|details/i.test(ch.id))
@@ -33,6 +34,8 @@ export async function setupScreen($: EngineInterface, x: Ctx): Promise<JSX.Eleme
             {links(`check-acts-${ch.id}`, [
               !ch.ok && ch.ask ? button(`ask:${ch.id}`, ASK_LABEL, () => { void askClaude($, ch.ask!) }, 'link') : null,
               !ch.ok && recommended(ch) ? button('setup-profile', 'Add your details', () => { void perform($, 'profile') }, 'link') : null,
+              !ch.ok && ch.link ? button(`setup-link:${ch.link.id}`, `${ch.link.label} ›`, () => { void perform($, `open-link:${ch.link!.id}`) }, 'link') : null,
+              !ch.ok && ch.id === 'research' && ch.link?.id === 'passim_trial' ? button('setup-link:connectors', 'Open Claude’s Connectors ›', () => { void perform($, 'open-link:connectors') }, 'quiet') : null,
             ])}
           </Box>
         </Box>

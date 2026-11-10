@@ -45,6 +45,7 @@ export async function helpScreen($: EngineInterface, x: Ctx): Promise<JSX.Elemen
       howTo('h3', 'Fix something in the draft', 'Ask Claude about this matter for one change, made in the chat. Or, on the matter page, Tell Claude what to change: Claude redoes the steps your change affects, in the background.'),
       howTo('h3b', 'Tell Claude how to handle the matter before it builds', 'On the matter page, Attorney instructions: what to lead with, what to leave out. Claude follows them in every step, in the build and every run after it.'),
       howTo('h4', 'Redo one part, such as the forms or the letter', 'Open the Packet tab, choose the step, and press Redo from here. Claude redoes it and every step after it; the steps before it are kept.'),
+      howTo('h4b', 'Make sure the law in the letter is still good before filing', 'On the matter’s Overview, the Research card says when the law the letter cites was last checked. Check the law again, there or on the Packet tab, takes about 5 minutes with BIA Edge and changes nothing in the packet.'),
       howTo('h5', 'Change the case type or the filing posture', 'On the matter page, More you can do › Change what is being filed. The steps start over; your documents stay and earlier work is kept.'),
       howTo('h6', 'Take out a document added by mistake', 'Documents › Remove beside the file. It’s kept with the matter, and Put back returns it.'),
       howTo('h7', 'Undo Mark done', 'Questions › Resolved › Reopen.'),
