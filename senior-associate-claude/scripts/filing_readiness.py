@@ -2,8 +2,8 @@
 
 The attorney can always approve an assembled packet. What stands in the way is said beside the button, in plain
 words (`risks`), and approving with any of it open takes a written reason, which is kept with the approval. Only
-two things make approval impossible (`blockers`): there is no assembled packet, or its clean copy is missing or
-changed. Once a version is approved it stays approved until the packet or the client's documents change; a check
+two things make approval impossible (`blockers`): there is no assembled packet in the matter's folder, or its
+clean copy is missing or changed. Once a version is approved it stays approved until the packet or the client's documents change; a check
 that ages afterwards (the research is a week old) never takes an approval back.
 
 This is a local workflow safeguard, not an authentication boundary against a process that can rewrite the matter
@@ -351,10 +351,11 @@ def readiness(matter: Path, stages: list[dict[str, Any]], ledger: dict[str, Any]
     if marked:
         risks.append(f"{', '.join(marked)} was changed after Claude assembled it (marked up or saved again, perhaps). "
                      "The clean copies come from the packet as assembled, without those changes.")
-    gone = sorted(Path(rel).name for rel in entries if rel not in files)
+    from scripts.draft_packets import left_out
+    gone = left_out(matter)
     if gone:
-        risks.append(f"{', '.join(gone)} isn't in the matter's folder as Claude assembled it (renamed and changed, or "
-                     "removed). Its clean copy is still part of what you approve, as assembled.")
+        risks.append(f"{', '.join(gone)} was assembled earlier and isn't in the matter's folder now, so it isn't part "
+                     "of what you approve. If it should be, press Update the packet.")
     return _result(version=version, risks=risks)
 
 

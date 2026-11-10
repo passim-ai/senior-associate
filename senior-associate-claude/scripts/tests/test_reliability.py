@@ -16,7 +16,7 @@ from unittest.mock import patch
 ROOT = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(ROOT), str(ROOT/'scripts/forms'), str(ROOT/'skills/senior-associate/scripts')]
 from scripts import filing_readiness as fr
-from scripts.draft_packets import keep_review_copy, export_approved, release_sources, retire_others
+from scripts.draft_packets import keep_review_copy, export_approved, release_sources, retire_superseded
 from scripts.generated_files import KEPT_DIR, kept_notice, preserve_edits, record_generated
 from scripts.legal_currency import currency_problems
 from scripts.response_review import response_problems
@@ -31,9 +31,11 @@ from pypdf import PdfReader, PdfWriter
 from xfa_tools import check_font_coverage
 
 
-def packet(path):
+def packet(path, pages=1):
     path.parent.mkdir(parents=True, exist_ok=True)
-    writer=PdfWriter();writer.add_blank_page(width=612,height=792);writer.add_outline_item("Synthetic exhibit",0);writer.write(path)
+    writer=PdfWriter()
+    for _ in range(pages):writer.add_blank_page(width=612,height=792)
+    writer.add_outline_item("Synthetic exhibit",0);writer.write(path)
 
 
 def currency():
@@ -159,22 +161,41 @@ class FilingTests(unittest.TestCase):
     def test_a_renamed_then_marked_up_review_copy_still_approves_its_clean_packet(self):
         final=self.p.with_name('Filing Packet.pdf');self.p.rename(final)   # the handoff's rename
         final.write_bytes(b'annotated in Preview after the rename')        # neither its name nor its contents match now
-        self.assertEqual(list(release_sources(self.m)),['output/deliverables/Filing Packet (DRAFT).pdf'])
+        self.assertEqual(list(release_sources(self.m)),['output/deliverables/Filing Packet.pdf'])
         ready=self.ready();self.assertTrue(ready['eligible'],ready['blockers'])
-        self.assertTrue(any("isn't in the matter's folder as Claude assembled it" in r for r in ready['risks']),ready['risks'])
+        self.assertTrue(any('Filing Packet.pdf was changed after Claude assembled it' in r for r in ready['risks']),ready['risks'])
         with self.assertRaisesRegex(ValueError,'Explain your decision'):self.approve()
         self.approve(risk_note='My notes on the review copy are not for filing.')
         clean=export_approved(self.m,self.ready()['digest'])/'Filing Packet.pdf'
         self.assertEqual(float(PdfReader(clean).pages[0].mediabox.height),792)
-        # A split filing keeps every part: one part's review copy going missing never drops it from what is approved.
-        second=self.m/'output/deliverables/Upload files/Part 2 (DRAFT).pdf'
-        packet(self.p);packet(second);keep_review_copy(self.m,self.p);keep_review_copy(self.m,second);retire_others(self.m,[self.p,second])
-        second.unlink()
-        self.assertEqual(sorted(release_sources(self.m)),['output/deliverables/Filing Packet (DRAFT).pdf','output/deliverables/Upload files/Part 2 (DRAFT).pdf'])
-        # The next assembly is what retires what is no longer made: here the packet under its filing name, with no
-        # upload files, though the draft-named copy was never removed.
-        ready_name=self.p.with_name('Filing Packet.pdf');packet(ready_name);keep_review_copy(self.m,ready_name);retire_others(self.m,[ready_name])
-        self.assertTrue(self.p.exists());self.assertEqual(list(release_sources(self.m)),['output/deliverables/Filing Packet.pdf'])
+        # Removed altogether: there is nothing in the folder to approve, and the page says what to do.
+        final.unlink()
+        gone=self.ready();self.assertFalse(gone['eligible']);self.assertIn("isn't in the matter's folder anymore",gone['blockers'][0])
+    def test_a_split_filing_keeps_both_parts_and_each_assembly_retires_only_what_it_replaces(self):
+        deliverables=self.m/'output/deliverables'
+        both=['output/deliverables/Filing Packet (DRAFT).pdf','output/deliverables/Filing Packet (paper part) (DRAFT).pdf']
+        def assemble(name,uploads=(),whole=False):
+            made=[deliverables/name]+[deliverables/'Upload files'/u for u in uploads]
+            # Each file its own length, as real ones are: a packet is told from another by what it holds.
+            for path in made:packet(path,pages=len(path.name));keep_review_copy(self.m,path,part_of=made[0])
+            retire_superseded(self.m,made[0],made,whole_filing=whole)
+        # The online packet with its upload files, then the paper part: two assemblies, in either order.
+        assemble('Filing Packet (DRAFT).pdf',['I-130.pdf','Evidence 1.pdf']);assemble('Filing Packet (paper part) (DRAFT).pdf')
+        self.assertEqual(sorted(release_sources(self.m)),both+['output/deliverables/Upload files/Evidence 1.pdf','output/deliverables/Upload files/I-130.pdf'])
+        assemble('Filing Packet (DRAFT).pdf',['I-130.pdf'])   # assembled again with one upload file fewer
+        self.assertEqual(sorted(release_sources(self.m)),both+['output/deliverables/Upload files/I-130.pdf'])
+        # The online packet under its filing name: its draft-named entry goes, though nobody removed that file.
+        assemble('Filing Packet.pdf',['I-130.pdf'])
+        self.assertTrue((deliverables/'Filing Packet (DRAFT).pdf').exists())
+        self.assertEqual(sorted(release_sources(self.m)),['output/deliverables/Filing Packet (paper part) (DRAFT).pdf','output/deliverables/Filing Packet.pdf','output/deliverables/Upload files/I-130.pdf'])
+        # A part removed from the folder is left out of what is approved, and the approval says so.
+        fr.record_review(self.m);(deliverables/'Filing Packet (paper part) (DRAFT).pdf').unlink()
+        ready=self.ready();self.assertTrue(ready['eligible'])
+        self.assertTrue(any("Filing Packet (paper part) (DRAFT).pdf was assembled earlier and isn't in the matter's folder now" in r for r in ready['risks']),ready['risks'])
+        # The fees tool says the filing isn't split any more: this packet is all of it, and nothing is said of the old part.
+        assemble('Filing Packet.pdf',whole=True)
+        self.assertEqual(list(release_sources(self.m)),['output/deliverables/Filing Packet.pdf'])
+        self.assertFalse(any('assembled earlier' in r for r in self.ready()['risks']))
     def test_new_contents_under_an_old_date_are_read_and_an_approval_reads_every_file(self):
         doc=self.m/'passport scan.txt';doc.write_text('AAAA');fr.record_review(self.m);self.approve()
         self.assertTrue(self.ready()['approved'])

@@ -26,6 +26,15 @@ SOURCE_CHANGED = ("The clean copy of the packet is missing or was changed. Press
                   "assembles it again.")
 RECORD_DAMAGED = ("The record of the assembled packet can't be read. Press Update the packet so Claude assembles "
                   "it again.")
+COPY_GONE = ("The packet Claude assembled isn't in the matter's folder anymore (it was renamed and changed, or "
+             "removed). Press Update the packet so Claude assembles it again.")
+DRAFT_MARK = " (DRAFT)"
+
+
+def _part(relative: str) -> str:
+    """Which part of the filing a file is, whatever its name says about being a draft: "Filing Packet (DRAFT).pdf"
+    and "Filing Packet.pdf" are one part, "Filing Packet (paper part).pdf" another."""
+    return relative.replace(DRAFT_MARK, "")
 
 
 def stamp_review_copy(source: Path, destination: Path) -> None:
@@ -87,23 +96,39 @@ def _review_copies(matter: Path, taken: set[str]) -> dict[str, str]:
     return found
 
 
-def release_sources(matter: Path) -> dict[str, dict]:
-    """The packets that can be approved now: each review copy in the deliverables folder, with its clean source.
+def _same_part(matter: Path, relative: str, taken: set[str]) -> str | None:
+    """The file beside a missing review copy that is the same part of the filing under its other name (the handoff
+    drops "(DRAFT)" once nothing blocks filing), whatever has been done to it since."""
+    folder = (matter / relative).parent
+    if not folder.is_dir():
+        return None
+    for path in sorted(folder.glob("*.pdf")):
+        other = path.relative_to(matter).as_posix()
+        if other not in taken and not path.is_symlink() and not path.name.startswith(".") and _part(other) == _part(relative):
+            return other
+    return None
 
-    A review copy renamed since it was assembled (the handoff drops "(DRAFT)" from its name once nothing blocks
-    filing) is found by its contents. One that can't be found at all (renamed and then marked up, or removed) stays
-    in the release under the name it was assembled as: what is filed is its clean source, and a packet is retired
-    only when the next assembly leaves it out (`retire_others`), never because its review copy went missing. Raises
-    when there is nothing to approve, or when a clean source is missing, changed or outside the matter."""
+
+def _release(matter: Path) -> tuple[dict[str, dict], list[str]]:
+    """The packets in the release now, by review copy, and the recorded ones whose review copy is nowhere to be found.
+
+    A review copy renamed since it was assembled is found by its contents, and one renamed by the handoff and then
+    marked up is found by its name without "(DRAFT)". Raises when the record can't be read, or when a clean source
+    is missing, changed or outside the matter."""
     entries = _recorded(matter)
     current: dict[str, dict] = {}
+    missing: list[str] = []
     elsewhere: dict[str, str] | None = None
     root = matter.resolve()
     for relative, entry in entries.items():
         if not (matter / relative).is_file():
             if elsewhere is None:
                 elsewhere = _review_copies(matter, set(entries))
-            relative = elsewhere.get(str(entry.get("draft_sha256") or ""), relative)
+            found = elsewhere.get(str(entry.get("draft_sha256") or "")) or _same_part(matter, relative, set(entries) | set(current))
+            if not found:
+                missing.append(relative)
+                continue
+            relative = found
         source = matter / entry["source"]
         try:
             source.resolve().relative_to(root)
@@ -113,13 +138,31 @@ def release_sources(matter: Path) -> dict[str, dict]:
         if not intact:
             raise ValueError(SOURCE_CHANGED)
         current[relative] = entry
+    return current, missing
+
+
+def release_sources(matter: Path) -> dict[str, dict]:
+    """The packets that can be approved now: each review copy in the deliverables folder, with its clean source.
+    Raises when there is nothing to approve, or when a clean source is missing, changed or outside the matter."""
+    current, missing = _release(matter)
     if not current:
-        raise ValueError(NOT_ASSEMBLED)
+        raise ValueError(COPY_GONE if missing else NOT_ASSEMBLED)
     return current
 
 
-def keep_review_copy(matter: Path, packet: Path) -> None:
-    """Called only on the newly assembled file, after all compression and splitting."""
+def left_out(matter: Path) -> list[str]:
+    """Recorded packets that are in the folder under no name they could have: not part of what is approved. The
+    approval says so, because a part removed by mistake would otherwise go missing from the approved copies
+    without a word."""
+    try:
+        return sorted(Path(relative).name for relative in _release(matter)[1])
+    except ValueError:
+        return []
+
+
+def keep_review_copy(matter: Path, packet: Path, *, part_of: Path | None = None) -> None:
+    """Called only on the newly assembled file, after all compression and splitting. `part_of` is the packet an
+    upload file was split from."""
     relative = packet.resolve().relative_to(matter.resolve()).as_posix()
     clean = matter / FILING_SOURCE / Path(relative).relative_to(DELIVERABLES)
     try:
@@ -134,22 +177,33 @@ def keep_review_copy(matter: Path, packet: Path) -> None:
     clean.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(packet, clean)
     stamp_review_copy(clean, packet)
+    owner = (part_of or packet).resolve().relative_to(matter.resolve()).as_posix()
     entries[relative] = {"source": clean.relative_to(matter).as_posix(), "clean_sha256": sha256_file(clean),
-                         "draft_sha256": sha256_file(packet)}
+                         "draft_sha256": sha256_file(packet), "of": _part(owner)}
     write_json_atomic(matter / RELEASE_MANIFEST, {"schema_version": 1, "entries": entries})
 
 
-def retire_others(matter: Path, current: list[Path]) -> None:
-    """Called once an assembly has kept everything it made (the packet and, for an online filing, its upload files):
-    those are the release now. Only one packet is ever current, so whatever was recorded before under another name
-    (the packet as "Filing Packet (DRAFT).pdf" before nothing blocked filing, upload files from a different split)
-    leaves the record. Their clean bytes stay on disk."""
+def retire_superseded(matter: Path, packet: Path, made: list[Path], *, whole_filing: bool = False) -> None:
+    """Called once an assembly has kept everything it made (`made`: the packet and, for an online filing, its upload
+    files). What it replaces leaves the record: the same packet under its other name ("Filing Packet (DRAFT).pdf"
+    before nothing blocked filing), and upload files an earlier assembly split from it. The other part of a split
+    filing (the paper part beside the online packet) is a separate assembly and stays, unless this one is the
+    `whole_filing`: the fees tool says the filing isn't split, so nothing else belongs to it. Clean bytes stay on
+    disk either way."""
     try:
         entries = _recorded(matter)
     except ValueError:
         return
-    keep = {path.resolve().relative_to(matter.resolve()).as_posix() for path in current}
-    write_json_atomic(matter / RELEASE_MANIFEST, {"schema_version": 1, "entries": {name: entry for name, entry in entries.items() if name in keep}})
+    rel = lambda path: path.resolve().relative_to(matter.resolve()).as_posix()  # noqa: E731
+    keep = {rel(path) for path in made}
+    part = _part(rel(packet))
+
+    def stays(name: str, entry: dict) -> bool:
+        if name in keep:
+            return True
+        return not whole_filing and _part(name) != part and entry.get("of") != part
+
+    write_json_atomic(matter / RELEASE_MANIFEST, {"schema_version": 1, "entries": {name: entry for name, entry in entries.items() if stays(name, entry)}})
 
 
 def export_approved(matter: Path, version: str) -> Path:
@@ -160,7 +214,7 @@ def export_approved(matter: Path, version: str) -> Path:
 
     def approved_path(relative: str) -> Path:
         parts = Path(relative).relative_to(DELIVERABLES).parts
-        return destination.joinpath(*(part.replace(" (DRAFT)", "") for part in parts))
+        return destination.joinpath(*(part.replace(DRAFT_MARK, "") for part in parts))
 
     for relative, entry in entries.items():
         target = approved_path(relative)

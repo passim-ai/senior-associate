@@ -4,7 +4,7 @@
 import type { Card, CardStatus, Lease, Run } from '../types'
 import { expect, test } from 'claude-code/testing'
 import { neededBeforeFiling, neededParts, reportQuestions } from '../hooks/matter'
-import { browserSends, carriesFolder, holdsTerm, isBrowser, isOutbound, isResearch, isScreened, onlyCitations, reachesNetwork, readTerms, sendsFile, spelledOut } from '../hooks/privacy'
+import { browserSends, carriesFolder, copiesAway, holdsTerm, isBrowser, isOutbound, isResearch, isScreened, onlyCitations, reachesNetwork, readTerms, sendsFile, spelledOut } from '../hooks/privacy'
 import { notInBrief } from '../hooks/runs'
 import { sortRows } from '../hooks/screens/home'
 import { timelineDays } from '../hooks/screens/timeline'
@@ -190,6 +190,10 @@ test('a shell command reaches the network only when it names an address or runs 
     'uv run --with pillow-heif --script /plugin/scripts/extract_documents.py "/matters/Garcia I-130 I-485"',
     'python3 -c "import json; print(json.load(open(\'x.json\'))[\'count\'])"',
     'cat curl-notes.txt',
+    // rsync and scp between folders on this Mac.
+    'rsync -a input/ output/working/',
+    'rsync -a --delete "/matters/Garcia I-130 I-485/Client documents/" output/working/copies/',
+    'scp notes.txt output/working/notes.txt',
   ]) expect(reachesNetwork(local)).toBe(false)
   for (const out of [
     'curl -s https://www.uscis.gov/i-485 -o /tmp/i-485.html',
@@ -199,7 +203,12 @@ test('a shell command reaches the network only when it names an address or runs 
     'echo hi | nc example.com 80',
     'ssh host ls',
     'git push origin main',
+    'rsync -a output/ backup-host:matters/',
+    'rsync -a -e ssh output/ somewhere',
+    'scp packet.pdf me@example.com:/tmp/',
   ]) expect(reachesNetwork(out)).toBe(true)
+  expect(copiesAway('rsync -a input/ output/working/')).toBe(false)
+  expect(copiesAway('cd output && rsync -a . host:backup/')).toBe(true)
 })
 
 test('a command that sends a file, or the matter’s folder, is told from one that saves a download', () => {
@@ -224,6 +233,10 @@ test('a command that sends a file, or the matter’s folder, is told from one th
     'cd "/matters/Garcia I-130" && unzip -d out forms.zip && curl -sO https://www.uscis.gov/i-130',
     'grep -ri mail notes/ ; curl -s https://www.uscis.gov/i-130 >/dev/null',
     'curl -s https://www.uscis.gov/i-130 <<< ""',
+    // "or", not a pipe: fetch the page only if it isn't there yet, and try again if the first try fails.
+    '[ -f page.html ] || curl -sL https://www.uscis.gov/i-485 -o page.html',
+    'curl -sfL https://www.uscis.gov/i-485 -o page.html || curl -sL https://www.uscis.gov/i-485 -o page.html',
+    'rsync -a input/ output/working/ && curl -sO https://www.uscis.gov/i-130',
   ]) expect(sendsFile(fetches)).toBe(false)
   const folder = ['/matters/Garcia I-130']
   // Saved there: not sent. Written into the address or the request: sent, though the name appears nowhere else.

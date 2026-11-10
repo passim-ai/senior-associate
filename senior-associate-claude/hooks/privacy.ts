@@ -79,10 +79,18 @@ export function isScreened(tool: string): boolean {
 
 // A shell command that reaches the network: it names an address, or runs a program that connects somewhere. Words
 // inside a longer name (a file called "curl-notes.txt") don't count.
-const NETWORK_PROGRAMS = /(?:^|[\s;&|(`'"=\/])(?:curl|wget|nc|ncat|netcat|ssh|scp|sftp|ftp|telnet|rsync|mail|mailx|sendmail|osascript|gh)(?=$|[\s;&|)`'"])/
+const NETWORK_PROGRAMS = /(?:^|[\s;&|(`'"=\/])(?:curl|wget|nc|ncat|netcat|ssh|sftp|ftp|telnet|mail|mailx|sendmail|osascript|gh)(?=$|[\s;&|)`'"])/
 const NETWORK_CODE = /\b(?:urllib|requests\.|httpx|http\.client|smtplib|socket\.|aiohttp|fetch\(|XMLHttpRequest|git\s+(?:push|fetch|pull|clone|remote))/
+// rsync and scp copy between folders on this Mac as readily as to another machine. They reach the network only when
+// an endpoint names a host ("host:path", "user@host:", "rsync://") or a remote shell is asked for.
+const COPIER = /(?:^|[;&|(`]\s*|\$\(\s*|\b(?:sudo|exec|time|xargs)\s+)(?:rsync|scp)\s([^;&|\n]*)/g
+const REMOTE_END = /(?:^|\s)["']?(?:[A-Za-z0-9_.-]+@)?[A-Za-z0-9_.-]+:(?!\\)\S*|rsync:\/\/|(?:^|\s)(?:-e|--rsh)(?:=|\s)/
+export function copiesAway(command: string): boolean {
+  for (const m of command.matchAll(COPIER)) if (REMOTE_END.test(m[1] ?? '')) return true
+  return false
+}
 export function reachesNetwork(command: string): boolean {
-  return /\b(?:https?|ftp|sftp|ssh):\/\//i.test(command) || NETWORK_PROGRAMS.test(command) || NETWORK_CODE.test(command)
+  return /\b(?:https?|ftp|sftp|ssh):\/\//i.test(command) || NETWORK_PROGRAMS.test(command) || NETWORK_CODE.test(command) || copiesAway(command)
 }
 const commandOf = (input: unknown): string => String((input as { command?: unknown })?.command ?? '')
 
@@ -104,15 +112,16 @@ export function spelledOut(command: string): string {
 // A command that sends a file or piped text: a copy program, a transfer program's upload option or a file given as
 // its request's data, a pipe or a file fed into a program that connects. What the file holds can't be read here.
 // The options are read only in a transfer program's own part of the command: `awk -F '@'` and `unzip -d` are local.
-const COPY_OUT = /(?:^|[;&|(`]\s*|\$\(\s*|\b(?:sudo|exec|time|xargs)\s+)(?:scp|sftp|rsync|ftp|nc|ncat|netcat|telnet|mail|mailx|sendmail)(?=$|[\s;&|)`])/
+const COPY_OUT = /(?:^|[;&|(`]\s*|\$\(\s*|\b(?:sudo|exec|time|xargs)\s+)(?:sftp|ftp|nc|ncat|netcat|telnet|mail|mailx|sendmail)(?=$|[\s;&|)`])/
 const TRANSFERS = /^\s*(?:[A-Za-z_][A-Za-z0-9_]*=\S*\s+)*(?:(?:sudo|exec|time)\s+)?(?:curl|wget|http|https|xh)(?=\s|$)/
 const UPLOAD_OPTION = /\s(?:-T|--upload-file|--post-file|--body-file)(?:=|\s)/
 const FILE_AS_DATA = /\s(?:-d|--data(?:-binary|-ascii|-urlencode)?|--json|-F|--form)(?:=|\s+)["']?(?:[^\s"'@<=]*=)?[@<]/
-const PIPED_OUT = /\|\s*(?:sudo\s+)?(?:curl|wget|nc|ncat|netcat|ssh|mail|mailx|sendmail)(?=$|[\s;&|)`])/
+// One pipe, not the "or" of two: `[ -f page.html ] || curl …` pipes nothing into curl.
+const PIPED_OUT = /(?<!\|)\|(?!\|)\s*(?:sudo\s+)?(?:curl|wget|nc|ncat|netcat|ssh|mail|mailx|sendmail)(?=$|[\s;&|)`])/
 const FED_A_FILE = /(?:^|[\s;&|(`])(?:curl|wget|ssh)\s[^|;&\n]*(?<!<)<(?!<)\s*[^\s<(&]/
 const parts = (command: string): string[] => command.split(/[;|&\n]+/)
 export function sendsFile(command: string): boolean {
-  if (COPY_OUT.test(command) || PIPED_OUT.test(command) || FED_A_FILE.test(command)) return true
+  if (COPY_OUT.test(command) || copiesAway(command) || PIPED_OUT.test(command) || FED_A_FILE.test(command)) return true
   return parts(command).some(part => TRANSFERS.test(part) && (UPLOAD_OPTION.test(part) || FILE_AS_DATA.test(part)))
 }
 

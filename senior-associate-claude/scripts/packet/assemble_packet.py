@@ -2002,13 +2002,15 @@ def main(argv: list[str] | None = None) -> int:
     if total != expected:
         warnings.append(f"Page count check: packet has {total} pages but items add up to {expected}.")
     if review_receipt is not None:
-        from scripts.draft_packets import keep_review_copy, retire_others
+        from scripts.draft_packets import keep_review_copy, retire_superseded
         from scripts.generated_files import record_generated
         made = [out_pdf] + ([split_dir / f["file"] for f in upload_files] if split_dir is not None else [])
         for path in made:
-            keep_review_copy(matter_root, path)
-        # What this assembly made is the release now; a packet or an upload file recorded before it is retired.
-        retire_others(matter_root, made)
+            keep_review_copy(matter_root, path, part_of=out_pdf)
+        # What this assembly replaces leaves the release: the same packet under its other name, and upload files
+        # split from it before. A split filing's other part is its own assembly and stays; when the fees tool says
+        # the filing isn't split, this packet is all of it.
+        retire_superseded(matter_root, out_pdf, made, whole_filing=channels is not None and not channels.get("split"))
         record_generated([out_pdf], review_receipt)
     size = out_pdf.stat().st_size
     if plan["filing_method"] == "online" and not upload_files and size > ONLINE_UPLOAD_MAX_MB * 1_048_576:
