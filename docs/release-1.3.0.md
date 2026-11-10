@@ -4,7 +4,7 @@ Recorded November 10, 2026, as `senior-associate-claude/docs/VERIFICATION.md` as
 
 ## Result
 
-A full build of the plugin's sample matter passed all 10 steps on the release candidate, in the desktop app's own engine. The approval steps then worked on that build's output. The build also showed one more defect in the tool gate, which was fixed and probed again before release.
+A full build of the plugin's sample matter passed all 10 steps on the release candidate, in the desktop app's own engine. The approval steps then worked on that build's output. The build also showed one more defect in the tool gate, which was fixed, reviewed, fixed again more narrowly, and probed in the engine before release.
 
 The panel itself was not used in the desktop app. That is the main thing still untested.
 
@@ -22,7 +22,7 @@ The panel itself was not used in the desktop app. That is the main thing still u
 | How it was started | As the app starts a build from the chat box: `start_run` for the lease and the brief, the lease renewed every 45 seconds, then the brief given to the `senior-associate:senior-associate` agent |
 | Mac | macOS 27.2, uv 0.13.5, Python 3.12.12, Ghostscript 10.06.0, Poppler 26.10.0, LibreOffice 26.2.0.3, Node 26.12.1 |
 
-Commits: the build ran on `1858375`. The approval steps, the last gate probe and the last full test run used `04521a3`, which differs from `1858375` in the tool gate's reading of shell commands, the rule for retiring packets, and the test workflow's runner. The released commit adds only this record and the PR's documentation.
+Commits: the build ran on `1858375`. The approval steps ran on `04521a3`. The last gate probe and the last full test run used `93d5931`. Between `1858375` and `93d5931` the changes are the tool gate's reading of shell commands, the rule for retiring packets, and the test workflow's runner. The released commit adds only this record.
 
 ## The build
 
@@ -50,8 +50,8 @@ Three calls out of about 445 that it screens.
 | Call | Refused because | Right? |
 |---|---|---|
 | A BIA Edge search for "Lopez-Meza moral turpitude…" | "Lopez" is the surname of the client's mother | By the rule, yes; in effect, no. *Matter of Lopez-Meza* is a precedent. The agent searched again in other words and went on. See "Known limits". |
-| A shell command writing a Python file of source addresses | The old check read any address anywhere in a command as reaching the network, then found a client's name in the file | No. Fixed in `04521a3`. |
-| A shell command writing the review memo with `cat` | The memo said the packet goes "by mail", and `mail` is a program that connects | No. Fixed in `04521a3`. |
+| A shell command writing a Python file of source addresses with `cat` | The check reads an address anywhere in a command as reaching the network, and the file named the client | No. Fixed in `93d5931`: text a command only writes down is left out. |
+| A shell command writing the review memo with `cat` | The memo said the packet goes "by mail", and `mail` is a program that connects | No. Fixed in `93d5931`, the same way. |
 
 In both false refusals the agent wrote the file another way and the step passed.
 
@@ -81,19 +81,23 @@ Each started one of the plugin's agents on the sample matter while a run held it
 |---|---|---|
 | 1 | `c241852` | Failed. The agent's report was refused three times: `SubagentHandback` was on no list of allowed tools. This would have stopped every build. |
 | 2 | `1858375` | The agent loaded its skill, ran a compound local command, fetched a public page (200), and handed back its report. A second agent's legal search and a fetch of a USCIS page went through; its search naming the client was refused. |
-| 3 | `04521a3` | A memo naming the client and saying "by mail" was written with `cat`; a Python table of source addresses naming the client ran; `[ -f page ] \|\| curl …` fetched (200); a search naming the client's wife was refused; a search for *Matter of Cervantes-Gonzalez* went through; the report was handed back. |
+| 3 | `04521a3` | Passed, on a first version of the fix that was then replaced (see "Independent review"). |
+| 4 | `93d5931` | A memo naming the client and saying "by mail" was written with `cat`; a Python file of source addresses naming the client was written with `cat` and run; `[ -f page ] \|\| curl …` fetched (200); a search naming the client's wife was refused; a search for *Matter of Cervantes-Gonzalez* went through; the report was handed back. |
 
 In probe 2 the agent itself declined two commands it was asked to run, one sending the client's name to a website and one uploading a client document, so the gate's refusal of those was not seen in the engine. The app tests cover both.
 
 ## Test suites
 
-- `UV_PYTHON=3.12 bash scripts/check-plugins.sh` on `04521a3`: all 30 Claude suites (27 Python suites, the app tests, plugin and marketplace validation), 6 transport tests, 29 ChatGPT adapter tests, the lifecycle test through both real transports, 13 browser scenarios.
-- The app tests (147) pass under engine 2.1.317 and CLI 2.1.304.
+- `UV_PYTHON=3.12 bash scripts/check-plugins.sh` on `93d5931`: all 30 Claude suites (27 Python suites, the app tests, plugin and marketplace validation), 6 transport tests, 29 ChatGPT adapter tests, the lifecycle test through both real transports, 13 browser scenarios.
+- The app tests (148) pass under engine 2.1.317.
+- The build's own 398 shell commands were replayed through the final rule: the 3 false network readings are gone and no other command reads differently.
 - GitHub Actions ran this workflow for the first time on this branch. Every earlier run, back to 1.0.0, was cancelled within seconds because the `macos-14` runner image was being retired; it now runs on `macos-15`.
 
 ## Independent review
 
-GPT-6 Astra (high) reviewed `c241852` and then `1858375`. It found ten defects, all fixed; `docs/fixes-2026-11-09.md` lists them. The fix in `04521a3` to how shell commands are read came after the second round and was not reviewed by Astra.
+GPT-6 Astra (high) reviewed `c241852`, then `1858375`, then `04521a3`. The first two rounds found ten defects, all fixed; `docs/fixes-2026-11-09.md` lists them.
+
+The third round was on the first fix for the false refusals above, which read a command's network reach from the programs it ran. Astra found nine ways that reading missed a real request (inside a process substitution or an unquoted here-document, launched from inline Python, behind `env -i`, after a comment with an apostrophe, inside `bash -c`) and one pattern that could take minutes on a long address. That design was dropped. `93d5931` goes back to the broad reading the first two rounds covered and leaves out one thing only: the body of a here-document that a command writes down with `cat`, `tee` or a plain filter. That narrower change was not reviewed by Astra again.
 
 ## Not tested
 
@@ -108,6 +112,8 @@ GPT-6 Astra (high) reviewed `c241852` and then `1858375`. It found ten defects, 
 ## Known limits seen in the trial
 
 - A precedent cited by a short name that is also a party's surname is refused ("Lopez-Meza" when a party is named López). Writing "Matter of Lopez-Meza" passes.
+- A shell command that names an address, or a word such as `mail` or `ssh`, outside a file it is writing is still read as reaching the network, and is refused if it also names the client. Inline Python that builds a record with source addresses and the client's name is the likely case; the agent then writes the file with the Write tool instead.
+- Text written down inside a shell function or group that is later piped to a shell is not read. The gate is a safeguard against a slip, not against a command built to get round it.
 - First names and titles read from the documents become terms too ("Rev", from "Rev. Julián Arreola"), so a search containing one as a whole word is refused.
 - A build of the sample cost about three times the 35 to 43 million tokens measured for builds under versions 0.2.4 to 0.9. The earlier figures may not have counted cache reads the same way, so the two are not a like-for-like comparison.
 
