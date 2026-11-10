@@ -10,7 +10,7 @@ import { answerFor, saveInstructions } from '../runs'
 import { session, setNote, typed } from '../state'
 import { ACCENT, ACCENT_TEXT, CARD, ERROR, HEAD, MUTED, STAGE_TEXT, WARN } from '../theme'
 import { markdown } from '../md'
-import { ASK_LABEL, brief, clock, dateOnly, duration, nowMs, plural, when, whenPhrase } from '../words'
+import { ASK_LABEL, AUTO_BEFORE, AUTO_WAITING, brief, clock, dateOnly, duration, nowMs, plural, when, whenPhrase } from '../words'
 import { matterStatus } from '../status'
 
 // What Check the law again does, wherever it is offered.
@@ -123,6 +123,8 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
     if (working?.waitingOk) {
       border = WARN
       lines.push(<Text key="ok">{`Claude is waiting for your OK in the chat. The ${runKind(kind).noun} continues once you answer.`}</Text>)
+      // The way out of answering several hundred of these.
+      lines.push(<Text key="ok-auto">{AUTO_WAITING}</Text>)
     } else if (stalled) {
       border = WARN
       lines.push(<Text key="stall">Nothing has changed for 20 minutes. Claude may be waiting for your OK in the chat, or it stopped.</Text>)
@@ -346,6 +348,9 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
     lines.push(<Text key="other">Claude isn’t working on this matter now. Continue building picks up from the last finished step.</Text>)
     main = [{ id: 'continue', label: 'Continue building', kind: 'primary', detail: 'Picks up where it stopped' }]
   }
+
+  // Where a build starts: the permission setting that lets it run without stopping at every step.
+  if (main.some(m => m.id === 'build' || m.id === 'continue')) foot.push(<Text key="auto-before" dimColor size="footnote">{AUTO_BEFORE}</Text>)
 
   // On any other card, something to fix first (the open items list can't be read, say) is said there too.
   if (systemNeeds.length && !['needs_you', 'building', 'starting', 'stopped'].includes(state)) lines.unshift(systemBlock('Needs fixing first'))

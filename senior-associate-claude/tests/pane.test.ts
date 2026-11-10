@@ -89,6 +89,7 @@ test('the first time: getting set up, the welcome, the first matter, files and a
   expect(await ui.find({ type: 'Text', text: /^✓ Added 2 files\.$/ })).toBeDefined()
   expect(store.prefs).toMatchObject({ pickerSeen: true })
   expect(await ui.find({ type: 'Text', text: /^Ready to build$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^Before you build, set the permission setting under the prompt box to Auto\./ })).toBeDefined()
   expect(await inActions(ui, /About 1–1½ hours · runs in the background/)).toBeDefined()
   expect(await inActions(ui, /About 5–10 minutes · see what’s missing first/)).toBeDefined()
   // The numbers, and the matter's details folded under them.
@@ -221,6 +222,8 @@ test('Claude at work: waiting for your OK, then twenty minutes with no progress,
   await ($ as never as { tool: { check: (e: unknown) => Promise<unknown> } }).tool.check({ tool: 'Bash', input: { command: 'gs -v' }, agentId: 'agent-1', approver: 'person' })
   await clock.settle()
   expect(await ui.find({ type: 'Text', text: /^Claude is waiting for your OK in the chat\. The build continues once you answer\.$/ })).toBeDefined()
+  // And the way out of several hundred of these: Auto, under the prompt box.
+  expect(await ui.find({ type: 'Text', text: /^A build asks like this several hundred times in Claude’s usual setting\. Under the prompt box, switch the permission setting to Auto/ })).toBeDefined()
   await ($ as never as { tool: { check: (e: unknown) => Promise<unknown> } }).tool.check({ tool: 'Read', input: {}, agentId: 'agent-1', approver: 'person' })
   await clock.settle()
   expect(await ui.find({ type: 'Text', text: /waiting for your OK in the chat\. The build/ })).toBeUndefined()

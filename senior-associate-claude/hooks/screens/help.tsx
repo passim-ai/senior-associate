@@ -49,6 +49,7 @@ export async function helpScreen($: EngineInterface, x: Ctx): Promise<JSX.Elemen
       howTo('h5', 'Change the case type or the filing posture', 'On the matter page, More you can do › Change what is being filed. The steps start over; your documents stay and earlier work is kept.'),
       howTo('h6', 'Take out a document added by mistake', 'Documents › Remove beside the file. It’s kept with the matter, and Put back returns it.'),
       howTo('h7', 'Undo Mark done', 'Questions › Resolved › Reopen.'),
+      howTo('h7b', 'Stop Claude asking permission for every step', 'Under the prompt box, switch the permission setting to Auto before you build. In Claude’s usual setting a full build asks several hundred times, and “don’t ask again” removes only a few. In Auto, Build puts the request in your chat box: press Enter there to send it.'),
       howTo('h8', 'Stop Claude', 'While Claude works, press Stop on the matter page. Everything finished is kept, and Continue building picks up there.'),
       howTo('h9', 'Undo Mark as filed', 'Open the matter and press Undo.'),
       <Box key="h10" flexDirection="column" gap="xs">

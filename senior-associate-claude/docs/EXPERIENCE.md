@@ -164,6 +164,10 @@ A column on every Overview: "A question, some research, or a change you want mad
 
 Folded on every Overview except Filed, and the box keeps its label "Additional attorney instructions": "Anything Claude should follow on this matter: what to lead with, what to leave out, how to argue it. Claude reads these before every step, in the build and every update after it." One box, four lines, with **save**. Saved, they live in the matter folder (output › working › workflow › attorney-instructions.md), every run's brief names the file, and each step reads it, so they hold for the build and every run after it until the attorney changes them. The save says when they take effect: before a build, "Claude follows them in every step of the build"; while Claude works, "The steps Claude hasn't reached yet follow them"; after a build, "Claude follows them from its next run. To redo the packet with them now, use Tell Claude what to change." Saving an empty box clears them. Text typed but not saved goes with the next run anyway: pressing Build packet, or any button that starts Claude, saves it first. Changing what is being filed keeps them. An instruction Claude can't follow without contradicting the documents or the law becomes a question on Questions instead. **Save instructions** under the box does what Enter does.
 
+### The permission setting
+
+A build in Claude's usual permission setting stops to ask several hundred times, and the plugin cannot answer for the attorney (Claude's own security check holds an ask over any installed plugin). So the page recommends Auto in two places. Under the buttons of any card that starts or continues a build, in small type: "Before you build, set the permission setting under the prompt box to Auto. In Claude's usual setting a build stops to ask your permission several hundred times; in Auto, Claude checks each step itself." And when a build is waiting for an OK, under "Claude is waiting for your OK in the chat…": "A build asks like this several hundred times in Claude's usual setting. Under the prompt box, switch the permission setting to Auto and Claude checks each step itself instead." Help has the same under "Stop Claude asking permission for every step".
+
 ### Research
 
 A card on the Overview from the moment the research step has written its records. It never judges the law; it counts what the records say was done.
@@ -318,7 +322,7 @@ Then **Files for this matter**, once there are any (below). Then **Steps**: "3 o
 
 ## Help
 
-**Help** in the header of every screen; the page's line says the version ("Immigration Packet Builder 1.4.0").
+**Help** in the header of every screen; the page's line says the version ("Immigration Packet Builder 1.4.1").
 
 - How it works, in four steps.
 - **How do I…**: ask about a case, research a point, or have one thing changed; add documents after a review or a build; have Claude look at the documents again; fix something in the draft; redo one part; change the case type or posture; take out a document; undo Mark done; stop Claude; undo Mark as filed. Each is the question in bold and the presses, in one line.
