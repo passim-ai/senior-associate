@@ -77,10 +77,33 @@ export function isScreened(tool: string): boolean {
   return tool === 'Bash' || isResearch(tool) || isBrowser(tool) || isOutbound(tool)
 }
 
-// A shell command that reaches the network: it names an address, or runs a program that connects somewhere. Words
-// inside a longer name (a file called "curl-notes.txt") don't count.
-const NETWORK_PROGRAMS = /(?:^|[\s;&|(`'"=\/])(?:curl|wget|nc|ncat|netcat|ssh|sftp|ftp|telnet|mail|mailx|sendmail|osascript|gh)(?=$|[\s;&|)`'"])/
-const NETWORK_CODE = /\b(?:urllib|requests\.|httpx|http\.client|smtplib|socket\.|aiohttp|fetch\(|XMLHttpRequest|git\s+(?:push|fetch|pull|clone|remote))/
+// ---------- reading a shell command ----------
+// Whether a command reaches the network is read from the programs it runs, never from every word in it. A memo
+// written with `cat > memo.md <<EOF … filed by mail … EOF` runs cat, and the text it writes is not a command; a table
+// of sources kept in a Python file is a list of addresses nobody is fetching.
+
+// Programs that connect somewhere by their nature.
+const NET_PROGRAMS = new Set(['curl', 'wget', 'nc', 'ncat', 'netcat', 'ssh', 'sftp', 'ftp', 'telnet', 'mail', 'mailx', 'sendmail', 'osascript', 'gh', 'http', 'https', 'xh', 'lynx', 'w3m', 'aria2c'])
+// Programs whose text is itself commands, or code.
+const SHELLS = new Set(['bash', 'sh', 'zsh', 'eval'])
+const INTERPRETERS = new Set(['python', 'python3', 'node', 'ruby', 'perl', 'deno', 'bun', 'php'])
+// Programs that only read and write text and files on this Mac: an address among their words is data.
+const TEXT_TOOLS = new Set(`
+  echo printf cat tee sed awk gawk grep egrep fgrep rg ag jq yq ls mkdir rmdir cp mv rm ln touch head tail wc sort uniq
+  cut tr find test [ [[ diff cmp comm file stat chmod chown cd pushd popd pwd export unset set true false read
+  basename dirname realpath readlink xxd od hexdump base64 md5 md5sum shasum sha256sum date sleep wait kill pkill pgrep
+  ps which type hash printenv tar zip unzip gzip gunzip zcat pdftotext pdfinfo pdftoppm pdfimages pdffonts pdfunite
+  pdfseparate gs qpdf mutool exiftool sips textutil plutil iconv fold fmt nl paste column tac rev strings less more
+  local declare typeset readonly return exit break continue shift source . : mdls mdfind du df sw_vers uname whoami id
+  pbcopy pbpaste say trap fi done esac
+`.trim().split(/\s+/))
+const ADDRESS = /\b(?:https?|ftp|sftp|ssh):\/\//i
+const NETWORK_CODE = /\b(?:urllib|requests\.|httpx|http\.client|smtplib|socket\.|aiohttp|urlopen|fetch\(|XMLHttpRequest|WebSocket|git\s+(?:push|fetch|pull|clone|remote))/
+// A network program's name as a word anywhere: how a shell's own text (`bash -c "…"`) is read, where every word may
+// be a command.
+const NET_WORD = /(?:^|[\s;&|(`'"=\/])(?:curl|wget|nc|ncat|netcat|ssh|sftp|ftp|telnet|mail|mailx|sendmail|osascript|gh)(?=$|[\s;&|)`'"])/
+// One run inside another: `$(curl …)`, a backtick, `find … -exec curl`.
+const NET_INSIDE = /(?:\$\(|`)\s*(?:sudo\s+)?(?:curl|wget|nc|ncat|netcat|ssh|sftp|ftp|telnet|mail|mailx|sendmail|osascript|gh)(?=$|[\s)`])|\s-exec(?:dir)?\s+(?:curl|wget|nc|ncat|netcat|ssh|sftp|ftp|telnet|mail|mailx|sendmail|osascript|gh)(?=\s)/
 // rsync and scp copy between folders on this Mac as readily as to another machine. They reach the network only when
 // an endpoint names a host ("host:path", "user@host:", "rsync://") or a remote shell is asked for.
 const COPIER = /(?:^|[;&|(`]\s*|\$\(\s*|\b(?:sudo|exec|time|xargs)\s+)(?:rsync|scp)\s([^;&|\n]*)/g
@@ -89,8 +112,85 @@ export function copiesAway(command: string): boolean {
   for (const m of command.matchAll(COPIER)) if (REMOTE_END.test(m[1] ?? '')) return true
   return false
 }
+
+// A command's parts, each a program and its words: cut at `;`, `|`, `&` and line ends that stand outside quotes.
+export function shellParts(text: string): string[] {
+  const out: string[] = []
+  let cur = ''
+  let quote = ''
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i] ?? ''
+    if (quote) {
+      cur += ch
+      if (ch === '\\' && quote === '"' && i + 1 < text.length) cur += text[++i] ?? ''
+      else if (ch === quote) quote = ''
+    } else if (ch === '\\' && i + 1 < text.length) {
+      cur += ch + (text[++i] ?? '') // an escaped character, a line that goes on
+    } else if (ch === '"' || ch === "'") {
+      quote = ch
+      cur += ch
+    } else if (ch === ';' || ch === '|' || ch === '&' || ch === '\n') {
+      if (cur.trim()) out.push(cur)
+      cur = ''
+    } else cur += ch
+  }
+  if (cur.trim()) out.push(cur)
+  return out
+}
+
+// The program a part runs: past any assignments (X=1 curl …), wrappers (sudo, env, xargs) and the shell's own words
+// (then, do), and without its folder (/usr/bin/curl).
+const LEAD = /^(?:[({!]+\s*|(?:[A-Za-z_][A-Za-z0-9_]*=(?:"[^"]*"|'[^']*'|\S*)|sudo|exec|time|nohup|command|env|then|do|else|elif|if|while|until)\s+|xargs\s+(?:-\S+\s+)*)*/
+const ONLY_ASSIGNS = /^\s*(?:(?:export|local|declare|readonly)\s+)?(?:[A-Za-z_][A-Za-z0-9_]*=(?:"[^"]*"|'[^']*'|\S*)\s*)+$/
+export function programOf(part: string): string {
+  if (ONLY_ASSIGNS.test(part)) return '' // X="https://…" runs nothing; the value is read where it is used
+  const rest = part.trimStart().replace(LEAD, '')
+  const word = /^(?:"([^"]+)"|'([^']+)'|([^\s)]+))/.exec(rest)
+  return ((word?.[1] ?? word?.[2] ?? word?.[3] ?? '').split('/').pop() ?? '')
+}
+
+// A command's here-documents, by what each is fed to. `reach`: the command as its programs are read, with only a
+// shell's here-document kept (its lines are commands). `code`: the bodies fed to an interpreter. `sent`: the command
+// as its words may leave, with the bodies written by a text tool (cat > file) taken out, since those stay here.
+type Heredocs = { reach: string; sent: string; code: string[] }
+const HEREDOC = /<<-?[ \t]*(["']?)([A-Za-z_][A-Za-z0-9_]*)\1([^\n]*)\n([\s\S]*?)\n[ \t]*\2[ \t]*(?=\n|$)/g
+function readHeredocs(command: string): Heredocs {
+  const code: string[] = []
+  const fedTo = (at: number) => programOf(shellParts(command.slice(command.lastIndexOf('\n', at - 1) + 1, at)).pop() ?? '')
+  const reach = command.replace(HEREDOC, (_all: string, _q: string, _tag: string, rest: string, body: string, at: number) => {
+    const fed = fedTo(at)
+    if (INTERPRETERS.has(fed)) code.push(body)
+    return SHELLS.has(fed) ? ` ${rest}\n${body}` : ` ${rest}`
+  })
+  const sent = command.replace(HEREDOC, (all: string, _q: string, _tag: string, rest: string, _body: string, at: number) => (TEXT_TOOLS.has(fedTo(at)) ? ` ${rest}` : all))
+  return { reach, sent, code }
+}
+
+// An interpreter given code to run (python3 -c "…", python3 - <<EOF) rather than a script file: an address in the
+// code is a string unless the code also connects.
+const SCRIPT_FILE = /\s(?:-m\s+\S+|["']?[^\s"'-][^\s"']*\.(?:py|js|mjs|cjs|ts|rb|pl|php)["']?)(?:\s|$)/
+
 export function reachesNetwork(command: string): boolean {
-  return /\b(?:https?|ftp|sftp|ssh):\/\//i.test(command) || NETWORK_PROGRAMS.test(command) || NETWORK_CODE.test(command) || copiesAway(command)
+  const { reach, code } = readHeredocs(command)
+  if (code.some(body => NETWORK_CODE.test(body))) return true
+  if (NET_INSIDE.test(reach) || copiesAway(reach)) return true
+  for (const part of shellParts(reach)) {
+    const program = programOf(part)
+    if (!program || TEXT_TOOLS.has(program) || program === 'rsync' || program === 'scp') continue
+    if (NET_PROGRAMS.has(program)) return true
+    if (program === 'git') {
+      if (/\bgit\s+(?:-\S+\s+)*(?:push|fetch|pull|clone|remote|ls-remote|submodule)\b/.test(part)) return true
+    } else if (SHELLS.has(program)) {
+      if (ADDRESS.test(part) || NET_WORD.test(part) || NETWORK_CODE.test(part)) return true
+    } else if (INTERPRETERS.has(program) && !SCRIPT_FILE.test(part)) {
+      if (NETWORK_CODE.test(part)) return true
+    } else if (ADDRESS.test(part) || NETWORK_CODE.test(part)) {
+      // Any other program (a script run with an address, `open`, a tool nobody listed): given an address, it may
+      // fetch it.
+      return true
+    }
+  }
+  return false
 }
 const commandOf = (input: unknown): string => String((input as { command?: unknown })?.command ?? '')
 
@@ -119,10 +219,10 @@ const FILE_AS_DATA = /\s(?:-d|--data(?:-binary|-ascii|-urlencode)?|--json|-F|--f
 // One pipe, not the "or" of two: `[ -f page.html ] || curl …` pipes nothing into curl.
 const PIPED_OUT = /(?<!\|)\|(?!\|)\s*(?:sudo\s+)?(?:curl|wget|nc|ncat|netcat|ssh|mail|mailx|sendmail)(?=$|[\s;&|)`])/
 const FED_A_FILE = /(?:^|[\s;&|(`])(?:curl|wget|ssh)\s[^|;&\n]*(?<!<)<(?!<)\s*[^\s<(&]/
-const parts = (command: string): string[] => command.split(/[;|&\n]+/)
 export function sendsFile(command: string): boolean {
-  if (COPY_OUT.test(command) || copiesAway(command) || PIPED_OUT.test(command) || FED_A_FILE.test(command)) return true
-  return parts(command).some(part => TRANSFERS.test(part) && (UPLOAD_OPTION.test(part) || FILE_AS_DATA.test(part)))
+  const { reach } = readHeredocs(command)
+  if (COPY_OUT.test(reach) || copiesAway(reach) || PIPED_OUT.test(reach) || FED_A_FILE.test(reach)) return true
+  return shellParts(reach).some(part => TRANSFERS.test(part) && (UPLOAD_OPTION.test(part) || FILE_AS_DATA.test(part)))
 }
 
 // The matter's own folder written where it is sent, not where a download is saved: inside an address, or in what a
@@ -135,7 +235,7 @@ export function carriesFolder(command: string, folders: string[]): boolean {
     for (let at = command.indexOf(folder); at >= 0; at = command.indexOf(folder, at + folder.length)) {
       const before = command.slice(0, at)
       if (IN_ADDRESS.test(before)) return true
-      const part = parts(before).pop() ?? ''
+      const part = shellParts(before).pop() ?? ''
       if (TRANSFERS.test(part) && IN_REQUEST.test(part)) return true
     }
   }
@@ -386,7 +486,7 @@ export async function researchGate($: EngineInterface, tool: string, input: unkn
   try {
     const matters = who.matter ? [who.matter] : await mattersAtWork($)
     if (shell && carriesFolder(command, matters)) return SHELL_BLOCKED
-    const sent = shell ? withoutFolders(command, matters) : browser ? browserSends(input) : input
+    const sent = shell ? withoutFolders(readHeredocs(command).sent, matters) : browser ? browserSends(input) : input
     // No matter at work that anyone knows of. One of the plugin's own agents may still hold a client's file (started
     // by hand, outside a run), so what it sends is checked for anything shaped like an identifier; anyone else has
     // nothing of a client's to keep back.

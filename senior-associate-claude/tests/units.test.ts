@@ -4,7 +4,7 @@
 import type { Card, CardStatus, Lease, Run } from '../types'
 import { expect, test } from 'claude-code/testing'
 import { neededBeforeFiling, neededParts, reportQuestions } from '../hooks/matter'
-import { browserSends, carriesFolder, copiesAway, holdsTerm, isBrowser, isOutbound, isResearch, isScreened, onlyCitations, reachesNetwork, readTerms, sendsFile, spelledOut } from '../hooks/privacy'
+import { browserSends, carriesFolder, copiesAway, holdsTerm, programOf, shellParts, isBrowser, isOutbound, isResearch, isScreened, onlyCitations, reachesNetwork, readTerms, sendsFile, spelledOut } from '../hooks/privacy'
 import { notInBrief } from '../hooks/runs'
 import { sortRows } from '../hooks/screens/home'
 import { timelineDays } from '../hooks/screens/timeline'
@@ -194,6 +194,16 @@ test('a shell command reaches the network only when it names an address or runs 
     'rsync -a input/ output/working/',
     'rsync -a --delete "/matters/Garcia I-130 I-485/Client documents/" output/working/copies/',
     'scp notes.txt output/working/notes.txt',
+    // Text that is only written to a file: a memo that says the packet goes by mail, a table of sources kept in a
+    // Python file, a findings file edited in place. Each is a word or an address in what is written, not a command.
+    'cat > "cover letter review memo.md" <<\'EOF\'\n# Cover letter review memo\n\n**Matter:** I-601A, new filing, paper by mail (not protected)\nSee curl notes and ssh keys.\nEOF',
+    'mkdir -p scratch; cat > scratch/matrix.py <<\'EOF\'\nimport json\nPM = "https://www.uscis.gov/policy-manual/volume-9-part-b-chapter-5"\nprint(json.dumps({"url": PM}))\nEOF',
+    'cd "/matters/Garcia I-130 I-485/output/working/vault" && python3 - <<\'EOF\'\nimport json\nd = json.load(open("findings.json"))\nd["source"] = "https://www.uscis.gov/i-485"\njson.dump(d, open("findings.json", "w"))\nEOF',
+    'U="https://www.uscis.gov/i-485"; echo "$U" >> sources.txt',
+    'echo "Sources: https://www.uscis.gov/i-485 (checked today)" >> notes.md',
+    'grep -rn "https://" output/working/vault | head -5',
+    'python3 -c "print(\'https://www.uscis.gov/i-485\'.split(\'/\')[2])"',
+    'sed -i "" "s#http://www.uscis.gov#https://www.uscis.gov#" notes.md',
   ]) expect(reachesNetwork(local)).toBe(false)
   for (const out of [
     'curl -s https://www.uscis.gov/i-485 -o /tmp/i-485.html',
@@ -206,7 +216,24 @@ test('a shell command reaches the network only when it names an address or runs 
     'rsync -a output/ backup-host:matters/',
     'rsync -a -e ssh output/ somewhere',
     'scp packet.pdf me@example.com:/tmp/',
+    // A program in command position, however it is reached.
+    '/usr/bin/curl -s https://www.uscis.gov/i-485',
+    'cd /tmp && env LANG=C curl -s https://www.uscis.gov/i-485',
+    'if [ ! -f page.html ]; then curl -sL https://www.uscis.gov/i-485 -o page.html; fi',
+    'EDITION=$(curl -s https://www.uscis.gov/i-485 | grep -o "Edition Date[^<]*")',
+    'find . -name "*.txt" -exec curl -T {} ftp://example.com/ \;',
+    'cat notes.txt | mail -s "notes" someone@example.com',
+    'bash -c "curl -s https://www.uscis.gov/i-485"',
+    'bash <<\'EOF\'\ncurl -s https://www.uscis.gov/i-485\nEOF',
+    // A script or a tool given an address may fetch it; so may code that connects, wherever it is written.
+    'python3 fetch_page.py "https://example.com/search?q=waiver"',
+    'uv run --script /plugin/scripts/forms/download_uscis_forms.py --url https://www.uscis.gov/i-485',
+    'python3 - <<\'EOF\'\nimport urllib.request\nprint(urllib.request.urlopen("https://www.uscis.gov/i-485").status)\nEOF',
   ]) expect(reachesNetwork(out)).toBe(true)
+  // How a command is read: its parts outside quotes, and the program each runs.
+  expect(shellParts('cd "a; b" && ls | head -3\necho "x | y"').map(programOf)).toEqual(['cd', 'ls', 'head', 'echo'])
+  expect(programOf('X=1 Y="two words" sudo /opt/homebrew/bin/uv run x.py')).toBe('uv')
+  expect(programOf('U="https://www.uscis.gov/i-485"')).toBe('')
   expect(copiesAway('rsync -a input/ output/working/')).toBe(false)
   expect(copiesAway('cd output && rsync -a . host:backup/')).toBe(true)
 })
