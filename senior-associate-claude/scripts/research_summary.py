@@ -5,7 +5,7 @@
 # ///
 """What the research behind the cover letter covered, in the words the app and the memo show.
 
-Read from the researcher's own records: the support matrix (every authority the letter cites), the legal currency
+Read from the researcher's own records: the support matrix (the authorities behind each point of the letter), the legal currency
 review (what was checked for later treatment and for change, and when) and, when the researcher looked for them, the
 unpublished decisions on similar facts. Nothing here judges the law. It counts what the records say was done, and it
 says plainly when BIA Edge wasn't used, so the attorney sees what the letter's law rests on before filing.
@@ -16,7 +16,7 @@ says plainly when BIA Edge wasn't used, so the attorney sees what the letter's l
 from __future__ import annotations
 
 import argparse
-from datetime import date
+from datetime import date, datetime, timezone
 import json
 from pathlib import Path
 import re
@@ -44,6 +44,10 @@ UNCHECKED = re.compile(r"not checked|unchecked|couldn['’]t be checked|could no
 CLEAN = re.compile(r"\b(?:none|no|nothing)\b[^.;:]{0,60}\b(?:adverse|negative)\b", re.I)
 # The library's status word for a case, as the researcher copies it into the row, and the ones that flag it.
 STATUS = re.compile(r"\bImmCite\s+([a-z_]+)", re.I)
+# A review that says it left something over: "31 of 32 citing decisions reviewed", "one unreviewed" (unless the row
+# goes on to say those were since read).
+PART_REVIEWED = re.compile(r"\b(\d+)\s+of\s+(\d+)\b[^.;]{0,80}\b(?:reviewed|read|checked)\b", re.I)
+LEFT_OVER = re.compile(r"\bunreviewed\b(?![^.;]*\bnow\s+(?:checked|reviewed|read)\b)", re.I)
 FLAGGED = {"caution", "negative", "overruled", "vacated", "superseded"}
 STANDARD_SOURCE = re.compile(r"^authorities/", re.I)
 # Why the letter was researched without the library, as the researcher records it on the receipt.
@@ -72,6 +76,13 @@ def _day(value: Any) -> date | None:
         return None
 
 
+def _written(path: Path) -> str:
+    try:
+        return datetime.fromtimestamp(path.stat().st_mtime, timezone.utc).isoformat(timespec="seconds")
+    except OSError:
+        return ""
+
+
 def long_date(day: date) -> str:
     return f"{day:%B} {day.day}, {day.year}"
 
@@ -88,6 +99,13 @@ def _is_case(row: dict[str, Any]) -> bool:
     return bool(row.get("document_id")) or bool(CASE.search(f"{row.get('authority') or ''} {row.get('citation') or ''}"))
 
 
+def _incomplete(text: str) -> bool:
+    """The row itself says the review of later treatment was not done, or not done in full."""
+    if UNCHECKED.search(text) or LEFT_OVER.search(text):
+        return True
+    return any(int(done) < int(total) for done, total in PART_REVIEWED.findall(text))
+
+
 def treatment_of(validity: Any) -> str:
     """How a case's row records its later treatment: limited, clean, or unknown (not checked, or not said).
 
@@ -99,7 +117,7 @@ def treatment_of(validity: Any) -> str:
     status = named.group(1).casefold() if named else ""
     if status in FLAGGED:
         return "limited"
-    if status.startswith("unchecked") or status == "not_applicable" or UNCHECKED.search(text):
+    if status.startswith("unchecked") or status == "not_applicable" or _incomplete(text):
         return "unknown"
     # "No negative treatment" is not a limit: read the limiting words in what is left once the clean phrase is out.
     if not status and LIMITED.search(CLEAN.sub(" ", text)):
@@ -132,6 +150,9 @@ def research_summary(matter: Path, today: date | None = None) -> dict[str, Any] 
         if not isinstance(prop, dict):
             continue
         rows = [r for r in prop.get("support") or [] if isinstance(r, dict) and _key(r)]
+        if str(prop.get("recommendation") or "").strip().casefold() == "drop":
+            # The research recommends taking the point out of the letter: its support isn't what the letter rests on.
+            rows = []
         for row in rows:
             authorities[_key(row)] = row
             if _is_case(row):
@@ -157,10 +178,9 @@ def research_summary(matter: Path, today: date | None = None) -> dict[str, Any] 
     checks = [c for c in receipt.get("checks") or [] if isinstance(c, dict)] if isinstance(receipt.get("checks"), list) else []
     connector = receipt.get("connector") if isinstance(receipt.get("connector"), dict) else {}
     treated = any(c.get("category") == "adverse_treatment" and c.get("status") == "checked" for c in checks)
-    used = connector.get("available") is True and any(c.get("status") == "checked" for c in checks)
     if connector.get("available") is False:
         state = "without"
-    elif treated or used:
+    elif treated or connector.get("available") is True:
         # The library answered. Whether the check of later treatment was finished is said apart (`treated`).
         state = "checked"
     elif receipt:
@@ -175,6 +195,8 @@ def research_summary(matter: Path, today: date | None = None) -> dict[str, Any] 
             for h in (c.get("hits") if isinstance(c.get("hits"), list) else []) if isinstance(h, dict)]
     applied = sum(1 for h in hits if h.get("disposition") == "applied")
     covered = sum(1 for h in hits if h.get("disposition") == "already_covered")
+    inapplicable = sum(1 for h in hits if h.get("disposition") == "not_applicable")
+    undecided = len(hits) - applied - covered - inapplicable
     unresolved = [_short(u, 240) for u in receipt.get("unresolved") or [] if str(u).strip()] if isinstance(receipt.get("unresolved"), list) else []
 
     checked = _day(receipt.get("checked_at")) if state == "checked" else None
@@ -191,7 +213,8 @@ def research_summary(matter: Path, today: date | None = None) -> dict[str, Any] 
             similar = 0
 
     a, c = len(authorities), len(cases)
-    cites = f"The letter cites {_n(a, 'authority', 'authorities')}" + (
+    # The support the research gives the letter. (An authority the letter only answers is counted with the adverse ones.)
+    cites = f"The research supports the letter with {_n(a, 'authority', 'authorities')}" + (
         f", {'one' if c == 1 else c} of them {'a case' if c == 1 else 'cases'}" if c else ", none of them a case")
     lines: list[str] = []
     if state == "checked":
@@ -225,14 +248,15 @@ def research_summary(matter: Path, today: date | None = None) -> dict[str, Any] 
                          + (f", and {_n(len(adverse), 'adverse authority was', 'adverse authorities were')} identified and answered." if adverse else "."))
         if hits:
             reviewed = f"{_n(len(hits), 'recent decision or policy update was', 'recent decisions and policy updates were')} reviewed"
-            other = len(hits) - applied - covered
             parts = []
             if applied:
                 parts.append(f"{applied} {'was' if applied == 1 else 'were'} taken into account in the research")
             if covered:
                 parts.append(f"{covered} {'was' if covered == 1 else 'were'} already covered by the research")
-            if other and parts:
-                parts.append(f"{other} {'doesn’t' if other == 1 else 'don’t'} apply to this letter")
+            if undecided:
+                parts.append(f"{undecided} {'has' if undecided == 1 else 'have'} no decision recorded")
+            if inapplicable and parts:
+                parts.append(f"{inapplicable} {'doesn’t' if inapplicable == 1 else 'don’t'} apply to this letter")
             lines.append(f"{reviewed}: {'; '.join(parts)}." if parts else f"{reviewed}; none applies to this letter.")
     elif state == "without":
         headline = f"Researched without {LIBRARY}"
@@ -260,6 +284,8 @@ def research_summary(matter: Path, today: date | None = None) -> dict[str, Any] 
         # False when the library answered but the check of the cases' later treatment wasn't finished.
         "treatment_checked": treated if state == "checked" else False,
         "checked_at": checked.isoformat() if checked else "",
+        # When the receipt file itself was last written: how a law check knows the receipt is its own work.
+        "receipt_at": _written(matter / CURRENCY),
         "age_days": age,
         "verified_at": verified.isoformat() if verified else "",
         "authorities": a,

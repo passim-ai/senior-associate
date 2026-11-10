@@ -106,7 +106,7 @@ class SummaryTests(unittest.TestCase):
         self.assertEqual((s["authorities"], s["cases"], s["researched"], s["adverse"]), (5, 3, 1, 2))
         self.assertEqual(s["limited"], ["Matter of O-J-O-, 21 I&N Dec. 381 (BIA 1996)"])
         self.assertEqual(s["lines"], [
-            "The letter cites 5 authorities, 3 of them cases.",
+            "The research supports the letter with 5 authorities, 3 of them cases.",
             "Later treatment was checked for all 3 cases: 1 carries a limit that the research notes explain, and nothing adverse was found for the other 2.",
             "1 point was researched for this client beyond the standard authorities, and 2 adverse authorities were identified and answered.",
             "2 recent decisions and policy updates were reviewed: 1 was taken into account in the research; 1 doesn’t apply to this letter.",
@@ -142,6 +142,43 @@ class SummaryTests(unittest.TestCase):
             with self.subTest(text):
                 self.assertEqual(rs.treatment_of(text), want)
 
+    def test_a_review_that_left_decisions_over_is_not_a_completed_review(self) -> None:
+        # The wording the shipped authorities use for a case with one citing decision still unread.
+        jean = "ImmCite treatment_available; 31 of 32 precedential citing decisions reviewed, none adverse; one unreviewed (Rivas-Gomez v. Gonzales, 441 F.3d 1072 (9th Cir. 2006)). Checked 2026-10-30."
+        self.assertEqual(rs.treatment_of(jean), "unknown")
+        self.assertEqual(rs.treatment_of("ImmCite treatment_available; 31 of 32 published citing decisions reviewed, none adverse"), "unknown")
+        self.assertEqual(rs.treatment_of("ImmCite treatment_available; 12 of 12 citing decisions reviewed, none adverse. Checked 2026-10-30."), "clean")
+        self.assertEqual(rs.treatment_of("ImmCite treatment_available; all 4 published citing decisions reviewed, none adverse"), "clean")
+        # Read since: the row says so, and the review is whole again.
+        self.assertEqual(rs.treatment_of("ImmCite treatment_available; the 2 unreviewed citing decisions now read, none adverse"), "clean")
+        # A flag is a flag, however much of the rest was read.
+        self.assertEqual(rs.treatment_of("ImmCite caution: limited by Matter of X; 3 of 9 citing decisions reviewed"), "limited")
+        self.checked_matter()
+        write(self.m / RESEARCH / "support matrix.json", matrix(proposition("P1", "A point.", [CERVANTES, row("Matter of Jean, 23 I&N Dec. 373 (A.G. 2002)", "23 I&N Dec. 373", jean, document_id=9)])))
+        s = rs.research_summary(self.m, TODAY)
+        self.assertEqual(s["unchecked"], ["Matter of Jean, 23 I&N Dec. 373 (A.G. 2002)"])
+        self.assertIn("Later treatment was checked for 1 of the 2 cases, and nothing adverse was found. For the other one, the research records no completed check.", s["lines"])
+
+    def test_support_under_a_point_the_research_drops_is_not_counted(self) -> None:
+        self.checked_matter()
+        dropped = proposition("P9", "A point the research recommends dropping.", [MENDEZ, OJO]) | {"recommendation": "drop"}
+        write(self.m / RESEARCH / "support matrix.json", matrix(proposition("S1", "A kept point.", [STATUTE, CERVANTES]), dropped))
+        s = rs.research_summary(self.m, TODAY)
+        self.assertEqual((s["authorities"], s["cases"], s["limited"], s["researched"]), (2, 1, [], 0))
+        self.assertEqual(s["lines"][0], "The research supports the letter with 2 authorities, one of them a case.")
+
+    def test_the_receipt_says_the_library_answered_though_no_check_was_finished(self) -> None:
+        self.checked_matter()
+        write(self.m / RECEIPT, receipt(checks=[{"category": c, "status": "not_checked"} for c in ("agency_policy", "adverse_treatment")]))
+        s = rs.research_summary(self.m, TODAY)
+        # The library was used: never "researched without BIA Edge", and never a finished check either.
+        self.assertEqual((s["state"], s["treatment_checked"], s["caveat"]), ("checked", False, ""))
+        self.assertTrue(s["headline"].endswith("the check of later treatment wasn’t finished"))
+        # The receipt's own time of writing rides along, for the law check to know its own work by.
+        self.assertRegex(s["receipt_at"], r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+00:00$")
+        (self.m / RECEIPT).unlink()
+        self.assertEqual(rs.research_summary(self.m, TODAY)["receipt_at"], "")
+
     def test_the_library_answered_but_the_treatment_check_was_not_finished(self) -> None:
         self.checked_matter()
         partial = receipt()
@@ -170,6 +207,9 @@ class SummaryTests(unittest.TestCase):
             ("already_covered", "not_applicable"): "2 recent decisions and policy updates were reviewed: 1 was already covered by the research; 1 doesn’t apply to this letter.",
             ("already_covered",): "1 recent decision or policy update was reviewed: 1 was already covered by the research.",
             ("applied", "applied", "already_covered"): "3 recent decisions and policy updates were reviewed: 2 were taken into account in the research; 1 was already covered by the research.",
+            # A hit nobody decided is not one that doesn't apply.
+            ("pending", "not_applicable"): "2 recent decisions and policy updates were reviewed: 1 has no decision recorded; 1 doesn’t apply to this letter.",
+            ("", ""): "2 recent decisions and policy updates were reviewed: 2 have no decision recorded.",
         }
         for dispositions, line in cases.items():
             with self.subTest(dispositions):
@@ -192,7 +232,7 @@ class SummaryTests(unittest.TestCase):
                 s = rs.research_summary(self.m, TODAY)
                 self.assertEqual((s["state"], s["reason"], s["headline"], s["checked_at"], s["age_days"]), ("without", reason, "Researched without BIA Edge", "", None))
                 self.assertEqual(s["lines"][0], f"When the letter was researched, {words}.")
-                self.assertEqual(s["lines"][1], "The letter cites 3 authorities, one of them a case, as last verified October 30, 2026. "
+                self.assertEqual(s["lines"][1], "The research supports the letter with 3 authorities, one of them a case, as last verified October 30, 2026. "
                                                 "Nothing after that was checked: not the cases’ later treatment, and not new decisions or policy.")
                 self.assertEqual(s["lines"][2], "1 point specific to this client got no case-law research.")
                 self.assertEqual(s["not_researched"], ["A single DWI without aggravating elements is not a crime involving moral turpitude."])
@@ -230,7 +270,7 @@ class SummaryTests(unittest.TestCase):
         self.checked_matter()
         s = rs.research_summary(self.m, TODAY)
         memo = rs.memo_lines(s)
-        self.assertTrue(memo[0].startswith("**Research: checked November 9, 2026 with BIA Edge.** The letter cites 5 authorities, 3 of them cases."))
+        self.assertTrue(memo[0].startswith("**Research: checked November 9, 2026 with BIA Edge.** The research supports the letter with 5 authorities, 3 of them cases."))
         self.assertEqual(memo[-1], s["caveat"])
         out = subprocess.run([sys.executable, str(PLUGIN_ROOT / "scripts/research_summary.py"), str(self.m)], capture_output=True, text=True, check=True).stdout
         self.assertIn("**Research: checked", out)

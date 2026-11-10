@@ -13,19 +13,19 @@ const EDGE = ['mcp__c0ffee__check_validity', 'mcp__c0ffee__search_cases']
 const CHECKED = {
   state: 'checked', reason: '', headline: 'Checked November 9, 2026 with BIA Edge',
   lines: [
-    'The letter cites 24 authorities, 6 of them cases.',
+    'The research supports the letter with 24 authorities, 6 of them cases.',
     'Later treatment was checked for all 6 cases: 2 carry a limit that the research notes explain, and nothing adverse was found for the other 4.',
     '7 points were researched for this client beyond the standard authorities, and 9 adverse authorities were identified and answered.',
   ],
   caveat: 'A clean check means no adverse treatment was found in the library that day. It isn’t a guarantee that a case is still good law.',
-  checked_at: '2026-11-09', age_days: 1, authorities: 24, cases: 6, not_researched: [] as string[], not_researched_count: 0,
+  checked_at: '2026-11-09', receipt_at: '2026-11-09T21:00:00+00:00', age_days: 1, authorities: 24, cases: 6, not_researched: [] as string[], not_researched_count: 0,
   unresolved: ['The attorney has not confirmed the controlling circuit.'], similar: 0,
 }
 const WITHOUT = {
   state: 'without', reason: 'not_connected', headline: 'Researched without BIA Edge',
   lines: [
     'When the letter was researched, BIA Edge wasn’t connected.',
-    'The letter cites 13 authorities, 4 of them cases, as last verified October 30, 2026. Nothing after that was checked: not the cases’ later treatment, and not new decisions or policy.',
+    'The research supports the letter with 13 authorities, 4 of them cases, as last verified October 30, 2026. Nothing after that was checked: not the cases’ later treatment, and not new decisions or policy.',
     '5 points specific to this client got no case-law research.',
   ],
   caveat: '', checked_at: '', age_days: null, authorities: 13, cases: 4,
@@ -118,7 +118,8 @@ test('research checked with BIA Edge: the matter’s page says what was checked 
   expect(await ui.find({ type: 'Button', key: 'research-recheck' })).toBeUndefined()
   // It finishes, and the matter's record now shows a check made today: the notification says what was done (the
   // matter was ready to file before and still is), and the report is on the page under the check's own name.
-  Object.assign(matters[0]!, { research: { ...CHECKED, checked_at: '2026-11-10', age_days: 0, headline: 'Checked November 10, 2026 with BIA Edge', treatment_checked: true } })
+  // (The receipt's time of writing is after the run's start: it is this run's work.)
+  Object.assign(matters[0]!, { research: { ...CHECKED, checked_at: '2026-11-10', receipt_at: '2099-01-01T00:00:00+00:00', age_days: 0, headline: 'Checked November 10, 2026 with BIA Edge', treatment_checked: true } })
   await ($ as never as { turn: { complete: (e: unknown) => Promise<unknown> } }).turn.complete({ agentId: 'agent-1', answer: 'I checked the six cases and the updates since November 9. Nothing the letter relies on has changed.', reason: 'answer', durationMs: 1000, isAborted: false, turnId: 't1' })
   run.finish('completed')
   await clock.settle()
@@ -129,13 +130,14 @@ test('research checked with BIA Edge: the matter’s page says what was checked 
 })
 
 test('a law check that could not check says only that it finished, and the report says why', OPTS(), async ($, on) => {
-  const done = Object.assign(card('Lopez I-601A', 'complete', DOCS), { research: CHECKED })
+  // Checked earlier the same day, by the build: today's date on the record is not this run's doing.
+  const done = Object.assign(card('Lopez I-601A', 'complete', DOCS), { research: { ...CHECKED, age_days: 0, receipt_at: '2020-01-01T00:00:00+00:00', treatment_checked: true } })
   const run = agents(on, 'Checking the law again: Lopez I-601A')
   const notified: string[] = []
   on('ui.notify', async (_$, e) => { notified.push(e.text); return { value: { isSent: false, reason: 'no-surface' } } })
   const { ui, tap, clock } = await boot($, on, [done], { tools: EDGE })
   await tap('research-recheck')
-  // BIA Edge returned Passim's notice to the agent, so the record still shows yesterday's check.
+  // BIA Edge returned Passim's notice to the agent, so the receipt is as it was before the run.
   await ($ as never as { turn: { complete: (e: unknown) => Promise<unknown> } }).turn.complete({ agentId: 'agent-1', answer: 'I could not check the law again: BIA Edge returned no research because the Passim trial has ended. Nothing was changed.', reason: 'answer', durationMs: 1000, isAborted: false, turnId: 't1' })
   run.finish('completed')
   await clock.settle()
@@ -146,7 +148,7 @@ test('a law check that could not check says only that it finished, and the repor
 })
 
 test('the library answered but the treatment check was not finished: said as a warning, with the check again', OPTS(), async ($, on) => {
-  const partial = { ...CHECKED, treatment_checked: false, caveat: '', headline: 'Checked November 9, 2026 with BIA Edge; the check of later treatment wasn’t finished', lines: ['The letter cites 24 authorities, 6 of them cases.', 'The check of the cases’ later treatment wasn’t finished.'] }
+  const partial = { ...CHECKED, treatment_checked: false, caveat: '', headline: 'Checked November 9, 2026 with BIA Edge; the check of later treatment wasn’t finished', lines: ['The research supports the letter with 24 authorities, 6 of them cases.', 'The check of the cases’ later treatment wasn’t finished.'] }
   const done = Object.assign(card('Lopez I-601A', 'complete', DOCS), { research: partial })
   const { ui } = await boot($, on, [done], { tools: EDGE })
   expect(await ui.find({ type: 'Text', text: /^Checked November 9, 2026 with BIA Edge; the check of later treatment wasn’t finished$/ })).toMatchObject({ props: { color: WARN } })

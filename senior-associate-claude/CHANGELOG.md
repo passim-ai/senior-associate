@@ -4,7 +4,7 @@ Your version appears at the foot of every Immigration Packet Builder screen ("He
 
 ## 1.4.0 (November 2026)
 
-**See what the letter's law rests on.** Each matter's Overview has a **Research** card. It says when the law in the cover letter was last checked, how many authorities and cases the letter cites, whether any case carries a limit, and how many points were researched for this client. The memo's Sources checked opens with the same summary. If a letter was researched without BIA Edge, the card says so and lists the points that got no case-law research, and the Packet tab lists it among the points to weigh before you approve.
+**See what the letter's law rests on.** Each matter's Overview has a **Research** card. It says when the law in the cover letter was last checked, how many authorities and cases support the letter, whether any case carries a limit, and how many points were researched for this client. The memo's Sources checked opens with the same summary. If a letter was researched without BIA Edge, the card says so and lists the points that got no case-law research, and the Packet tab lists it among the points to weigh before you approve.
 
 **Check the law again before you file.** Weeks can pass between a build and a filing. **Check the law again**, on the Research card, the Packet tab and under More you can do, checks every cited case for later treatment and looks for changes in the law since the last check. It takes about five minutes with BIA Edge and changes nothing in the letter or the packet. If something the letter relies on has changed, it's added to Questions.
 

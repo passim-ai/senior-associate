@@ -23,8 +23,9 @@ On the Passim site, `packet-builder` joins the sign-up sources it counts (`app/b
 - **The app opens four addresses and no others.** Passim's sign-up page, its plans page and its account page, and Claude's Connectors page. The app names the page; the address is fixed in the server. The sign-up and plans addresses end in `ref=packet-builder`. Nothing about the attorney, the Mac or a matter is in them.
 - **The app keeps Passim's notice, not the attorney's research.** The tool hook reads a connector's answer only when it is an error, and keeps it only when it is Passim's no-access notice. It is stored on the Mac with its date and cleared by the next answer with results.
 - **A clean check is never called a guarantee.** The card says so in small type whenever a case was checked.
-- **The summary counts; it does not conclude.** A case counts as carrying a limit when its row in the support matrix carries the library's caution, negative, overruled or vacated status. It counts as cleanly checked only when the row says, in words, that nothing adverse was found. A row that says less (treatment history exists, coverage incomplete, nothing at all) is counted apart as having no completed check.
-- **Check the law again works nothing in.** Its brief carries no saved answers and no marked items, and tells the run to leave them; they wait for the next update. Its notification says the law was checked only when the matter's record shows a check made that day.
+- **The summary counts what the research supports the letter with**, from the support matrix, leaving out points the research recommends dropping. It does not read the letter itself.
+- **The summary counts; it does not conclude.** A case counts as carrying a limit when its row in the support matrix carries the library's caution, negative, overruled or vacated status. It counts as cleanly checked only when the row says, in words, that nothing adverse was found. A row that says less (treatment history exists, coverage incomplete, decisions left unread, nothing at all) is counted apart as having no completed check.
+- **Check the law again works nothing in.** Its brief carries no saved answers and no marked items, and tells the run to leave them; they wait for the next update. Its notification says the law was checked only when the matter's receipt was written during that run and shows a finished check.
 - **Unpublished decisions stay out of the letter.** The memo section opens by saying they are not precedent. The researcher skips the search when nothing in the filing is contested, and records a search that found nothing.
 - **Check the law again holds the matter like any run** and shows on the timeline. It is offered only when BIA Edge is in the session and answering.
 
@@ -49,7 +50,7 @@ The trial plugin and the scripts are kept with the evidence, outside this reposi
 
 ## Independent review
 
-GPT-6 Astra (high) reviewed the first commit (`9a014a5`) and found six defects, all real and all fixed before release:
+GPT-6 Astra (high) reviewed the first commit (`9a014a5`), then the fixes (`7cf9f8e`). Round one found six defects, all real and all fixed before release:
 
 | Finding | Fix |
 |---|---|
@@ -60,7 +61,17 @@ GPT-6 Astra (high) reviewed the first commit (`9a014a5`) and found six defects, 
 | A law check that could not check (no access) still announced "checked again". | It says so only when the record shows that day's check; otherwise only that it finished. |
 | Passim's notice stayed on the page if BIA Edge was added again under another name and answered through a method the app didn't list. | Any answer with results from the connector the session lists as BIA Edge clears it. |
 
-The trials above ran before these fixes. After them, the summary was run again on all three trial matters and the suites were rerun; the engine trials were not repeated.
+Round two found five more, all in how the summary words what was done, and all fixed:
+
+| Finding | Fix |
+|---|---|
+| "31 of 32 citing decisions reviewed, none adverse; one unreviewed", wording the shipped reference files use, counted as a clean check. | A review that says it left decisions over is not a completed check. |
+| "The letter cites N authorities" counted support under points the research recommends dropping, and claimed more than the matrix shows. | Dropped points are left out, and the line reads "The research supports the letter with N authorities". |
+| A receipt saying the library answered, with no check finished, still read as "researched without BIA Edge". | The receipt's own word decides; the unfinished check is said. |
+| An update with no decision recorded was said not to apply. | It is said to have no decision recorded. |
+| A law check that could not check announced "checked again" when an earlier check that day had dated the receipt. | The receipt must have been written during the run. |
+
+The review stopped at two rounds, as the practice is; the round-two fixes were not reviewed again. The trials above ran before these fixes. After them, the summary was run again on all three trial matters and the suites were rerun; the engine trials were not repeated.
 
 ## Not tested
 

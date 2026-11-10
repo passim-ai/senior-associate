@@ -186,6 +186,8 @@ export type Research = {
   lines: string[]
   caveat: string
   checked_at: string
+  /** When the receipt of the check was last written (ISO), '' when there is none. */
+  receipt_at?: string
   /** Days since the law was last checked; null when it never was. */
   age_days: number | null
   /** False when the library answered but the check of the cases' later treatment wasn't finished. */
