@@ -131,7 +131,7 @@ To update right away, choose **Help** in Immigration Packet Builder and press **
 - **A tool still shows ✗ after Claude installed it.** Press **Check again**. If it still shows ✗, quit Claude with ⌘Q, reopen it, type `/matters`, and choose **Help › Check my setup**.
 - **The file picker doesn't open.** Open System Settings › Privacy & Security › Automation › Claude, turn on System Events, and try again.
 - **A build stopped.** Open the matter and press **Try again**. It picks up where it stopped.
-- **Anything else:** ask Claude in the Code tab, or [open an issue](https://github.com/passim-ai/senior-associate/issues).
+- **Anything else:** ask Claude in the Code tab, or [open an issue](https://github.com/passim-ai/senior-associate/issues/new/choose). Issues are public, so never post anything about a client. Report a security problem privately, as [SECURITY.md](SECURITY.md) describes.
 
 The full guide, including what each status means and how your clients' documents are protected, is in [senior-associate-claude/README.md](senior-associate-claude/README.md).
 
