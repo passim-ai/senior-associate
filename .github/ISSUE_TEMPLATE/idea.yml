@@ -1,0 +1,20 @@
+name: Question or idea
+description: Ask how something works, or suggest a case type, a form, or a change.
+title: "[Idea]: "
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: "**This page is public. Never post anything about a client.** Describe examples with fictional people."
+  - type: textarea
+    id: what
+    attributes:
+      label: Your question or idea
+      description: What you were trying to do, and what would have helped.
+    validations:
+      required: true
+  - type: input
+    id: case_type
+    attributes:
+      label: Case type or form, if it is about one
+      description: Form numbers only, for example "I-751" or "N-400".

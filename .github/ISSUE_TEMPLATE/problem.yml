@@ -1,0 +1,64 @@
+name: Report a problem
+description: Something went wrong while installing or using Immigration Packet Builder.
+title: "[Problem]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **This page is public. Never post anything about a client:** no names, A-numbers, receipt numbers, dates of birth, documents, screenshots of a real matter, or text copied from a memo, letter or form.
+
+        If you can, reproduce the problem with the sample matter (**Help › Open the sample matter**), which is fictional, and describe that.
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Shown at the foot of every screen, for example "Help · Immigration Packet Builder 1.4.1".
+    validations:
+      required: true
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where did it happen?
+      options:
+        - Installing or Getting set up
+        - Creating a matter or adding documents
+        - Review documents first
+        - Build packet (say which step below)
+        - Update the packet, or a redo
+        - Ask Claude about this matter
+        - The packet, forms, letter or memo it produced
+        - Updating to a new version
+        - Somewhere else
+    validations:
+      required: true
+  - type: textarea
+    id: happened
+    attributes:
+      label: What happened?
+      description: What you pressed or typed, what the screen said, and the step Claude was on. Copy the screen's own words if you can.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+    validations:
+      required: true
+  - type: input
+    id: case_type
+    attributes:
+      label: What was being filed?
+      description: Form numbers only, for example "I-130 and I-485" or "I-601A".
+  - type: input
+    id: system
+    attributes:
+      label: Your Mac and Claude
+      description: macOS version, Apple Silicon or Intel, and your Claude plan, if you know them.
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Before you submit
+      options:
+        - label: Nothing in this report identifies a client.
+          required: true
