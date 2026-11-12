@@ -97,11 +97,9 @@ test('research checked with BIA Edge: the matter’s page says what was checked 
   expect(await ui.find({ type: 'Text', text: /^Checked November 9, 2026 with BIA Edge$/ })).toMatchObject({ props: { color: HEAD } })
   expect(await ui.find({ type: 'Text', text: /^Later treatment was checked for all 6 cases: 2 carry a limit/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^Still open: The attorney has not confirmed the controlling circuit\.$/ })).toBeDefined()
-  // What the letter rests on and how its cases were treated are said at once; the counts behind them when asked for.
-  expect(await ui.find({ type: 'Text', text: /^7 points were researched for this client/ })).toBeUndefined()
-  await tap('more:research')
+  // Every line of the card is on the page: none is folded behind a press.
   expect(await ui.find({ type: 'Text', text: /^7 points were researched for this client/ })).toBeDefined()
-  expect(await ui.find({ type: 'Button', key: 'more:research' })).toMatchObject({ props: { label: 'Show less' } })
+  expect(await ui.find({ type: 'Button', key: 'more:research' })).toBeUndefined()
   expect(await ui.find({ type: 'Text', text: /^A clean check means no adverse treatment was found in the library that day\./ })).toBeDefined()
   // BIA Edge is there, so nothing sells it.
   expect(await ui.find({ type: 'Button', text: /Start a free trial/ })).toBeUndefined()
@@ -301,5 +299,24 @@ test('check the law again once BIA Edge has gone from the session: nothing start
   expect(requests.at(-1)).toMatchObject({ op: 'open_link', which: 'passim_trial' })
   // And the page now knows: the offer is gone, and the way to BIA Edge is there instead.
   expect(await ui.find({ type: 'Button', key: 'research-recheck' })).toBeUndefined()
+  await ui.unmount()
+})
+
+test('research with something still outstanding says so on the page, with nothing folded away', OPTS(), async ($, on) => {
+  // A finished treatment check is not finished research: an update with no decision recorded, and a point of this
+  // client's that got no case-law research, are both said without a press.
+  const open = {
+    ...CHECKED,
+    lines: [...CHECKED.lines, '3 recent decisions and policy updates were reviewed: 1 was taken into account in the research; 1 has no decision recorded; 1 doesn’t apply to this letter.'],
+    unresolved: [] as string[],
+    not_researched: ['Whether the 2019 arrest is a crime involving moral turpitude.'], not_researched_count: 1,
+  }
+  const draft = Object.assign(card('Lopez I-601A', 'draft', DOCS), { research: open })
+  const { ui } = await boot($, on, [draft], { tools: EDGE })
+  expect(await ui.find({ type: 'Text', text: /^Later treatment was checked for all 6 cases/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /1 has no decision recorded/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^• Whether the 2019 arrest is a crime involving moral turpitude\.$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^A clean check means no adverse treatment was found/ })).toBeDefined()
+  expect(await ui.find({ type: 'Button', key: 'more:research' })).toBeUndefined()
   await ui.unmount()
 })

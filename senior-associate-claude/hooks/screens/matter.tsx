@@ -363,8 +363,9 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
     const at = first ? lines.findIndex(l => /^\s*\d+[.)]\s+/.test(l) && first.startsWith(l.replace(/^\s*\d+[.)]\s+/, '').trim())) : -1
     return (at > 0 ? lines.slice(0, at).join('\n') : report.answer).trim()
   })()
-  // A long report opens with its first part; the rest is one press away, so the next step stays in view.
-  const REPORT_SHOWN = 600
+  // A report of ordinary length is shown whole. A long one opens with its first part and says so (an ellipsis and
+  // Show all of it), so the next step stays in view; 1.5.0 cut it at 4,000 characters with no way to the rest.
+  const REPORT_SHOWN = 1200
   const reportOpen = open.includes('more:report')
   const reportLong = reportText.length > REPORT_SHOWN
   const reportShown = (() => {
@@ -479,17 +480,13 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
   const stale = rs?.state === 'checked' && rs.age_days !== null && rs.age_days > 7
   // The library answered, but the check of the cases' later treatment wasn't finished.
   const unfinished = rs?.state === 'checked' && rs.treatment_checked === false
-  // A finished check with BIA Edge opens with what the letter rests on and how its cases were treated; the counts
-  // behind them are one press away. Anything short of that (not finished, done without BIA Edge, no record) is said
-  // in full.
-  const rsOpen = open.includes('more:research')
-  const rsFold = rs?.state === 'checked' && !unfinished
-  const rsMore = Boolean(rs && rsFold && (rs.lines.length > 2 || rs.not_researched.length))
+  // Nothing on this card is folded away: any of its lines may say that something is still outstanding (a recent
+  // decision with no decision recorded, a point that got no case-law research), and the attorney reads it whole.
   const researchCard = rs
     ? card('Research', [
         <Text key="rs-head" weight="semibold" color={rs.state === 'checked' && !stale && !unfinished ? HEAD : WARN}>{`${rs.headline}${stale ? ` · ${rs.age_days} days ago` : ''}`}</Text>,
-        ...rs.lines.slice(0, rsFold && !rsOpen ? 2 : undefined).map((line, i) => <Text key={`rs-line-${i}`} size="footnote">{line}</Text>),
-        rs.not_researched.length && (rsOpen || !rsFold)
+        ...rs.lines.map((line, i) => <Text key={`rs-line-${i}`} size="footnote">{line}</Text>),
+        rs.not_researched.length
           ? <Box key="rs-missing" flexDirection="column" gap="xs">
               {rs.not_researched.map((text, i) => <Text key={`rs-miss-${i}`} size="footnote">{`• ${text}`}</Text>)}
               {rs.not_researched_count > rs.not_researched.length ? <Text dimColor size="footnote">{`…and ${rs.not_researched_count - rs.not_researched.length} more.`}</Text> : null}
@@ -500,7 +497,6 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
         // Researched without BIA Edge, and it still isn't usable: what it is, or what Passim said, and the way there.
         rs.state === 'without' && research && !research.ok ? <Text key="rs-library" size="footnote">{research.detail}</Text> : null,
         links('rs-acts', [
-          rsMore ? button('more:research', rsOpen ? 'Show less' : 'More on what was checked ›', () => { void perform($, 'more:research') }, 'quiet') : null,
           rs.state === 'without' && research && !research.ok && research.link
             ? button(`research-link:${research.link.id}`, `${research.link.label} ›`, () => { void perform($, `open-link:${research.link!.id}`) }, 'link') : null,
           // BIA Edge is usable now: the research step can be done over with it, and the letter revised and reviewed after.

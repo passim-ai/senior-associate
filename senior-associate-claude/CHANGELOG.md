@@ -6,7 +6,7 @@ Your version appears at the foot of every Immigration Packet Builder screen ("He
 
 **Less on each screen.** A matter's page now has one way back (**‹ Matters**), its tabs, and Help. The trail under the header is gone, **Setup** is under Help (**Check my setup**), and the **Timeline** is under Matter details. The Overview no longer repeats the counts that are on the tabs ("Documents · 23", "Questions · 3"), and what is left is shorter: about a quarter fewer words and seven fewer buttons than before.
 
-**Detail when you ask for it.** A long report from Claude opens with its first part. A finished check of the law opens with what the letter rests on and how its cases were treated; the counts behind them are one press away. The Packet tab lists the steps and where each stands, with **What each step does ›** for the rest.
+**Detail when you ask for it.** A long report from Claude opens with its first part and **Show all of it ›**. The Packet tab lists the steps and where each stands, with **What each step does ›** for the rest. Nothing on the Research card is folded.
 
 **The list of matters is rows, not cards.** Each group's matters sit on one card with a thin line between them.
 
