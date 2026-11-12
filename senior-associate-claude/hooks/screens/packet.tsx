@@ -10,7 +10,8 @@ import { matterStatus, isBusy } from '../status'
 import { typed } from '../state'
 
 export async function packetScreen($: EngineInterface, x: Ctx, c: Card): Promise<JSX.Element> {
-  const { Box, Text, Input, field, isDesktop, svg, allRuns, actions, button, lone, section, rule, link, links, matterPage, research } = x
+  const { Box, Text, Input, field, isDesktop, svg, allRuns, actions, button, lone, section, rule, link, links, matterPage, research, open } = x
+  const aboutOpen = open.includes('more:steps')
   const prg = c.progress
   const notes = c.review_notes
   const NOTES_SHOWN = 40
@@ -80,9 +81,11 @@ export async function packetScreen($: EngineInterface, x: Ctx, c: Card): Promise
     section('Steps', [
       <Text key="steps-done" weight="medium" color={HEAD}>{`${prg.done} of ${prg.total} steps done`}</Text>,
       <Text key="steps-what" dimColor size="footnote">{live
-        ? 'Each step is done by its own specialist, and the reviews are independent. Claude is working on this matter now; you can redo a step once it’s done.'
-        : 'Each step is done by its own specialist, and the reviews are independent. To change something, redo a step: Claude redoes it and every step after it, and keeps the ones before.'}</Text>,
+        ? 'Claude is working on this matter now; you can redo a step once it’s done.'
+        : 'To change something, redo a step: Claude redoes it and every step after it, and keeps the ones before.'}</Text>,
       isDesktop ? <Box key="track" flexDirection="column">{svg(trackSvg(prg.stages), `${prg.done} of ${prg.total} steps done`)}</Box> : null,
+      // What each step does is said once it's asked for: the list itself is the steps and where each stands.
+      lone('more:steps', button('more:steps', aboutOpen ? 'Hide what each step does' : 'What each step does ›', () => { void perform($, 'more:steps') }, 'quiet')),
       rule('steps-rule'),
       ...prg.stages.map((s, i) => {
         return (
@@ -100,7 +103,7 @@ export async function packetScreen($: EngineInterface, x: Ctx, c: Card): Promise
                   ? button(`redo:${s.id}`, s.id === 'docs_review' && reviewOnly(c) ? 'Review again ›' : 'Redo from here ›', () => { void perform($, `redo:${s.id}`) }, 'link')
                   : null}
               </Box>
-              {STAGE_ABOUT[s.id] ? <Text dimColor size="footnote">{STAGE_ABOUT[s.id]}</Text> : null}
+              {aboutOpen && STAGE_ABOUT[s.id] ? <Text dimColor size="footnote">{STAGE_ABOUT[s.id]}</Text> : null}
             </Box>
           </Box>
         )

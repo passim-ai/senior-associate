@@ -58,7 +58,7 @@ for (const phase of ['draft', 'waiting_client'] as const) {
     const garcia = withOptionalDecision(card('Garcia I-130 I-485', phase, DOCS))
     if (phase === 'waiting_client') garcia.needs_you = [{ text: 'The I-94', question: 'The I-94', kind: 'client', who: 'client', id: 'doc-i94' }, ...garcia.needs_you]
     const { ui, tap } = await boot($, on, [garcia])
-    expect(await ui.find({ type: 'Text', text: /^Your decision · Not needed before filing$/ })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: /^Your decision$/ })).toBeDefined()
     await tap('view:decide-i765')
     expect(await ui.find({ type: 'Text', text: /^Questions & missing evidence$/ })).toBeDefined()
     expect(await ui.find({ type: 'Text', text: /^Not needed before filing$/ })).toBeDefined()

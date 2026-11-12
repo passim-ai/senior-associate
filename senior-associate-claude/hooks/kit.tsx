@@ -59,7 +59,8 @@ export function tableFor($: EngineInterface, e: ResolveInput, columns?: number):
 
 export type Kids = (JSX.Element | null | false | undefined)[]
 
-// The matter's tabs, each the view it shows and the key that opens it.
+// The matter's tabs, each the view it shows and the key that opens it. The Timeline is a screen of the matter's too,
+// reached from Matter details on the Overview: looked at rarely, it has no tab of its own.
 export type Tab = 'matter' | 'documents' | 'items' | 'packet' | 'memo' | 'timeline'
 const TABS: { tab: Tab; key: string; id: string; label: string }[] = [
   { tab: 'matter', key: 'nav-matter', id: 'matter', label: 'Overview' },
@@ -67,7 +68,6 @@ const TABS: { tab: Tab; key: string; id: string; label: string }[] = [
   { tab: 'items', key: 'items', id: 'items', label: 'Questions' },
   { tab: 'packet', key: 'packet', id: 'packet', label: 'Packet' },
   { tab: 'memo', key: 'memo', id: 'memo', label: 'Memo & request' },
-  { tab: 'timeline', key: 'timeline', id: 'timeline', label: 'Timeline' },
 ]
 
 // What the Questions tab holds open: the open items and the questions Claude asked, counted once each.
@@ -148,13 +148,15 @@ export function makeKit($: EngineInterface, els: Els, site: 'pane' | 'inline', v
 
   // ----- the header: Passim's lockup, and the places every screen can go -----
 
+  // On a matter's screens the header holds the way back and Help, and the matter's tabs do the rest; elsewhere it
+  // holds Matters, Your details and Help. Setup is under Help (Check my setup), and shows by itself when it is needed.
   const matterViews: View[] = ['matter', 'documents', 'packet', 'items', 'memo', 'request', 'redo', 'intake', 'timeline']
+  const onMatter = matterViews.includes(v) && Boolean(p?.matter)
   const nav = (
     <Box key="nav" flexDirection="row" flexWrap="wrap" columnGap="md" rowGap="xs" alignItems="flex-start">
-      {place('nav-all', 'Matters', 'all', v === 'home' || v === 'new' || v === 'welcome' || matterViews.includes(v))}
-      {place('profile', 'Your details', 'profile', v === 'profile')}
-      {place('nav-setup', 'Setup', 'setup', v === 'setup')}
-      {place('help', 'Help', 'help', v === 'help')}
+      {place('nav-all', onMatter ? '‹ Matters' : 'Matters', 'all', !onMatter && (v === 'home' || v === 'new' || v === 'welcome'))}
+      {onMatter ? null : place('profile', 'Your details', 'profile', v === 'profile')}
+      {place('help', 'Help', 'help', v === 'help' || v === 'setup')}
       {site === 'inline' ? place('dock', 'Open as side panel', 'dock', false) : null}
     </Box>
   )
@@ -189,31 +191,21 @@ export function makeKit($: EngineInterface, els: Els, site: 'pane' | 'inline', v
     </Box>
   )
 
-  // Where you are: "Matters › Garcia I-130 I-485", each place before the last a press.
-  const crumbs = (items: ({ key: string; label: string; id: string } | string)[]) => (
-    <Box key="crumbs" flexDirection="row" flexWrap="wrap" alignItems="center" columnGap="xs">
-      {items.flatMap((it, i) => [
-        i > 0 ? <Text key={`sep-${i}`} size="footnote" color={MUTED}>›</Text> : null,
-        typeof it === 'string'
-          ? <Text key={`here-${i}`} size="footnote" color={MUTED}>{it}</Text>
-          : <Button key={it.key} label={it.label} plain onPress={() => { void perform($, it.id) }} />,
-      ])}
-    </Box>
-  )
-
   // The chip on a matter's screens: the same word the matter page and the list use.
   const pillOf = (c: Card) => {
     const s = matterStatus(c, allRuns[c.path], nowMs())
     return { label: s.label, tone: s.tone }
   }
 
-  // The matter's tabs, Questions with how many are open, and a line under them all.
+  // The matter's tabs, Documents with how many there are and Questions with how many are open, and a line under them.
   const tabs = (c: Card, active: Tab) => {
     const count = questionCount(c)
+    const label = (t: (typeof TABS)[number]) =>
+      t.tab === 'items' && count ? `${t.label} · ${count}` : t.tab === 'documents' && c.documents.count ? `${t.label} · ${c.documents.count}` : t.label
     return (
       <Box key="tabs" flexDirection="column" gap="xs">
         <Box flexDirection="row" flexWrap="wrap" columnGap={narrow ? 'sm' : 'md'} rowGap="sm" alignItems="flex-start">
-          {TABS.map(t => place(t.key, t.tab === 'items' && count ? `${t.label} · ${count}` : t.label, t.id, t.tab === active))}
+          {TABS.map(t => place(t.key, label(t), t.id, t.tab === active))}
         </Box>
         {rule('tabs-rule')}
       </Box>
@@ -275,12 +267,13 @@ export function makeKit($: EngineInterface, els: Els, site: 'pane' | 'inline', v
     </Box>
   )
 
-  // A matter on the list: its name and status chip, what's next under them, and Open at the right (below, when narrow).
+  // A matter on the list: its name and status chip, what's next under them, and Open at the right (below, when
+  // narrow). A row has no card of its own: `rows` puts a group's rows on one card, a thin line between them.
   const row = (key: string, id: string, main: string, detail: string, badge?: { label: string; tone: Tone }, hotkey?: string, press = 'Open') => (
-    <Box key={key} flexDirection="row" flexWrap="wrap" justifyContent="space-between" alignItems="center" columnGap="lg" rowGap="sm" backgroundColor={CARD} borderStyle="round" paddingX="lg" paddingY="md">
+    <Box key={key} flexDirection="row" flexWrap="wrap" justifyContent="space-between" alignItems="center" columnGap="lg" rowGap="xs" paddingY="sm">
       <Box flexDirection="column" gap="xs" flexGrow={1} flexShrink={1} minWidth={0}>
         <Box flexDirection="row" flexWrap="wrap" columnGap="sm" rowGap="xs" alignItems="center">
-          <Text size="heading" weight="semibold" color={HEAD}>{main}</Text>
+          <Text weight="semibold" color={HEAD}>{main}</Text>
           {badge ? pill(badge.label, badge.tone, `${key}-pill`) : null}
         </Box>
         {detail ? <Text color={MUTED} size="footnote">{detail}</Text> : null}
@@ -288,6 +281,14 @@ export function makeKit($: EngineInterface, els: Els, site: 'pane' | 'inline', v
       <Button key={id} label={press} hotkey={hotkey} onPress={() => perform($, id)} />
     </Box>
   )
+  const rows = (key: string, items: (JSX.Element | null)[]) => {
+    const shown = items.filter((it): it is JSX.Element => Boolean(it))
+    return shown.length
+      ? <Box key={key} flexDirection="column" backgroundColor={CARD} borderStyle="round" paddingX={narrow ? 'lg' : 'xl'} paddingY="xs">
+          {shown.flatMap((it, i) => (i ? [rule(`${key}-rule-${i}`), it] : [it]))}
+        </Box>
+      : null
+  }
 
   // A numbered step: 01, 02, 03 in the accent, a short title, a line on what it means.
   const numbered = (num: string, heading: string, text: string) => (
@@ -364,23 +365,23 @@ export function makeKit($: EngineInterface, els: Els, site: 'pane' | 'inline', v
     </Box>
   )
 
-  // A screen reached from another: where you are and the way back, the title, the body.
+  // A screen reached from another: the way back, the title, the body. Where the way back is Matters, the header
+  // already holds it.
   const subpage = (o: { title: string; subtitle?: string; status?: { label: string; tone: Tone }; back: { id: string; label: string }; here: string; foot?: string | null }, ...children: Kids) =>
     page(
       [
-        // The header's Matters is nav-all; the crumb back to Matters is a press of its own.
-        crumbs([{ key: o.back.id === 'all' ? 'crumb-all' : `nav-${o.back.id}`, label: o.back.label, id: o.back.id }, o.here]),
+        o.back.id === 'all' ? null : lone(`back-${o.back.id}`, button(`nav-${o.back.id}`, `‹ ${o.back.label}`, () => { void perform($, o.back.id) }, 'quiet')),
         title(o.title, o.subtitle, o.status ? pill(o.status.label, o.status.tone, 'title-pill') : null),
       ],
       body(...children),
     )
 
-  // One of the matter's tabs: Matters › the matter, its name and case, its status, the tabs, then the tab's body.
+  // One of the matter's screens: its name and case, its status, the tabs, then the body. The way back to Matters is
+  // in the header.
   const matterPage = (c: Card, tab: Tab, ...children: Kids) => {
     const s = pillOf(c)
     return page(
       [
-        crumbs([{ key: 'crumb-all', label: 'Matters', id: 'all' }, shownName(c)]),
         title(shownName(c), [c.case_line, c.intake.filing_posture_label].filter(Boolean).join(' · '), pill(s.label, s.tone, 'title-pill')),
         tabs(c, tab),
       ],
@@ -458,7 +459,7 @@ export function makeKit($: EngineInterface, els: Els, site: 'pane' | 'inline', v
     numbered('4', 'Build the packet', 'A document review takes about 5–10 minutes; a full build about 1–1½ hours, in the background. Nothing is filed or sent: you get a draft to read.'),
   ]
 
-  return { rule, eyebrow, heading, pill, button, lone, actions, link, links, header, title, crumbs, pillOf, tabs, card, section, barCard, columns, disclosure, row, numbered, field, savedMark, status, version, page, body, subpage, matterPage, confirmBox, choice, chips, caseChooser, postureChips, filingChoices, howItWorks }
+  return { rule, eyebrow, heading, pill, button, lone, actions, link, links, header, title, pillOf, tabs, card, section, barCard, columns, disclosure, row, rows, numbered, field, savedMark, status, version, page, body, subpage, matterPage, confirmBox, choice, chips, caseChooser, postureChips, filingChoices, howItWorks }
 }
 
 

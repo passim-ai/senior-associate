@@ -35,7 +35,7 @@ export function sortRows(rows: { m: MatterRow; s: MatterStatus }[], sort: string
 }
 
 export async function homeScreen($: EngineInterface, x: Ctx): Promise<JSX.Element> {
-  const { Box, Text, Input, site, p, allRuns, pr, q, st, open, actions, button, lone, title, card, barCard, row, page, body, field, folder, noProfile, tip, chips, sort } = x
+  const { Box, Text, Input, site, p, allRuns, pr, q, st, open, actions, button, lone, title, card, barCard, row, rows, page, body, field, folder, noProfile, tip, chips, sort } = x
   const now = nowMs()
   const everything = p.matters.map(m => ({ m, s: matterStatus(m, allRuns[m.path], now) }))
   const live = everything.filter(r => !r.m.archived)
@@ -136,29 +136,43 @@ export async function homeScreen($: EngineInterface, x: Ctx): Promise<JSX.Elemen
   const allOpen = listed.length > 0 && listed.every(isOpen)
   const namesOnScreen = Boolean(needle) || someOpen
 
-  const group = (g: Group) => {
-    const rows = shown.filter(r => r.s.group === g)
-    if (!rows.length) return null
+  // The list. Folded groups share one card, a row each (what the group is, how many are in it, Show); an open group
+  // is its heading and its matters, on a card of their own.
+  const list: (JSX.Element | null)[] = []
+  let folded: JSX.Element[] = []
+  const flush = () => {
+    if (folded.length) list.push(rows(`folded-${list.length}`, folded))
+    folded = []
+  }
+  for (const g of GROUP_ORDER) {
+    const members = shown.filter(r => r.s.group === g)
+    if (!members.length) continue
     if (g === 'filed') {
-      return (
+      flush()
+      list.push(
         <Box key={`grp-${g}`} flexDirection="column" gap="sm">
-          {lone('filed-group', button('filed-group', `${GROUP_TITLE[g]} (${rows.length}) ${isOpen(g) ? '⌄' : '›'}`, () => { void perform($, 'filed-group') }, 'link'))}
-          {isOpen(g) || needle ? rows.map(rowFor) : null}
-        </Box>
+          {lone('filed-group', button('filed-group', `${GROUP_TITLE[g]} (${members.length}) ${isOpen(g) ? '⌄' : '›'}`, () => { void perform($, 'filed-group') }, 'link'))}
+          {isOpen(g) || needle ? rows('rows-filed', members.map(rowFor)) : null}
+        </Box>,
       )
+      continue
     }
-    // Folded: what the group is and how many are in it.
-    if (!isOpen(g) && !needle) return row(`grp-${g}`, groupKey(g), GROUP_TITLE[g], plural(rows.length, 'matter', 'matters'), undefined, undefined, 'Show')
-    return (
+    if (!isOpen(g) && !needle) {
+      folded.push(row(`grp-${g}`, groupKey(g), GROUP_TITLE[g], plural(members.length, 'matter', 'matters'), undefined, undefined, 'Show'))
+      continue
+    }
+    flush()
+    list.push(
       <Box key={`grp-${g}`} flexDirection="column" gap="sm">
         <Box flexDirection="row" flexWrap="wrap" justifyContent="space-between" alignItems="center" columnGap="md" rowGap="xs">
           <Text size="heading" weight="semibold" color={HEAD}>{GROUP_TITLE[g]}</Text>
           {needle ? null : button(groupKey(g), 'Hide', () => { void perform($, groupKey(g)) }, 'quiet')}
         </Box>
-        {rows.map(rowFor)}
-      </Box>
+        {rows(`rows-${g}`, members.map(rowFor))}
+      </Box>,
     )
   }
+  flush()
 
   return page(
     [title('Matters', summary, actions([newMatter]))],
@@ -195,11 +209,11 @@ export async function homeScreen($: EngineInterface, x: Ctx): Promise<JSX.Elemen
         : null,
       <Box key="list" flexDirection="column" gap="lg">
         {needle && shown.length === 0 && shownArchived.length === 0 ? <Text dimColor>No matter matches “{q}”.</Text> : null}
-        {GROUP_ORDER.map(group)}
+        {list}
         {shownArchived.length
           ? <Box key="grp-archived" flexDirection="column" gap="sm">
               {lone('archived-group', button('archived-group', `Archived (${shownArchived.length}) ${archivedOpen ? '⌄' : '›'}`, () => { void perform($, 'archived-group') }, 'link'))}
-              {archivedOpen || needle ? shownArchived.map(rowFor) : null}
+              {archivedOpen || needle ? rows('rows-archived', shownArchived.map(rowFor)) : null}
             </Box>
           : null}
       </Box>,
