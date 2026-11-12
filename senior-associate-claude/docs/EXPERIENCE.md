@@ -244,7 +244,7 @@ When the attorney's permission settings don't let the app start Claude itself (A
 
 A notification (a toast if notifications aren't available) says what happened and never names the matter, because a notification shows on the lock screen and over whatever is being shared: "A packet is ready to file." / "A draft packet is ready. 4 items are needed before filing." / "Claude needs your answer on 2 questions about one of your matters." / "The build on one of your matters stopped at Forms review. Type /matters to try again." The next `/matters` opens on the list, where a card says the same and **Open it** goes to that matter.
 
-The agent's short report appears as **What Claude did**, "finished 3:29 PM, took 1 h 15 min", right under the next step, drawn like the memo. A report of ordinary length is shown whole; a long one (past about 1,200 characters) opens with its first part, an ellipsis and **Show all of it ›**.
+The agent's short report appears as **What Claude did**, "finished 3:29 PM, took 1 h 15 min", right under the next step, drawn like the memo. A report of ordinary length is shown whole; a long one (past about 1,200 characters) opens with its first part, an ellipsis and **Show all of it ›**, which shows every word of it.
 
 ### When it stops
 

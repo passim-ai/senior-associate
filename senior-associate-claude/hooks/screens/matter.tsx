@@ -364,12 +364,13 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
     return (at > 0 ? lines.slice(0, at).join('\n') : report.answer).trim()
   })()
   // A report of ordinary length is shown whole. A long one opens with its first part and says so (an ellipsis and
-  // Show all of it), so the next step stays in view; 1.5.0 cut it at 4,000 characters with no way to the rest.
+  // Show all of it), so the next step stays in view; Show all of it then shows every word, however long, as the Memo
+  // tab does for the memo. (1.5.0 cut a report at 4,000 characters with no way to the rest.)
   const REPORT_SHOWN = 1200
   const reportOpen = open.includes('more:report')
   const reportLong = reportText.length > REPORT_SHOWN
   const reportShown = (() => {
-    if (!reportLong || reportOpen) return reportText.length > 4000 ? `${reportText.slice(0, 4000)}…` : reportText
+    if (!reportLong || reportOpen) return reportText
     const at = reportText.lastIndexOf('\n\n', REPORT_SHOWN)
     return `${reportText.slice(0, at > 200 ? at : REPORT_SHOWN).trimEnd()}…`
   })()
