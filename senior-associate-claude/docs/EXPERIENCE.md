@@ -324,7 +324,7 @@ Then **Files for this matter**, once there are any (below). Then **Steps**: "3 o
 
 ## Help
 
-**Help** in the header of every screen; the page's line says the version ("Immigration Packet Builder 1.5.0").
+**Help** in the header of every screen; the page's line says the version ("Immigration Packet Builder 1.6.0").
 
 - How it works, in four steps.
 - **How do I…**: ask about a case, research a point, or have one thing changed; add documents after a review or a build; have Claude look at the documents again; fix something in the draft; redo one part; change the case type or posture; take out a document; undo Mark done; stop Claude; undo Mark as filed. Each is the question in bold and the presses, in one line.

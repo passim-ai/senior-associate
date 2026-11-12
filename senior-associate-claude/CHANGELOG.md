@@ -1,8 +1,8 @@
 # What's new in Immigration Packet Builder
 
-Your version appears at the foot of every Immigration Packet Builder screen ("Help · Immigration Packet Builder 1.5.0"). After an update, quit Claude with ⌘Q and reopen it.
+Your version appears at the foot of every Immigration Packet Builder screen ("Help · Immigration Packet Builder 1.6.0"). After an update, quit Claude with ⌘Q and reopen it.
 
-## Coming in the next version
+## 1.6.0 (November 2026)
 
 **Less on each screen.** A matter's page now has one way back (**‹ Matters**), its tabs, and Help. The trail under the header is gone, **Setup** is under Help (**Check my setup**), and the **Timeline** is under Matter details. The Overview no longer repeats the counts that are on the tabs ("Documents · 23", "Questions · 3"), and what is left is shorter: about a quarter fewer words and seven fewer buttons than before.
 
