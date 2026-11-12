@@ -1,8 +1,8 @@
 # What's new in Immigration Packet Builder
 
-Your version appears at the foot of every Immigration Packet Builder screen ("Help · Immigration Packet Builder 1.4.1"). After an update, quit Claude with ⌘Q and reopen it.
+Your version appears at the foot of every Immigration Packet Builder screen ("Help · Immigration Packet Builder 1.5.0"). After an update, quit Claude with ⌘Q and reopen it.
 
-## Coming in the next version
+## 1.5.0 (November 2026)
 
 **Clients' names stay off the screen until you ask.** Your list of matters now opens with each group folded: what stands where and how many, and no names. **Show** opens a group; **Hide names** folds them all again. No matter opens by itself anymore, and **Pick up where you left off** says the matter by its case, not the client.
 
