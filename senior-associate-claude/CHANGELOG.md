@@ -2,6 +2,14 @@
 
 Your version appears at the foot of every Immigration Packet Builder screen ("Help · Immigration Packet Builder 1.5.0"). After an update, quit Claude with ⌘Q and reopen it.
 
+## Coming in the next version
+
+**Less on each screen.** A matter's page now has one way back (**‹ Matters**), its tabs, and Help. The trail under the header is gone, **Setup** is under Help (**Check my setup**), and the **Timeline** is under Matter details. The Overview no longer repeats the counts that are on the tabs ("Documents · 23", "Questions · 3"), and what is left is shorter: about a quarter fewer words and seven fewer buttons than before.
+
+**Detail when you ask for it.** A long report from Claude opens with its first part. A finished check of the law opens with what the letter rests on and how its cases were treated; the counts behind them are one press away. The Packet tab lists the steps and where each stands, with **What each step does ›** for the rest.
+
+**The list of matters is rows, not cards.** Each group's matters sit on one card with a thin line between them.
+
 ## 1.5.0 (November 2026)
 
 **Clients' names stay off the screen until you ask.** Your list of matters now opens with each group folded: what stands where and how many, and no names. **Show** opens a group; **Hide names** folds them all again. No matter opens by itself anymore, and **Pick up where you left off** says the matter by its case, not the client.

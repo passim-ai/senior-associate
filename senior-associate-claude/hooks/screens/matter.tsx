@@ -8,16 +8,13 @@ import type { Need } from '../matter'
 import { askClaude, perform, sendQuestion } from '../perform'
 import { answerFor, saveInstructions } from '../runs'
 import { session, setNote, typed } from '../state'
-import { ACCENT, ACCENT_TEXT, CARD, ERROR, HEAD, MUTED, STAGE_TEXT, WARN } from '../theme'
+import { ACCENT, ACCENT_TEXT, ERROR, HEAD, MUTED, STAGE_TEXT, WARN } from '../theme'
 import { markdown } from '../md'
 import { ASK_LABEL, AUTO_BEFORE, AUTO_WAITING, brief, clock, dateOnly, duration, nowMs, plural, when, whenPhrase } from '../words'
 import { matterStatus } from '../status'
 
 // What Clean up working files does, in a line.
 const CLEAN_UP = 'Deletes Claude’s working copies. Your documents and the finished files stay.'
-
-// What Check the law again does, wherever it is offered.
-export const RECHECK_ABOUT = 'About 5 minutes. Checks every case the letter cites for later treatment, and looks for changes in the law since the last check. Nothing in the packet changes; if something the letter relies on has changed, it goes on Questions.'
 
 export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise<JSX.Element> {
   const { Box, Text, Input, isDesktop, narrow, svg, allRuns, pr, d, savedAnswers, g, open, missingCase, asked, actions, button, lone, link, links, card, barCard, columns, disclosure, rule, field, savedMark, matterPage, noProfile, tip, confirmBox, caseChooser, postureChips, research } = x

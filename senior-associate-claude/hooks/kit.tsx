@@ -191,18 +191,6 @@ export function makeKit($: EngineInterface, els: Els, site: 'pane' | 'inline', v
     </Box>
   )
 
-  // Where you are: "Matters › Garcia I-130 I-485", each place before the last a press.
-  const crumbs = (items: ({ key: string; label: string; id: string } | string)[]) => (
-    <Box key="crumbs" flexDirection="row" flexWrap="wrap" alignItems="center" columnGap="xs">
-      {items.flatMap((it, i) => [
-        i > 0 ? <Text key={`sep-${i}`} size="footnote" color={MUTED}>›</Text> : null,
-        typeof it === 'string'
-          ? <Text key={`here-${i}`} size="footnote" color={MUTED}>{it}</Text>
-          : <Button key={it.key} label={it.label} plain onPress={() => { void perform($, it.id) }} />,
-      ])}
-    </Box>
-  )
-
   // The chip on a matter's screens: the same word the matter page and the list use.
   const pillOf = (c: Card) => {
     const s = matterStatus(c, allRuns[c.path], nowMs())
@@ -471,7 +459,7 @@ export function makeKit($: EngineInterface, els: Els, site: 'pane' | 'inline', v
     numbered('4', 'Build the packet', 'A document review takes about 5–10 minutes; a full build about 1–1½ hours, in the background. Nothing is filed or sent: you get a draft to read.'),
   ]
 
-  return { rule, eyebrow, heading, pill, button, lone, actions, link, links, header, title, crumbs, pillOf, tabs, card, section, barCard, columns, disclosure, row, rows, numbered, field, savedMark, status, version, page, body, subpage, matterPage, confirmBox, choice, chips, caseChooser, postureChips, filingChoices, howItWorks }
+  return { rule, eyebrow, heading, pill, button, lone, actions, link, links, header, title, pillOf, tabs, card, section, barCard, columns, disclosure, row, rows, numbered, field, savedMark, status, version, page, body, subpage, matterPage, confirmBox, choice, chips, caseChooser, postureChips, filingChoices, howItWorks }
 }
 
 
