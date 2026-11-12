@@ -3,8 +3,8 @@ import type { EngineInterface } from 'claude-code'
 import type { BackTo, Card, Payload, Profile, View } from '../types'
 import { PROFILE_FIELDS, REVIEW_KINDS, STEP_KINDS, asksAttorney, builtPast, carried, chosenCase, folderName, metaChanged, needsOf, profileIsEmpty, reportQuestions, requestTranslations, requiredMissing, retryKind, reviewOnly, shownName } from './matter'
 import { clearAnswers, composeAnswers, saveAnswer, startRun, stopRun, toChat, withdrawStart } from './runs'
-import { DEMO_FOLDER, act, call, closePicker, doctor, load, lookForLibrary, ownMatters, refresh, setPayload } from './server'
-import { EMPTY_DRAFT, MATTER_VIEWS, PANE, foldMatters, go, readConfirm, readDraft, readGate, readNote, readOrigins, readPayload, readPrefs, readRedoAt, readRuns, readSetup, readView, remember, session, setDemo, setNote, typed, unfoldMatters, updateCaseMissing, updateConfirm, updateDocked, updateDraft, updateExpanded, updateFilter, updateGate, updateLaunching, updateOrigins, updatePayload, updateRedoAt, updateRuns, updateSetup, updateSort, updateView } from './state'
+import { act, call, closePicker, doctor, load, lookForLibrary, ownMatters, refresh, setPayload } from './server'
+import { DEMO_FOLDER, EMPTY_DRAFT, MATTER_VIEWS, PANE, foldMatters, go, onScreen, readConfirm, readDraft, readGate, readNote, readOrigins, readPayload, readPrefs, readRedoAt, readRuns, readSetup, readView, remember, session, setDemo, setNote, typed, unfoldMatters, updateBusy, updateCaseMissing, updateConfirm, updateDocked, updateDraft, updateExpanded, updateFilter, updateGate, updateLaunching, updateOrigins, updatePayload, updateRedoAt, updateRuns, updateSetup, updateSort, updateView } from './state'
 import { ASK_LABEL, LINK_TOAST, brief, friendly, nowMs, plainText } from './words'
 import { afterAdding, isBusy, matterStatus } from './status'
 
@@ -243,15 +243,47 @@ export async function paneUp($: EngineInterface): Promise<boolean> {
   }
 }
 
-// The page is emptied before the other folder's list is asked for, so nothing of one is on screen under the other.
-async function switchFolder($: EngineInterface, demo: string) {
+// A load still on its way was asked of the page as it was: its answer is dropped when it comes (load checks whose
+// turn it is), and the page is free at once for what is asked next, as Close the picker does.
+async function dropFlight($: EngineInterface) {
   session.seq += 1
+  session.flight += 1
+  session.inFlight = false
+  session.waitingOn = ''
+  await updateBusy($, () => false)
+}
+
+// Back to the matters list with its groups folded and no matter open, before anything is asked of the server: what
+// was on the page when the panel closed is not on it when it shows again. A screen that isn't a matter's (Help,
+// Your details, the welcome) stays.
+export async function clearToList($: EngineInterface) {
+  await dropFlight($)
+  typed.name = ''
+  typed.other = ''
+  await updateDraft($, () => EMPTY_DRAFT)
+  await updateFilter($, () => '')
+  await updateCaseMissing($, () => false)
+  await foldMatters($)
+  await updatePayload($, p => (p ? { ...p, matter: null } : p))
+  if (MATTER_VIEWS.includes(await readView($))) await go($, 'home')
+}
+
+// The page is emptied before the other folder's list is asked for, so nothing of one is on screen under the other;
+// and what was put off on a matter of the folder being left (a build waiting on the setup check or on Your details,
+// a redo, the way back from Help) is let go, so no press in the other folder can reach that matter.
+async function switchFolder($: EngineInterface, demo: string) {
+  await dropFlight($)
   await setDemo($, demo)
   await foldMatters($)
   typed.name = ''
   typed.other = ''
   await updateDraft($, () => EMPTY_DRAFT)
   await updateFilter($, () => '')
+  await updateCaseMissing($, () => false)
+  await updateSetup($, s => (s ? { ...s, pending: null } : s))
+  await updateGate($, () => null)
+  await updateRedoAt($, () => null)
+  await updateOrigins($, () => ({}))
   await updatePayload($, () => null)
   await go($, 'home')
 }
@@ -860,8 +892,11 @@ async function press($: EngineInterface, id: string): Promise<void> {
     case 'unarchive': {
       const res = await load($, { op: id, matter_path: c.path, matter: c.path, stay: true })
       if (!res || res.warning) return
+      // Said only while this matter's folder is still the one on screen.
+      if (!onScreen(c.path)) return
       if (id === 'archive') {
         await goHome($)
+        if (!onScreen(c.path)) return
         await setNote($, `${shownName(c)} is archived. It’s under Archived, at the foot of the list; Unarchive there puts it back.`, 'ok')
       } else await setNote($, `${shownName(c)} is back on the main list.`, 'ok')
       return

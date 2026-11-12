@@ -32,10 +32,10 @@ import { draw } from './draw'
 import { BLOCKED, forgetTerms, isResearch, isScreened, researchGate, toolInput } from './privacy'
 import { tableFor } from './kit'
 import { noteAccess } from './library'
-import { enterDemo, goHome, goTo, openPane, paneUp } from './perform'
+import { clearToList, enterDemo, goHome, goTo, openPane, paneUp } from './perform'
 import { adoptSpawn, ensurePoll, finishRun, markWaiting } from './runs'
 import { doctor, load, refresh } from './server'
-import { PANE, foldMatters, go, liveAgents, loadPrefs, readPayload, readPrefs, readRuns, rebuildSession, remember, session } from './state'
+import { PANE, go, liveAgents, loadPrefs, readPayload, readPrefs, readRuns, rebuildSession, remember, session } from './state'
 
 export const register: Register = (on, options) => {
   session.config = {
@@ -73,8 +73,10 @@ export const register: Register = (on, options) => {
     const askedDemo = /\bdemo\b/i.test(args)
     const wantsDemo = askedDemo && (await enterDemo($))
     if (askedDemo && !wantsDemo) return { text: 'Immigration Packet Builder couldn’t open the demo.' }
-    // A panel already open stays where the attorney has it; a fresh opening starts at the folded list.
+    // A panel already open stays where the attorney has it; a fresh opening starts at the folded list, and the page is
+    // cleared to it before the panel is on screen, not once the server has answered.
     const wasUp = await paneUp($)
+    if (!wasUp && !wantsDemo) await clearToList($)
     const placed = wantsInline ? false : await openPane($, true)
     if (!placed) await remember($, { inlineUses: (await readPrefs($)).inlineUses + 1 })
     const p = await readPayload($)
@@ -93,12 +95,25 @@ export const register: Register = (on, options) => {
     } else if (wasUp) {
       void refresh($)
     } else {
-      // A matter left open when the panel was closed isn't put back on screen: the list, folded, is. A run that
-      // finished meanwhile is said there, with the press that opens its matter.
-      await foldMatters($)
+      // The list, folded and as it is now. A run that finished meanwhile is said there, with the press that opens
+      // its matter.
       void goHome($)
     }
     return { text: placed ? 'Immigration Packet Builder is open in the side panel.' : 'Immigration Packet Builder' }
+  })
+
+  // The side panel was closed: nothing of the matter that was open is kept for when it shows again, and the
+  // /matters rows in the conversation, which draw the app once the panel is gone, show the folded list too.
+  on('ui.close', async ($, e, next) => {
+    const res = await next(e)
+    if (e.id === PANE && e.origin?.kind !== 'unload') {
+      try {
+        await clearToList($)
+      } catch {
+        // the next /matters clears it before it opens
+      }
+    }
+    return res
   })
 
   // A request the app left in the chat box, sent: the agent the chat starts carries the app's run id in its brief, so

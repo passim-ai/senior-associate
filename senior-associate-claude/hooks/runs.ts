@@ -4,7 +4,7 @@ import type { Card, Lease, Run, View } from '../types'
 import { AGENT, BUILDS, ENDED, REVIEW_KINDS, STEP_KINDS, clientCount, missingCount, neededBeforeFiling, needsOf, profileIsEmpty, progressSig, replyKey, requiredMissing, runKind, stepOf, stepText } from './matter'
 import type { Need } from './matter'
 import { call, doctor, refresh, setPayload } from './server'
-import { MATTER_VIEWS, go, liveAgents, readAnswers, readPayload, readRuns, readView, session, setNote, stillWorking, typed, updateAnswers, updateGate, updateOrigins, updateRuns, updateSetup } from './state'
+import { MATTER_VIEWS, go, liveAgents, onScreen, readAnswers, readPayload, readRuns, readView, session, setNote, stillWorking, typed, updateAnswers, updateGate, updateOrigins, updateRuns, updateSetup } from './state'
 import { nowIso, nowMs, plural } from './words'
 import { matterStatus } from './status'
 
@@ -204,9 +204,13 @@ export async function withdrawStart($: EngineInterface, r: Run, byYou = false): 
   const still = start === 'cancelled' ? !(await clearChatBox($, r)) : false
   const here = (await readPayload($))?.matter?.path === r.matter
   const again = `Press ${runKind(r.kind).button} to try again.`
+  // This comes up by itself, on whatever screen the attorney is on, so it never names the matter; and a start that
+  // belongs to the other folder (one of the attorney's own, while the demo is on) is not said here at all.
+  const what = here ? 'The start' : 'A start for one of your matters'
   if (byYou) await setNote($, still ? 'Cancelled. The request is still in your chat box: delete it there rather than send it.' : '')
-  else if (still) await setNote($, `${here ? 'The start' : `The start for ${r.name}`} in your chat box wasn’t sent, so it was cancelled. It’s still in your chat box: delete it there rather than send it. ${again}`)
-  else await setNote($, `${here ? 'The start' : `The start for ${r.name}`} in your chat box wasn’t sent. ${again}`)
+  else if (!onScreen(r.matter)) { /* nothing is said on the other folder's screens */ }
+  else if (still) await setNote($, `${what} in your chat box wasn’t sent, so it was cancelled. It’s still in your chat box: delete it there rather than send it. ${again}`)
+  else await setNote($, `${what} in your chat box wasn’t sent. ${again}`)
   await refresh($)
 }
 

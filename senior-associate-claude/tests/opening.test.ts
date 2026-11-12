@@ -2,7 +2,7 @@
 // (or left in the conversation) until the attorney asks for one; and the demo, which shows only the fictional sample
 // matter from a folder of its own.
 import { expect, test } from 'claude-code/testing'
-import { ANA, DOCS, OPTS, PLUGIN, ROOT, SEEN, agents, boot, card, inActions, mount, open, world } from './world'
+import { ANA, DOCS, NO_GS, OPTS, PLUGIN, ROOT, SEEN, agents, boot, card, inActions, mount, open, world } from './world'
 
 const DEMO = '/Users/example/Library/Application Support/Immigration Packet Builder/Demo'
 
@@ -164,5 +164,179 @@ test('/matters demo finds the home folder from the plugin’s own folder when th
   expect(asked.length).toBeGreaterThan(0)
   expect(asked.every(r => /^\/(Users|home)\/[^/]+\/Library\/Application Support\/Immigration Packet Builder\/Demo$/.test(String(r.matters_root)))).toBe(true)
   expect(await ui.find({ type: 'Button', key: 'leave-demo' })).toBeDefined()
+  await ui.unmount()
+})
+
+// A panel the tests can open and close, as the host's own would be.
+function panel(on: Parameters<typeof world>[0]) {
+  const state = { up: true }
+  on('ui.open', async () => { state.up = true; return { value: { isPlaced: true } } })
+  on('ui.panes', async () => ({ value: state.up ? [{ id: 'senior-associate', title: 'Immigration Packet Builder', isShown: true, isFocused: false, isPlaced: true }] : [] }))
+  return state
+}
+
+test('/matters on a closed panel clears the page before the panel shows, not once the server answers', OPTS(), async ($, on) => {
+  const { clock } = await open($, on)
+  const garcia = card('Garcia I-130 I-485', 'ready', DOCS)
+  let held: Promise<void> | undefined
+  let release: () => void = () => {}
+  world(on, [garcia, card('Lopez I-751', 'ready', DOCS)], { prefs: { ...SEEN, lastMatter: garcia.path } }, { profile: ANA, hold: r => (r.op === 'state' && !r.matter_path ? held : undefined) })
+  const pane = panel(on)
+  const { ui, tap } = await mount($, clock)
+  await tap(`open:${garcia.path}`)
+  expect(await ui.find({ type: 'Text', text: /^Garcia I-130 I-485$/ })).toBeDefined()
+
+  // The panel went away on that matter without the app being told, and the server is slow to answer from here on.
+  pane.up = false
+  held = new Promise<void>(done => { release = done })
+  await command($, '')
+  await clock.settle()
+  // Nothing has come back yet, and nothing of the matter is on the page: the list, folded.
+  expect(said(await ui.drawn()).filter(t => /Garcia|Lopez/.test(t))).toEqual([])
+  expect(await ui.find({ type: 'Text', text: /^Matters$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Button', key: 'main:build' })).toBeUndefined()
+  held = undefined
+  release()
+  await clock.settle()
+  expect(said(await ui.drawn()).filter(t => /Garcia|Lopez/.test(t))).toEqual([])
+  expect(await ui.find({ type: 'Button', key: 'grp:preparing' })).toMatchObject({ text: 'Show' })
+  await ui.unmount()
+})
+
+test('the demo lists the sample alone; a build put off on one of the attorney’s matters can’t be started from inside it', OPTS(), async ($, on) => {
+  const { clock } = await open($, on)
+  on('env.get', async (_$, e) => ({ value: e.name === 'HOME' ? '/Users/example' : undefined }))
+  const garcia = card('Garcia I-130 I-485', 'ready', DOCS)
+  const run = agents(on, 'Building the packet: Garcia I-130 I-485')
+  // Ghostscript is missing: Build is put off until the setup check passes.
+  const { requests } = world(on, [garcia], { prefs: { ...SEEN, lastMatter: garcia.path } }, { profile: ANA, checks: NO_GS })
+  panel(on)
+  const { ui, tap } = await mount($, clock)
+  await tap(`open:${garcia.path}`)
+  await tap('main:build')
+  expect(await ui.find({ type: 'Text', text: /^Getting set up$/ })).toBeDefined()
+  expect(run.spawned.length).toBe(0)
+
+  await command($, 'demo')
+  await clock.settle()
+  // Only the sample is in the demo, shown like any matter once its group is opened.
+  await tap('show-all')
+  expect(await ui.find({ type: 'Button', key: `open:${DEMO}/Sample - Barrientos-Eckhardt` })).toBeDefined()
+  expect(said(await ui.drawn()).filter(t => /Garcia/.test(t))).toEqual([])
+
+  // Setup › Continue anyway, inside the demo: the build that was put off on the attorney's matter doesn't start, and
+  // that matter is not opened.
+  const before = requests.length
+  await tap('nav-setup')
+  await tap('main:setup-continue')
+  expect(run.spawned.length).toBe(0)
+  expect(requests.slice(before).filter(r => r.matter_path === garcia.path)).toEqual([])
+  expect(said(await ui.drawn()).filter(t => /Garcia/.test(t))).toEqual([])
+  expect(await ui.find({ type: 'Button', key: 'leave-demo' })).toBeDefined()
+  await ui.unmount()
+})
+
+test('an answer about one of the attorney’s matters that comes back after the demo opened is not put on the page', OPTS(), async ($, on) => {
+  const { clock } = await open($, on)
+  on('env.get', async (_$, e) => ({ value: e.name === 'HOME' ? '/Users/example' : undefined }))
+  const garcia = card('Garcia I-130 I-485', 'ready', DOCS)
+  let held: Promise<void> | undefined
+  let release: () => void = () => {}
+  const { requests } = world(on, [garcia], { prefs: { ...SEEN, lastMatter: garcia.path } }, { profile: ANA, hold: r => (r.op === 'set_instructions' ? held : undefined) })
+  panel(on)
+  const { ui, tap } = await mount($, clock)
+  await tap(`open:${garcia.path}`)
+  await tap('sec-instructions')
+  // The instructions are saved, and the server is slow to say so.
+  held = new Promise<void>(done => { release = done })
+  await ui.input({ plugin: PLUGIN, key: 'instructions', text: 'Lead with the joint lease.', kind: 'submit' })
+  await clock.settle()
+  expect(requests.at(-1)).toMatchObject({ op: 'set_instructions', matters_root: ROOT })
+
+  await command($, 'demo')
+  await clock.settle()
+  held = undefined
+  release()
+  await clock.settle()
+  // The late answer carries the attorney's matter and list: neither is on the page under the demo's line.
+  expect(await ui.find({ type: 'Button', key: 'leave-demo' })).toBeDefined()
+  expect(said(await ui.drawn()).filter(t => /Garcia/.test(t))).toEqual([])
+  await tap('show-all')
+  expect(said(await ui.drawn()).filter(t => /Garcia/.test(t))).toEqual([])
+  expect(await ui.find({ type: 'Button', key: `open:${DEMO}/Sample - Barrientos-Eckhardt` })).toBeDefined()
+  await ui.unmount()
+})
+
+test('a start that timed out on one of the attorney’s matters is not said inside the demo, and never by name on the list', OPTS(), async ($, on) => {
+  const { clock } = await open($, on)
+  on('env.get', async (_$, e) => ({ value: e.name === 'HOME' ? '/Users/example' : undefined }))
+  const garcia = card('Garcia I-130 I-485', 'ready', DOCS)
+  const lopez = card('Lopez I-751', 'ready', DOCS)
+  let box = ''
+  on('agent.spawn', async () => ({ deny: 'auto mode' }))
+  on('agent.list', async () => ({ value: [] }))
+  on('prompt.fill', async (_$, e) => { box = e.text; return { isFilled: true } })
+  on('prompt.read', async () => ({ value: { text: box, cursor: box.length } }))
+  const { requests } = world(on, [garcia, lopez], { prefs: { ...SEEN, lastMatter: garcia.path } }, { profile: ANA })
+  panel(on)
+  const { ui, tap } = await mount($, clock)
+  // Two starts wait in the chat box, unsent. The first times out while the attorney is on the list.
+  await tap(`open:${garcia.path}`)
+  await tap('main:build')
+  await tap('nav-all')
+  await tap('hide-all')
+  for (let i = 0; i < 44; i++) await clock.advance(15000)
+  await clock.settle()
+  expect(requests.find(r => r.op === 'cancel_start' && r.matter_path === garcia.path)).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^⚠ A start for one of your matters in your chat box wasn’t sent\. Press Build packet to try again\.$/ })).toBeDefined()
+  expect(said(await ui.drawn()).filter(t => /Garcia|Lopez/.test(t))).toEqual([])
+
+  // The second times out while the demo is on screen: it is still cancelled, in the attorney's own folder, and
+  // nothing is said about it there.
+  await tap('show-all')
+  await tap(`open:${lopez.path}`)
+  await tap('main:build')
+  await command($, 'demo')
+  await clock.settle()
+  for (let i = 0; i < 44; i++) await clock.advance(15000)
+  await clock.settle()
+  expect(requests.find(r => r.op === 'cancel_start' && r.matter_path === lopez.path)).toMatchObject({ matters_root: ROOT })
+  expect(await ui.find({ type: 'Text', text: /wasn’t sent/ })).toBeUndefined()
+  expect(said(await ui.drawn()).filter(t => /Garcia|Lopez/.test(t))).toEqual([])
+  await ui.unmount()
+})
+
+test('Leave the demo while the demo is still loading: the attorney’s own list loads, and nothing is left waiting', OPTS(), async ($, on) => {
+  const { clock } = await open($, on)
+  on('env.get', async (_$, e) => ({ value: e.name === 'HOME' ? '/Users/example' : undefined }))
+  const garcia = card('Garcia I-130 I-485', 'ready', DOCS)
+  let held: Promise<void> | undefined
+  let release: () => void = () => {}
+  const { requests } = world(on, [garcia], { prefs: SEEN }, { profile: ANA, hold: r => (r.op === 'state' && r.matters_root === DEMO ? held : undefined) })
+  panel(on)
+  const { ui, tap } = await mount($, clock, true)
+  await command($, 'demo')
+  await clock.settle()
+  expect(await ui.find({ type: 'Button', key: 'leave-demo' })).toBeDefined()
+  // The demo's list is loading again, slowly, when Leave the demo is pressed.
+  held = new Promise<void>(done => { release = done })
+  await ui.press({ plugin: PLUGIN, key: 'nav-all' })
+  await clock.settle()
+  expect(requests.at(-1)).toMatchObject({ op: 'state', matters_root: DEMO })
+  const leaving = requests.length
+  await tap('leave-demo')
+  expect(requests.slice(leaving).some(r => r.op === 'state' && r.matters_root === ROOT)).toBe(true)
+  expect(await ui.find({ type: 'Text', text: /^Matters$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Button', key: 'grp:preparing' })).toMatchObject({ text: 'Show' })
+  expect(await ui.find({ type: 'Button', key: 'leave-demo' })).toBeUndefined()
+  expect(await ui.find({ type: 'Text', text: /couldn’t open|One moment|⏳/ })).toBeUndefined()
+  held = undefined
+  release()
+  await clock.settle()
+  // The demo's late answer changes nothing: the attorney's own list stays, folded.
+  expect(await ui.find({ type: 'Button', key: 'leave-demo' })).toBeUndefined()
+  expect(await ui.find({ type: 'Text', text: /Barrientos/ })).toBeUndefined()
+  await tap('grp:preparing')
+  expect(await ui.find({ type: 'Button', key: `open:${garcia.path}` })).toBeDefined()
   await ui.unmount()
 })

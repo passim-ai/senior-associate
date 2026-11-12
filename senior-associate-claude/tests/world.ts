@@ -286,6 +286,8 @@ export type Options = { checks?: unknown[]; profile?: Record<string, string>; ca
   sample?: boolean
   /** The tools the session has, by name: BIA Edge's are how the app knows the connector is there. */
   tools?: string[]
+  /** Holds the answer to a request until this settles: a server that is slow to answer, or never does. */
+  hold?: (request: Record<string, string>) => Promise<void> | undefined
 }
 
 // The server and the host's side effects, stood in for. `seed` seeds the list.
@@ -318,7 +320,17 @@ export function world(on: On, seed: Matter[] = [], stored: Record<string, unknow
     const request = JSON.parse(argv[argv.length - 1] ?? '{}') as Record<string, string>
     ops.push(request.op ?? '')
     requests.push(request)
-    const withProfile = (p: ReturnType<typeof payload>) => ({ ...p, profile })
+    const wait = o.hold?.(request)
+    if (wait) await wait
+    // The demo's own Matters folder, as the real server keeps it: the sample matter and nothing of the attorney's.
+    const demoRoot = /\/Immigration Packet Builder\/Demo$/.test(request.matters_root ?? '') ? request.matters_root! : ''
+    if (demoRoot && (request.op === 'state' || request.op === 'list')) {
+      const sample = Object.assign(sampleCard('ready'), { path: `${demoRoot}/Sample - Barrientos-Eckhardt` })
+      if (request.op === 'list') return answer({ status: 'list', matters: [row(sample, undefined)], archived_count: 0 })
+      return answer({ ...payload(request.matter_path === sample.path ? sample : null, [sample], catalog, {}), profile: {}, matters_root: demoRoot })
+    }
+    // As the real server does, every answer says which Matters folder it is from.
+    const withProfile = (p: ReturnType<typeof payload>) => ({ ...p, profile, matters_root: request.matters_root ?? p.matters_root })
     if (request.matter_path && o.gone?.includes(request.matter_path)) {
       return answer({ error: `${request.matter_path.split('/').pop()} isn't in your Matters folder anymore. It may have been moved or renamed in Finder.` }, 1)
     }

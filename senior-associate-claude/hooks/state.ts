@@ -8,6 +8,29 @@ import { MATTERS_ASK, NEW_FOLDER, NO_UV, STILL_WORKING, UV_ASK } from './words'
 
 export const PANE = 'senior-associate'
 
+// The demo's own Matters folder, under the attorney's home folder: it holds the fictional sample matter and nothing
+// of theirs.
+export const DEMO_FOLDER = 'Library/Application Support/Immigration Packet Builder/Demo'
+
+// The demo folder a path sits in ('' when it is none of the demo's), read off the path itself, so a matter of the
+// demo's is known as one whether or not the demo is on, and after a reload.
+export function demoRootOf(path: string): string {
+  const mark = `/${DEMO_FOLDER}`
+  const at = path.indexOf(`${mark}/`)
+  return at >= 0 ? path.slice(0, at + mark.length) : path.endsWith(mark) ? path : ''
+}
+export const inDemo = (path: string) => demoRootOf(path) !== ''
+// Whether a matter (or a Matters folder) belongs to what is on screen now: the demo's while the demo is on, the
+// attorney's own otherwise.
+export const onScreen = (path: string) => inDemo(path) === Boolean(session.demo)
+// An answer from the other folder: one asked for before the demo was opened or left, or one that names a matter
+// which isn't this folder's. It is never put on the page, whoever asked for it.
+export function otherFolder(p: Payload | null | undefined): boolean {
+  if (!p) return false
+  if (p.matter && !onScreen(p.matter.path)) return true
+  return Boolean(p.matters_root) && !onScreen(p.matters_root!)
+}
+
 // The matters folder and model letters folder come from the plugin's settings (its userConfig).
 // The rest is this module's own bookkeeping; a hot reload starts it over, and session.start rebuilds what matters.
 export const session = {
@@ -95,6 +118,8 @@ export function readPayload($: EngineInterface) { return read($, payload) }
 export function updatePayload($: EngineInterface, change: Parameters<typeof update<Value<typeof payload>>>[2]) {
   return update($, payload, value => {
     const next = change(value)
+    // The one gate every writer of the page goes through: nothing of the other folder's is shown.
+    if (otherFolder(next)) return value
     session.matter = next?.matter?.path ?? ''
     return next
   })

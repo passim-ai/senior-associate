@@ -2,7 +2,7 @@
 import type { EngineInterface } from 'claude-code'
 import type { Access, Card, Check, MatterRow, Payload, Setup, View } from '../types'
 import { progressSig, stepOf, stepText } from './matter'
-import { MATTER_VIEWS, loadPrefs, markSeen, readAccess, readLibrary, readPayload, readPrefs, readRuns, readSetup, readView, remember, session, setDemo, setNote, stillWorking, updateBusy, updateLibrary, updatePayload, updateRuns, updateSetup, updateView } from './state'
+import { MATTER_VIEWS, demoRootOf, inDemo, loadPrefs, markSeen, otherFolder, readAccess, readLibrary, readPayload, readPrefs, readRuns, readSetup, readView, remember, session, setDemo, setNote, stillWorking, updateBusy, updateLibrary, updatePayload, updateRuns, updateSetup, updateView } from './state'
 import { ACCOUNT_LABEL, LIBRARY_ABOUT, LIBRARY_PRICE, NO_UV, TRIAL_LABEL, dateOnly, friendly, nowIso } from './words'
 
 // The pickers are macOS windows that can open behind Claude; while one is open the app can only wait.
@@ -30,19 +30,6 @@ export async function findUv($: EngineInterface): Promise<string> {
   }
   return 'uv'
 }
-
-// The demo's own Matters folder, under the attorney's home folder: it holds the fictional sample matter and nothing
-// of theirs.
-export const DEMO_FOLDER = 'Library/Application Support/Immigration Packet Builder/Demo'
-
-// The demo folder a path sits in ('' when it is none of the demo's), read off the path itself, so a matter of the
-// demo's is known as one whether or not the demo is on, and after a reload.
-export function demoRootOf(path: string): string {
-  const mark = `/${DEMO_FOLDER}`
-  const at = path.indexOf(`${mark}/`)
-  return at >= 0 ? path.slice(0, at + mark.length) : path.endsWith(mark) ? path : ''
-}
-export const inDemo = (path: string) => demoRootOf(path) !== ''
 
 // The plugin's settings for the server, the empty ones left out so its defaults (~/Matters) apply. While the demo is
 // on, the Matters folder is the demo's own and no model letters are read. A request that names a matter goes to the
@@ -185,7 +172,7 @@ export async function load($: EngineInterface, request: Record<string, unknown>,
     const p = await call($, request)
     if (session.flight !== token) return null
     // The demo was opened or left while this was on its way: its answer is from the other folder, and is dropped.
-    if (session.demo !== demoAtCall) return null
+    if (session.demo !== demoAtCall || otherFolder(p)) return null
     // The server answers with the folder's real path; the demo keeps that one, so its matters are known as its own.
     if (session.demo && !request.matter_path && p.matters_root && p.matters_root !== session.demo && inDemo(p.matters_root)) await setDemo($, p.matters_root)
     let next = await landing($, p, request)
