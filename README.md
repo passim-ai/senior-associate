@@ -53,7 +53,7 @@ You won't need Terminal. Claude does the installing.
 
 ## First steps
 
-1. **In the Code tab, type `/matters` and press Return.** Immigration Packet Builder opens. Choose **Open as side panel** to keep it beside your chat while Claude works.
+1. **In the Code tab, type `/matters` and press Return.** Immigration Packet Builder opens beside your chat, and stays there while Claude works.
 2. **Getting set up** appears the first time. It checks each tool and marks it ✓ or ✗. For a ✗, press **Ask Claude to do it**: Claude installs it in the chat. Then press **Check again**. Rows marked ○ are optional.
 3. **Try the sample matter, if you like.** Your list starts with *Sample - Barrientos-Eckhardt*, a fictional I-601A with gaps planted on purpose. Press **Open the sample matter**, then **Review documents first**: in about 5–10 minutes Claude lists what's missing, and the page then shows what a good review catches, so you can compare. It uses your Claude plan like any matter. Archive it when you're done.
 4. **Add your details** (2 minutes, once): your name, firm, address, bar number and licensing authority. They go on the G-28 and on the letter's signature.
@@ -63,7 +63,7 @@ You won't need Terminal. Claude does the installing.
    - The first time, macOS may ask whether Claude can control System Events. Choose **OK**; that's what lets the file picker open in front.
 6. **Press Review documents first.** In about 5–10 minutes you see what's there, what's missing, and a client request you can copy into an email. When you're ready, press **Build packet**.
 
-Type `/matters` any time to come back. **Help**, at the foot of every screen, explains each status and what to do if something goes wrong.
+Type `/matters` any time to come back. Your list of matters opens with each group folded, so no client's name is on screen until you press **Show**, and notifications never name a matter. To show Immigration Packet Builder to someone else, type `/matters demo`: only the fictional sample matter appears, until you press **Leave the demo**. **Help**, at the foot of every screen, explains each status and what to do if something goes wrong.
 
 ## What to expect
 

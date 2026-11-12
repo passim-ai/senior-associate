@@ -1,4 +1,6 @@
-// Matters: pick up where you left off, or start another.
+// Matters: where everything stands, or start another. The list opens with its groups folded, a count for each, so
+// no client's name is on screen until the attorney asks for one: Show opens a group, and typing in Find a matter shows
+// only what matches.
 import type { EngineInterface } from 'claude-code'
 import type { MatterRow } from '../../types'
 import type { Ctx } from '../kit'
@@ -8,7 +10,7 @@ import { PANE, updateFilter } from '../state'
 import { GROUP_TITLE, matterStatus } from '../status'
 import type { Group, MatterStatus } from '../status'
 import { nowMs, plural, when } from '../words'
-import { WARN, MUTED, HEAD } from '../theme'
+import { ACCENT, WARN, MUTED, HEAD } from '../theme'
 
 // The list's orders, by the words its chooser shows. Rows stay in their status groups; the order is within each.
 export const SORTS: { id: string; label: string }[] = [
@@ -17,6 +19,9 @@ export const SORTS: { id: string; label: string }[] = [
 // Within a group, by status: what needs the most attention first.
 const STATUS_ORDER = ['stopped', 'starting', 'needs_you', 'building', 'draft', 'waiting_client', 'paused', 'reviewed', 'ready', 'new', 'complete', 'filed']
 const GROUP_ORDER: Group[] = ['needs_you', 'working', 'preparing', 'ready', 'filed']
+
+// The press that shows or hides a group. Filed keeps the key it always had; the others are `grp:<group>`.
+export const groupKey = (g: Group) => (g === 'filed' ? 'filed-group' : `grp:${g}`)
 
 export function sortRows(rows: { m: MatterRow; s: MatterStatus }[], sort: string): { m: MatterRow; s: MatterStatus }[] {
   const byName = (a: MatterRow, b: MatterRow) => shownName(a).localeCompare(shownName(b), undefined, { sensitivity: 'base' })
@@ -30,7 +35,7 @@ export function sortRows(rows: { m: MatterRow; s: MatterStatus }[], sort: string
 }
 
 export async function homeScreen($: EngineInterface, x: Ctx): Promise<JSX.Element> {
-  const { Box, Text, Input, site, p, allRuns, pr, q, st, open, actions, button, lone, title, card, row, page, body, field, folder, noProfile, tip, chips, sort } = x
+  const { Box, Text, Input, site, p, allRuns, pr, q, st, open, actions, button, lone, title, card, barCard, row, page, body, field, folder, noProfile, tip, chips, sort } = x
   const now = nowMs()
   const everything = p.matters.map(m => ({ m, s: matterStatus(m, allRuns[m.path], now) }))
   const live = everything.filter(r => !r.m.archived)
@@ -102,9 +107,34 @@ export async function homeScreen($: EngineInterface, x: Ctx): Promise<JSX.Elemen
     count('building') ? `${count('building')} in progress` : '',
     count('complete') ? `${count('complete')} ready to file` : '',
   ].filter(Boolean).join(' · ') || plural(live.length, 'matter', 'matters')
-  const lastRow = live.length > FEW && pr.lastMatter ? live.find(r => r.m.path === pr.lastMatter) ?? null : null
-  const filedOpen = open.includes('filed-group')
+
+  // Work Claude finished while the attorney was elsewhere. The notification named no one, and neither does this:
+  // the press opens the matter it was about, the latest first.
+  const unseen = live
+    .map(r => ({ path: r.m.path, run: allRuns[r.m.path] }))
+    .filter(u => u.run && (u.run.status === 'done' || u.run.status === 'failed') && u.run.seen === false)
+    .sort((a, b) => (b.run!.endedAt ?? '').localeCompare(a.run!.endedAt ?? ''))
+  const unseenCard = unseen.length
+    ? barCard('card-unseen', ACCENT, [
+        <Text key="unseen-text" weight="semibold" color={HEAD}>{unseen.length > 1
+          ? `Claude finished or stopped work on ${unseen.length} matters since you last looked.`
+          : unseen[0]!.run!.status === 'failed'
+            ? 'Claude stopped partway through a matter since you last looked.'
+            : 'Claude finished its work on a matter since you last looked.'}</Text>,
+        lone('unseen-open', button('main:open-unseen', unseen.length > 1 ? 'Open the most recent' : 'Open it', () => { void perform($, `open:${unseen[0]!.path}`) }, 'primary')),
+      ], 'sm')
+    : null
+
+  // The matter last opened, said by its case and where it stands, never by the client's name.
+  const lastRow = !unseen.length && live.length > FEW && pr.lastMatter ? live.find(r => r.m.path === pr.lastMatter) ?? null : null
   const archivedOpen = open.includes('archived-group')
+
+  // A group is folded until its Show is pressed; a search shows what matches wherever it sits.
+  const isOpen = (g: Group) => open.includes(groupKey(g))
+  const listed = GROUP_ORDER.filter(g => g !== 'filed' && shown.some(r => r.s.group === g))
+  const someOpen = listed.some(isOpen)
+  const allOpen = listed.length > 0 && listed.every(isOpen)
+  const namesOnScreen = Boolean(needle) || someOpen
 
   const group = (g: Group) => {
     const rows = shown.filter(r => r.s.group === g)
@@ -112,14 +142,19 @@ export async function homeScreen($: EngineInterface, x: Ctx): Promise<JSX.Elemen
     if (g === 'filed') {
       return (
         <Box key={`grp-${g}`} flexDirection="column" gap="sm">
-          {lone('filed-group', button('filed-group', `${GROUP_TITLE[g]} (${rows.length}) ${filedOpen ? '⌄' : '›'}`, () => { void perform($, 'filed-group') }, 'link'))}
-          {filedOpen || needle ? rows.map(rowFor) : null}
+          {lone('filed-group', button('filed-group', `${GROUP_TITLE[g]} (${rows.length}) ${isOpen(g) ? '⌄' : '›'}`, () => { void perform($, 'filed-group') }, 'link'))}
+          {isOpen(g) || needle ? rows.map(rowFor) : null}
         </Box>
       )
     }
+    // Folded: what the group is and how many are in it.
+    if (!isOpen(g) && !needle) return row(`grp-${g}`, groupKey(g), GROUP_TITLE[g], plural(rows.length, 'matter', 'matters'), undefined, undefined, 'Show')
     return (
       <Box key={`grp-${g}`} flexDirection="column" gap="sm">
-        <Text size="heading" weight="semibold" color={HEAD}>{GROUP_TITLE[g]}</Text>
+        <Box flexDirection="row" flexWrap="wrap" justifyContent="space-between" alignItems="center" columnGap="md" rowGap="xs">
+          <Text size="heading" weight="semibold" color={HEAD}>{GROUP_TITLE[g]}</Text>
+          {needle ? null : button(groupKey(g), 'Hide', () => { void perform($, groupKey(g)) }, 'quiet')}
+        </Box>
         {rows.map(rowFor)}
       </Box>
     )
@@ -129,13 +164,11 @@ export async function homeScreen($: EngineInterface, x: Ctx): Promise<JSX.Elemen
     [title('Matters', summary, actions([newMatter]))],
     tip,
     body(
+      unseenCard,
       lastRow
         ? card('Pick up where you left off', [
-            <Box key="last" flexDirection="column" gap="xs">
-              <Text size="heading" weight="semibold" color={HEAD}>{shownName(lastRow.m)}</Text>
-              <Text color={MUTED} size="footnote">{[lastRow.s.label, nextStep(lastRow.m, lastRow.s), lastRow.m.updated_at ? `updated ${when(lastRow.m.updated_at)}` : ''].filter(Boolean).join(' · ')}</Text>
-            </Box>,
-            lone('last-open', button(`main:open:${lastRow.m.path}`, `Open ${shownName(lastRow.m)}`, () => { void perform($, `open:${lastRow.m.path}`) }, 'primary')),
+            <Text key="last" color={MUTED} size="footnote">{[lastRow.m.case_line, lastRow.s.label, nextStep(lastRow.m, lastRow.s), lastRow.m.updated_at ? `updated ${when(lastRow.m.updated_at)}` : ''].filter(Boolean).join(' · ')}</Text>,
+            lone('last-open', button(`main:open:${lastRow.m.path}`, 'Open it', () => { void perform($, `open:${lastRow.m.path}`) }, 'primary')),
           ], undefined, 'card-last')
         : null,
       setupWarning,
@@ -146,7 +179,15 @@ export async function homeScreen($: EngineInterface, x: Ctx): Promise<JSX.Elemen
             {site === 'pane' ? lone('find-key', button('find-key', 'Press f to find a matter', () => { void $.ui.focus({ requestId: PANE, key: 'search' }).catch(() => undefined) }, 'quiet', { hotkey: 'f' })) : null}
           </Box>
         : null,
-      live.length > 1
+      // Whether names are on screen, and the press that shows or hides them all.
+      listed.length && !needle
+        ? <Box key="names" flexDirection="row" flexWrap="wrap" columnGap="md" rowGap="xs" alignItems="center">
+            <Text color={MUTED} size="footnote">{someOpen ? 'Client names are showing.' : 'Client names stay hidden until you show a group.'}</Text>
+            {allOpen ? null : button('show-all', 'Show all', () => { void perform($, 'show-all') }, 'link')}
+            {someOpen ? button('hide-all', 'Hide names', () => { void perform($, 'hide-all') }, 'link') : null}
+          </Box>
+        : null,
+      namesOnScreen && live.length > 1
         ? <Box key="sort" flexDirection="row" flexWrap="wrap" columnGap="md" rowGap="xs" alignItems="center">
             <Text color={MUTED} size="footnote">Sort:</Text>
             {chips('sort-chips', SORTS.map(s => ({ id: `sort:${s.id}`, label: s.label, chosen: sort === s.id })))}

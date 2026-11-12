@@ -29,6 +29,7 @@ export const session = {
   launching: new Set<string>(), // matters with a start in flight: set at the press, before any await, so a second press can't start a second agent
   matter: '', // the open matter's path, kept in step with the payload so a press knows it without waiting
   sampleAsked: false, // the first load of a new attorney's session has asked the server for the sample matter
+  demo: '', // the demo's own Matters folder while the demo is on, kept in step with the `demo` value below
 }
 
 // What the attorney is typing, until it is saved or sent.
@@ -81,6 +82,8 @@ const sort = atom({ ...S, key: 'sort' } as const, 'updated')
 const access = atom({ ...S, key: 'access' } as const, null as Access | null)
 // Whether the BIA Edge connector is in this session, looked up when a matter opens and at the setup check.
 const library = atom({ ...S, key: 'library' } as const, null as { connected: boolean } | null)
+// The demo: its own Matters folder, holding only the fictional sample, so the attorney's matters are never listed.
+const demo = atom({ ...S, key: 'demo' } as const, '')
 
 type Value<A> = A extends Atom<infer T> ? T : never
 
@@ -132,6 +135,23 @@ export function updateConfirm($: EngineInterface, change: Parameters<typeof upda
 export function readAccess($: EngineInterface) { return read($, access) }
 export function readLibrary($: EngineInterface) { return read($, library) }
 export function updateLibrary($: EngineInterface, change: Parameters<typeof update<Value<typeof library>>>[2]) { return update($, library, change) }
+export function readDemo($: EngineInterface) { return read($, demo) }
+export async function setDemo($: EngineInterface, root: string) {
+  session.demo = root
+  await update($, demo, () => root)
+}
+
+// The matters list opens with its groups folded: a count for each, and no client's name until a group is opened.
+// `grp:<group>` is an open group; the Filed and Archived groups keep the keys they always had.
+export const GROUP_KEYS = ['grp:needs_you', 'grp:working', 'grp:preparing', 'grp:ready']
+const isGroupKey = (key: string) => key.startsWith('grp:') || key === 'filed-group' || key === 'archived-group'
+export async function foldMatters($: EngineInterface) {
+  await update($, expanded, list => (list ?? []).filter(key => !isGroupKey(key)))
+}
+export async function unfoldMatters($: EngineInterface) {
+  await update($, expanded, list => [...(list ?? []).filter(key => !GROUP_KEYS.includes(key)), ...GROUP_KEYS])
+}
+
 // Kept between sessions too, so the page still says it tomorrow; with its date, because it is what Passim said then.
 export async function setAccess($: EngineInterface, value: Access | null) {
   await update($, access, () => value)
@@ -210,8 +230,9 @@ export async function go($: EngineInterface, v: View) {
 // A hot reload starts this module over, with the session's values kept: rebuild what the module had from them, so a
 // run in progress is still ours, saved answers are still in their boxes, and a passed setup check isn't asked again.
 export async function rebuildSession($: EngineInterface) {
-  const [all, saved, s, p] = await Promise.all([read($, runs), read($, answers), read($, setup), read($, payload)])
+  const [all, saved, s, p, demoRoot] = await Promise.all([read($, runs), read($, answers), read($, setup), read($, payload), read($, demo)])
   session.matter = p?.matter?.path ?? ''
+  session.demo = demoRoot ?? ''
   // What was in flight died with the old module (its server call, its press): nothing is busy or starting now, so the
   // page and its start buttons aren't left dimmed waiting for an answer that can't come.
   await update($, busy, () => false)

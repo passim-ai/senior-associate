@@ -52,6 +52,8 @@ export async function helpScreen($: EngineInterface, x: Ctx): Promise<JSX.Elemen
       howTo('h7b', 'Stop Claude asking permission for every step', 'Under the prompt box, switch the permission setting to Auto before you build. In Claude’s usual setting a full build asks several hundred times, and “don’t ask again” removes only a few. In Auto, Build puts the request in your chat box: press Enter there to send it.'),
       howTo('h8', 'Stop Claude', 'While Claude works, press Stop on the matter page. Everything finished is kept, and Continue building picks up there.'),
       howTo('h9', 'Undo Mark as filed', 'Open the matter and press Undo.'),
+      howTo('h9b', 'Keep clients’ names off the screen', 'The list opens with its groups folded: Show opens one, and Hide names folds them all again. Notifications never name a matter.'),
+      howTo('h9c', 'Show Immigration Packet Builder to someone else', 'Type /matters demo. Only the fictional sample matter is shown, from a folder of its own, until you press Leave the demo.'),
       <Box key="h10" flexDirection="column" gap="xs">
         <Text weight="semibold" color={HEAD}>Try Immigration Packet Builder on a fictional case</Text>
         <Text dimColor size="footnote">The sample matter is an I-601A built from made-up documents, with gaps a good review should catch. Archive it when you’re done; this brings it back.</Text>

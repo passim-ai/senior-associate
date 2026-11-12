@@ -2,10 +2,13 @@
 //
 // Client documents in, a filing-ready USCIS packet out (or, when documents are
 // missing, a draft packet as far as the record allows plus a memo and a client
-// request), without leaving the session. `/matters` draws the app at the
-// command's own row in the conversation; "Open as side panel" (or `/matters
-// pane`) docks the same app beside the transcript. Both draw from one state,
-// so a press in either updates both. The screens, in the order an attorney
+// request), without leaving the session. `/matters` opens the app beside the
+// transcript, on the matters list with every group folded, so no client's name
+// is on screen until the attorney asks for one. Where the side panel can't be
+// placed (or for `/matters here`) the same app is drawn at the command's own row
+// in the conversation; both draw from one state, so a press in either updates
+// both. `/matters demo` shows only the fictional sample matter, from a folder of
+// its own. The screens, in the order an attorney
 // meets them, are laid out in docs/EXPERIENCE.md: Getting set up and Welcome
 // (the first time), Matters, Your details, New matter, and a matter's tabs
 // (Overview, Documents, Questions, Packet, Memo & request, Timeline), Help.
@@ -29,10 +32,10 @@ import { draw } from './draw'
 import { BLOCKED, forgetTerms, isResearch, isScreened, researchGate, toolInput } from './privacy'
 import { tableFor } from './kit'
 import { noteAccess } from './library'
-import { goTo, openPane } from './perform'
+import { enterDemo, goHome, goTo, openPane, paneUp } from './perform'
 import { adoptSpawn, ensurePoll, finishRun, markWaiting } from './runs'
 import { doctor, load, refresh } from './server'
-import { PANE, go, liveAgents, loadPrefs, readPayload, readPrefs, readRuns, rebuildSession, remember, session } from './state'
+import { PANE, foldMatters, go, liveAgents, loadPrefs, readPayload, readPrefs, readRuns, rebuildSession, remember, session } from './state'
 
 export const register: Register = (on, options) => {
   session.config = {
@@ -57,15 +60,27 @@ export const register: Register = (on, options) => {
     return next(e)
   })
 
-  // `/matters` draws the app at its own row in the conversation; `/matters pane` docks it beside.
+  // `/matters` opens the app beside the chat, on the matters list with its groups folded: no client's name is on
+  // screen until the attorney asks for one, and none is left in the conversation. Where the side panel can't be
+  // placed, and for `/matters here`, the app is drawn at the command's own row instead. `/matters demo` shows only the
+  // fictional sample matter, from a folder of its own.
   on('command.run', { command: 'matters' }, async ($, e) => {
     const args = e.args ?? ''
-    const wantsPane = /\bpane\b|\bside\b|\bdock\b/i.test(args)
+    const wantsInline = /\bhere\b|\binline\b/i.test(args)
     if (!session.prefsLoaded) await loadPrefs($)
-    if (wantsPane) await openPane($)
-    else await remember($, { inlineUses: (await readPrefs($)).inlineUses + 1 })
+    // The demo's folder is chosen before anything is drawn, so the attorney's own list is never asked for meanwhile.
+    // A demo that couldn't open says why on the page; the attorney's own list is not opened in its place.
+    const askedDemo = /\bdemo\b/i.test(args)
+    const wantsDemo = askedDemo && (await enterDemo($))
+    if (askedDemo && !wantsDemo) return { text: 'Immigration Packet Builder couldn’t open the demo.' }
+    // A panel already open stays where the attorney has it; a fresh opening starts at the folded list.
+    const wasUp = await paneUp($)
+    const placed = wantsInline ? false : await openPane($, true)
+    if (!placed) await remember($, { inlineUses: (await readPrefs($)).inlineUses + 1 })
     const p = await readPayload($)
-    if (/\bwelcome\b/i.test(args)) {
+    if (wantsDemo) {
+      if (!session.inFlight) void load($, { op: 'state', auto_select: false })
+    } else if (/\bwelcome\b/i.test(args)) {
       // `/matters welcome` shows the first-time screen again, whatever is remembered.
       if (!p) await load($, { op: 'state', auto_select: false })
       await go($, 'welcome')
@@ -73,16 +88,17 @@ export const register: Register = (on, options) => {
       if (!p) await load($, { op: 'state', auto_select: false })
       await goTo($, 'setup')
       await doctor($)
+    } else if (!p) {
+      if (!session.inFlight) void load($, { op: 'state', auto_select: false })
+    } else if (wasUp) {
+      void refresh($)
     } else {
-      // A run that finished while the attorney was elsewhere: its notification named the matter, and /matters opens it.
-      const unseen = Object.values(await readRuns($))
-        .filter(r => (r.status === 'done' || r.status === 'failed') && r.seen === false)
-        .sort((a, b) => b.endedAt.localeCompare(a.endedAt))[0]
-      if (unseen && !wantsPane) void load($, { op: 'state', matter_path: unseen.matter })
-      else if (p) void refresh($)
-      else void load($, { op: 'state' })
+      // A matter left open when the panel was closed isn't put back on screen: the list, folded, is. A run that
+      // finished meanwhile is said there, with the press that opens its matter.
+      await foldMatters($)
+      void goHome($)
     }
-    return { text: wantsPane ? 'Immigration Packet Builder is open in the side panel.' : 'Immigration Packet Builder' }
+    return { text: placed ? 'Immigration Packet Builder is open in the side panel.' : 'Immigration Packet Builder' }
   })
 
   // A request the app left in the chat box, sent: the agent the chat starts carries the app's run id in its brief, so

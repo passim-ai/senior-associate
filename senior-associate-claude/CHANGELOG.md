@@ -2,6 +2,16 @@
 
 Your version appears at the foot of every Immigration Packet Builder screen ("Help · Immigration Packet Builder 1.4.1"). After an update, quit Claude with ⌘Q and reopen it.
 
+## Coming in the next version
+
+**Clients' names stay off the screen until you ask.** Your list of matters now opens with each group folded: what stands where and how many, and no names. **Show** opens a group; **Hide names** folds them all again. No matter opens by itself anymore, and **Pick up where you left off** says the matter by its case, not the client.
+
+**Notifications never name a matter.** "A packet is ready to file." in place of the client's name. Type `/matters` and the list says what finished, with **Open it**.
+
+**`/matters` opens beside your chat.** The side panel opens straight away, and nothing about a client is left in the conversation. Where the panel can't open, the app is drawn in the conversation as before; `/matters here` asks for that.
+
+**A demo you can show.** `/matters demo` shows only the fictional sample matter, from a folder of its own, until you press **Leave the demo**. Your own matters are never listed there.
+
 ## 1.4.1 (November 2026)
 
 **Use Auto for builds.** In Claude's usual permission setting, a full build stops to ask your permission several hundred times: 479 on the sample matter, seconds apart. The matter page now tells you to switch the permission setting under the prompt box to **Auto** before you build, and reminds you whenever a build is waiting for your OK. In Auto, Claude checks each step itself. In Auto the page puts the build request in your chat box; press Return to send it. Help has the same under "Stop Claude asking permission for every step".

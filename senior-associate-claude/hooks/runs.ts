@@ -449,17 +449,18 @@ export async function announce($: EngineInterface, r: Run, after: Card | null = 
   }
 }
 
+// What the notification says. It never names the matter: a notification shows on the lock screen and over whatever is
+// being shared. /matters opens on the list, where "Open it" goes to the matter this is about.
 export function finishedText(r: Run, c: Card | null): string {
-  const name = c?.meta.protected ? 'Your confidential matter' : r.name || c?.name || 'The matter'
   if (r.status === 'failed') {
-    return `${name}: the ${runKind(r.kind).noun} stopped${STEP_KINDS.has(r.kind) && r.stepLabel ? ` at ${r.stepLabel}` : ''}. Open it to try again.`
+    return `The ${runKind(r.kind).noun} on one of your matters stopped${STEP_KINDS.has(r.kind) && r.stepLabel ? ` at ${r.stepLabel}` : ''}. Type /matters to try again.`
   }
-  if (r.kind === 'closeout') return `${name}: Claude’s working files are cleaned up.`
-  if (!c) return `${name}: Claude has finished.`
+  if (r.kind === 'closeout') return 'Claude’s working files for one of your matters are cleaned up.'
+  if (!c) return 'Claude has finished its work on one of your matters.'
   const needs = needsOf(c)
   const questions = needs.filter(n => n.who === 'attorney').length
   const phase = matterStatus(c, null, nowMs()).phase
-  if (phase === 'needs_you' && questions) return `${name}: Claude needs your answer on ${plural(questions, 'question', 'questions')}.`
+  if (phase === 'needs_you' && questions) return `Claude needs your answer on ${plural(questions, 'question', 'questions')} about one of your matters.`
   // The law check: said as done only when the matter's receipt was written during this run and shows a finished
   // check. A run that couldn't check (BIA Edge returned no research, say) leaves the receipt as it was and ends with
   // a report all the same; the report says why.
@@ -468,19 +469,19 @@ export function finishedText(r: Run, c: Card | null): string {
     const started = Date.parse(r.startedAt)
     const refreshed = Number.isFinite(written) && Number.isFinite(started) && written >= started
     return refreshed && c.research?.state === 'checked' && c.research.treatment_checked !== false
-      ? `${name}: the law the letter cites has been checked again.`
-      : `${name}: the check of the law has finished. Open it to see what Claude found.`
+      ? 'The law one of your letters cites has been checked again.'
+      : 'The check of the law for one of your matters has finished. Type /matters to see what Claude found.'
   }
-  if (phase === 'complete') return `${name} is ready to file.`
+  if (phase === 'complete') return 'A packet is ready to file.'
   const needed = neededBeforeFiling(c).total
-  if (phase === 'draft') return needed ? `${name}: draft packet ready. ${plural(needed, 'item is', 'items are')} needed before filing.` : `${name}: draft packet ready.`
-  if (phase === 'waiting_client') return `${name}: waiting on the client for ${plural(clientCount(c, needs), 'item', 'items')}.`
+  if (phase === 'draft') return needed ? `A draft packet is ready. ${plural(needed, 'item is', 'items are')} needed before filing.` : 'A draft packet is ready.'
+  if (phase === 'waiting_client') return `One of your matters is waiting on the client for ${plural(clientCount(c, needs), 'item', 'items')}.`
   if (phase === 'reviewed' || REVIEW_KINDS.has(r.kind)) {
     const k = missingCount(c)
-    return k ? `${name}: document review done. ${plural(k, 'thing is', 'things are')} missing.` : `${name}: document review done. Nothing is missing.`
+    return k ? `A document review is done. ${plural(k, 'thing is', 'things are')} missing.` : 'A document review is done. Nothing is missing.'
   }
-  if (r.kind === 'stress_test') return `${name}: the officer’s review is done.`
-  return `${name}: Claude has finished for now.`
+  if (r.kind === 'stress_test') return 'An officer’s review is done.'
+  return 'Claude has finished its work on one of your matters for now.'
 }
 
 // The agent list is the fallback when no turn.complete reached us (a reload in between), and how a request sent from

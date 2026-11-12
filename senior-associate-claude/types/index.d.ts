@@ -439,6 +439,8 @@ declare module 'claude-code' {
       access: Access | null
       /** Whether the BIA Edge connector is in this session, as last looked; null before the first look. */
       library: { connected: boolean } | null
+      /** The demo's own Matters folder while the demo is on, '' otherwise: only the fictional sample is shown. */
+      demo: string
     }
   }
 }

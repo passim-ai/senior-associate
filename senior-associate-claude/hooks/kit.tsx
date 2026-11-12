@@ -77,7 +77,7 @@ export function questionCount(c: Card): number {
   return keys.size
 }
 
-export function makeKit($: EngineInterface, els: Els, site: 'pane' | 'inline', v: View, p: Payload | null, n: Note, b: boolean, allRuns: Record<string, Run>, st: Setup | null) {
+export function makeKit($: EngineInterface, els: Els, site: 'pane' | 'inline', v: View, p: Payload | null, n: Note, b: boolean, allRuns: Record<string, Run>, st: Setup | null, demo = false) {
   const { Box, Text, Button, Input, isDesktop, narrow } = els
 
   // ----- rules, labels and chips -----
@@ -333,9 +333,23 @@ export function makeKit($: EngineInterface, els: Els, site: 'pane' | 'inline', v
   const version = p?.version || st?.version || ''
 
   // A screen: the header, then its head (where you are, the title, the tabs), the message of the moment, and its body.
+  // While the demo is on, every screen says so under the header, with the way out.
+  const demoBar = demo
+    ? <Box key="demo-bar" flexDirection="column">
+        <Box flexDirection="row" flexWrap="wrap" justifyContent="space-between" alignItems="center" columnGap="lg" rowGap="xs" backgroundColor={CARD} paddingX={narrow ? 'lg' : 'xl'} paddingY="sm">
+          <Box flexDirection="column" flexShrink={1} minWidth={0}>
+            <Text size="footnote" weight="medium">Demo. Only the fictional sample matter is shown; your own matters are not.</Text>
+          </Box>
+          {button('leave-demo', 'Leave the demo', () => { void perform($, 'leave-demo') }, 'link')}
+        </Box>
+        {rule('demo-rule')}
+      </Box>
+    : null
+
   const page = (head: Kids, ...children: Kids) => (
     <Box flexDirection="column" flexGrow={1}>
       {header}
+      {demoBar}
       <Box key="content" flexDirection="column" paddingX={narrow ? 'lg' : 'xl'} paddingTop="lg" paddingBottom="xl" gap="lg">
         {head}
         {status}

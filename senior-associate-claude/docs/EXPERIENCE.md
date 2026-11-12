@@ -115,14 +115,17 @@ Name, firm, mailing address, phone, email, bar number, licensing authority, disc
 
 ## Matters
 
-What `/matters` shows once a matter exists.
+What `/matters` shows once a matter exists. It opens with no client's name on screen: the attorney may be sharing the screen, or have someone at their shoulder, so a name appears only when they ask for it.
 
 - Title **Matters**, with **New matter** at its right. The line under it: "2 need your answer · 1 stopped · 1 in progress · 3 ready to file". Need your answer counts only matters with a question for the attorney; a stop and a start waiting in the chat box are said as such.
-- Groups, each with its heading: **Needs you**, **Claude is working**, **In preparation**, **Ready to file**, **Filed** (collapsed), and **Archived (n)** (collapsed) at the foot.
-- **Sort:** Updated (the default), Name, Case type, Status, as chips; the order holds within each group, for the session.
+- Groups: **Needs you**, **Claude is working**, **In preparation**, **Ready to file**, **Filed** and **Archived (n)** at the foot. Each opens folded: a card with the group's name, how many matters are in it ("3 matters"), and **Show**. Show opens that group and no other, with **Hide** beside its heading. Above the groups, one line says which it is, "Client names stay hidden until you show a group." or "Client names are showing.", with **Show all** and, once any group is open, **Hide names**, which folds every group again.
+- What the attorney opened stays open while they work, across matters and back. It folds again each time the app is opened afresh: a new session, or `/matters` typed with the side panel closed.
+- No matter opens by itself, not even the only one, and not one whose build just finished.
+- **Sort:** Updated (the default), Name, Case type, Status, as chips, once a group is open; the order holds within each group, for the session.
 - A row is a card: the client's name with the status chip beside it, then one line: "I-751 waiver · Answer 2 questions · updated Oct 27", and **Open** at its right (below, in the side panel), which 1–9 also press. A live run shows "step 4 of 10: Forms review and Cover letter".
 - The list refreshes by itself every 15 seconds and whenever `/matters` is typed again, so a build that finishes elsewhere shows at once.
-- **Pick up where you left off** appears only with more than three matters, with **Open <matter>**. Past six, a search field filters as they type.
+- When Claude finished or stopped work while the attorney was elsewhere, a card at the top says so without a name ("Claude finished its work on a matter since you last looked."), with **Open it** (**Open the most recent** when there are several).
+- **Pick up where you left off** appears only with more than three matters, and says the matter by its case and where it stands ("I-751 waiver · Needs your answer · Answer 2 questions · updated Oct 27"), never by the client's name, with **Open it**. Past six, a search field filters as they type; a search shows the matters that match, whichever group they are in, and only those.
 - **New matter** is at the title's right; **Your details** is in the header, and while they're empty the list says "Add your details so the G-28 and the letter carry your name and bar number".
 - Keys, in the side panel: n New matter, f find, 1–9 open the matter in that place.
 
@@ -240,7 +243,7 @@ When the attorney's permission settings don't let the app start Claude itself (A
 
 ### When it finishes
 
-A notification (a toast if notifications aren't available) names the matter, and the next `/matters` opens that matter: "Garcia I-130 I-485 is ready to file." / "Garcia I-130 I-485: draft packet ready. 4 items are needed before filing." / "Garcia I-130 I-485: Claude needs your answer on 2 questions." / "Garcia I-130 I-485: the build stopped at Forms review. Open it to try again."
+A notification (a toast if notifications aren't available) says what happened and never names the matter, because a notification shows on the lock screen and over whatever is being shared: "A packet is ready to file." / "A draft packet is ready. 4 items are needed before filing." / "Claude needs your answer on 2 questions about one of your matters." / "The build on one of your matters stopped at Forms review. Type /matters to try again." The next `/matters` opens on the list, where a card says the same and **Open it** goes to that matter.
 
 The agent's short report appears as **What Claude did**, "finished 3:29 PM, took 1 h 15 min", right under the next step, drawn like the memo.
 
@@ -346,12 +349,24 @@ The matter's **Timeline** tab: what happened on the matter, newest first, groupe
 
 ## Inline /matters and the side panel
 
-Both placements (the row under `/matters`, and the side panel from **Open as side panel** or `/matters pane`) draw the same screen from the same state. When the side panel is already open, the inline row shows only "Immigration Packet Builder is open beside the chat." with **Show it**. The first two inline uses add "Tip: Open as side panel keeps this beside your chat while Claude works." Outside the desktop app: "Immigration Packet Builder opens in the Claude desktop app."
+`/matters` opens the app in the side panel, beside the chat, and leaves one line at its row in the conversation: "Immigration Packet Builder is open beside the chat." with **Show it**. Nothing about a client is left in the conversation. With the panel already open, `/matters` brings it forward where the attorney left it; with it closed, the app starts again at the folded list, not on the matter that was open.
+
+Where the side panel can't be placed (a window too narrow for it), and for `/matters here`, the app is drawn at the command's own row instead, from the same state, with **Open as side panel** in its header. The first two times it is drawn there add "Tip: Open as side panel keeps this beside your chat while Claude works." Outside the desktop app: "Immigration Packet Builder opens in the Claude desktop app."
+
+## The demo
+
+`/matters demo` shows the app with none of the attorney's matters in it: for showing it to someone else, or looking it over. The demo has a Matters folder of its own (Library › Application Support › Immigration Packet Builder › Demo, in the attorney's home folder), which gets the fictional sample matter the first time and never holds anything of theirs. It reads no model letters, and Your details start empty there.
+
+- Every screen says so under the header: "Demo. Only the fictional sample matter is shown; your own matters are not." with **Leave the demo**.
+- Everything else works as it does on a real matter, the folded list included, so what is shown is what an attorney gets.
+- It stays on for the session: `/matters` typed again stays in the demo. **Leave the demo** goes back to the attorney's own list, folded.
+- A build already running on one of the attorney's matters keeps running in their own folder while the demo is on screen, and its notification names no one.
 
 ## Rules that hold everywhere
 
 - One main action per screen, the app's main button, with at most one secondary beside it, outlined; a line under each says what it does. Links are plain text, quieter presses dim. A matter's row has **Open**.
 - The way back is at the top left of every screen ("Matters › …"), and the header reaches Matters, Your details, Setup and Help from anywhere.
+- A client's name is on screen only once the attorney has asked for it: the list opens folded, no matter opens by itself, and a notification never names one.
 - Plain words, per the glossary. Agents' replies and the files they write follow it too.
 - Nothing greys out except the main buttons while a Mac picker is open (a second press would open a second picker) or a start is on its way (a second press would start a second Claude).
 - A press that can't be undone with one more press (Stop, Remove) asks on the spot, in a line with **Yes** and a way out; nothing else asks.

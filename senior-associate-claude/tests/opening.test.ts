@@ -1,0 +1,168 @@
+// How the app opens: beside the chat, on the matters list with every group folded, so no client's name is on screen
+// (or left in the conversation) until the attorney asks for one; and the demo, which shows only the fictional sample
+// matter from a folder of its own.
+import { expect, test } from 'claude-code/testing'
+import { ANA, DOCS, OPTS, PLUGIN, ROOT, SEEN, agents, boot, card, inActions, mount, open, world } from './world'
+
+const DEMO = '/Users/example/Library/Application Support/Immigration Packet Builder/Demo'
+
+// Everything on screen that has words: the texts and what each press is called.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function said(el: any, out: string[] = []): string[] {
+  if (typeof el === 'string') out.push(el)
+  else if (el && typeof el === 'object') {
+    if (el.props?.label) out.push(String(el.props.label))
+    for (const child of el.children ?? []) said(child, out)
+  }
+  return out
+}
+
+const command = ($: unknown, args: string) =>
+  ($ as { command: { run: (e: unknown) => Promise<{ text?: string } | undefined> } }).command.run({ command: 'matters', args })
+
+test('one matter does not open by itself: the list comes first, folded, and Show then Open reach it', OPTS(), async ($, on) => {
+  const garcia = card('Garcia I-130 I-485', 'ready', DOCS)
+  const { ui, tap, requests } = await boot($, on, [garcia], { open: false, folded: true })
+  // The server is never asked to pick the one matter.
+  const lists = requests.filter(r => r.op === 'state' && !r.matter_path)
+  expect(lists.length).toBeGreaterThan(0)
+  expect(lists.every(r => r.auto_select === false)).toBe(true)
+  expect(said(await ui.drawn()).filter(t => /Garcia/.test(t))).toEqual([])
+  expect(await ui.find({ type: 'Text', text: /^In preparation$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^1 matter$/ })).toBeDefined()
+  await tap('grp:preparing')
+  await tap(`open:${garcia.path}`)
+  expect(await inActions(ui, /Build packet/)).toBeDefined()
+  await ui.unmount()
+})
+
+test('a search shows only the matters that match, in a folded list', OPTS(), async ($, on) => {
+  const names = ['Garcia', 'Lopez', 'Nguyen', 'Bravo', 'Silva', 'Haddad', 'Okafor', 'Petrov']
+  const seed = names.map(n => card(`${n} I-130 I-485`, 'ready', DOCS))
+  const { ui, clock } = await boot($, on, seed, { open: false, folded: true })
+  expect(said(await ui.drawn()).filter(t => names.some(n => t.includes(n)))).toEqual([])
+  await ui.input({ plugin: PLUGIN, key: 'search', text: 'ngu', kind: 'change' })
+  await clock.settle()
+  expect(await ui.find({ type: 'Button', key: `open:${ROOT}/Nguyen I-130 I-485` })).toBeDefined()
+  expect(said(await ui.drawn()).filter(t => names.some(n => n !== 'Nguyen' && t.includes(n)))).toEqual([])
+  await ui.unmount()
+})
+
+test('/matters opens the side panel on the folded list; a panel already open stays where it is; a closed one starts over', OPTS(), async ($, on) => {
+  const { clock } = await open($, on)
+  const garcia = card('Garcia I-130 I-485', 'ready', DOCS)
+  const { store } = world(on, [garcia, card('Lopez I-751', 'ready', DOCS)], { prefs: { ...SEEN, inlineUses: 0 } })
+  let canPlace = true
+  let paneUp = false
+  const opened: string[] = []
+  on('ui.open', async (_$, e) => { opened.push(e.id); paneUp = canPlace; return { value: { isPlaced: canPlace } } })
+  on('ui.panes', async () => ({ value: paneUp ? [{ id: 'senior-associate', title: 'Immigration Packet Builder', isShown: true, isFocused: false, isPlaced: true }] : [] }))
+  const { ui, tap } = await mount($, clock, true)
+
+  expect((await command($, ''))?.text).toBe('Immigration Packet Builder is open in the side panel.')
+  await clock.settle()
+  expect(opened).toEqual(['senior-associate'])
+  expect(said(await ui.drawn()).filter(t => /Garcia|Lopez/.test(t))).toEqual([])
+  // Opened beside the chat, it isn't counted as drawn in the conversation.
+  expect((store.prefs as { inlineUses: number }).inlineUses).toBe(0)
+
+  // With the panel up, /matters leaves the attorney where they are.
+  await tap('show-all')
+  await tap(`open:${garcia.path}`)
+  await command($, '')
+  await clock.settle()
+  expect(await inActions(ui, /Build packet/)).toBeDefined()
+
+  // The panel was closed on that matter: /matters starts at the folded list, not on the matter.
+  paneUp = false
+  await command($, '')
+  await clock.settle()
+  expect(await ui.find({ type: 'Text', text: /^Matters$/ })).toBeDefined()
+  expect(said(await ui.drawn()).filter(t => /Garcia|Lopez/.test(t))).toEqual([])
+  expect(await ui.find({ type: 'Button', key: 'grp:preparing' })).toMatchObject({ text: 'Show' })
+
+  // Where the panel can't be placed, and for /matters here, the app is drawn in the conversation, and counted so.
+  canPlace = false
+  paneUp = false
+  expect((await command($, ''))?.text).toBe('Immigration Packet Builder')
+  await clock.settle()
+  expect((store.prefs as { inlineUses: number }).inlineUses).toBe(1)
+  canPlace = true
+  expect((await command($, 'here'))?.text).toBe('Immigration Packet Builder')
+  await clock.settle()
+  expect(opened.length).toBe(4)
+  expect((store.prefs as { inlineUses: number }).inlineUses).toBe(2)
+  await ui.unmount()
+})
+
+test('/matters demo: the demo’s own folder and no model letters, said on every screen; Leave the demo goes back to the folded list', OPTS(), async ($, on) => {
+  const { clock } = await open($, on)
+  on('env.get', async (_$, e) => ({ value: e.name === 'HOME' ? '/Users/example' : undefined }))
+  const garcia = card('Garcia I-130 I-485', 'ready', DOCS)
+  agents(on, 'Building the packet: Garcia I-130 I-485')
+  const { requests, store } = world(on, [garcia], { prefs: { ...SEEN, lastMatter: garcia.path } }, { profile: ANA })
+  on('ui.open', async () => ({ value: { isPlaced: true } }))
+  const { ui, tap } = await mount($, clock)
+  await tap(`open:${garcia.path}`)
+  expect(requests.at(-1)).toMatchObject({ op: 'state', matters_root: ROOT, exemplars_dir: `${ROOT}/Exemplar` })
+  // A build is running on the attorney's own matter when the demo opens.
+  await tap('main:build')
+
+  const before = requests.length
+  await command($, 'demo')
+  await clock.settle()
+  // Every request for the list goes to the demo's folder, asks for the sample, and reads no model letters.
+  const asked = requests.slice(before).filter(r => !r.matter_path)
+  expect(asked.length).toBeGreaterThan(0)
+  for (const r of asked) expect([r.op, r.matters_root, r.exemplars_dir]).toEqual([r.op, DEMO, undefined])
+  expect(asked.some(r => r.op === 'state' && r.ensure_sample === true && r.auto_select === false)).toBe(true)
+  // The attorney's matter is off the screen, and every screen says this is the demo.
+  expect(await ui.find({ type: 'Text', text: /^Matters$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^Demo\. Only the fictional sample matter is shown; your own matters are not\.$/ })).toBeDefined()
+  await tap('help')
+  expect(await ui.find({ type: 'Text', text: /^Demo\. Only the fictional sample matter is shown/ })).toBeDefined()
+  // What the demo opens is not remembered as the attorney's last matter.
+  expect((store.prefs as { lastMatter: string }).lastMatter).toBe(garcia.path)
+
+  // The build still running on the attorney's own matter keeps its place in their folder: its renewals name that
+  // matter, and go there, while the list beside them is the demo's.
+  const during = requests.length
+  await clock.advance(16000)
+  await clock.settle()
+  const own = requests.slice(during).filter(r => r.matter_path === garcia.path)
+  expect(own.some(r => r.op === 'heartbeat_run')).toBe(true)
+  expect(own.every(r => r.matters_root === ROOT)).toBe(true)
+  expect(requests.slice(during).filter(r => !r.matter_path).every(r => r.matters_root === DEMO)).toBe(true)
+  expect(await ui.find({ type: 'Text', text: /Garcia/ })).toBeUndefined()
+
+  // /matters again stays in the demo; only Leave the demo goes back, to the list with its groups folded.
+  await command($, '')
+  await clock.settle()
+  expect(await ui.find({ type: 'Button', key: 'leave-demo' })).toBeDefined()
+  const leaving = requests.length
+  await tap('leave-demo')
+  expect(requests.slice(leaving).length).toBeGreaterThan(0)
+  expect(requests.slice(leaving).every(r => r.matters_root === ROOT)).toBe(true)
+  expect(await ui.find({ type: 'Button', key: 'leave-demo' })).toBeUndefined()
+  expect(await ui.find({ type: 'Text', text: /^Matters$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Button', key: `open:${garcia.path}` })).toBeUndefined()
+  expect(await ui.find({ type: 'Button', key: 'grp:working' })).toMatchObject({ text: 'Show' })
+  await ui.unmount()
+})
+
+test('/matters demo finds the home folder from the plugin’s own folder when the Mac doesn’t say it', OPTS(), async ($, on) => {
+  const { clock } = await open($, on)
+  on('env.get', async () => ({ value: undefined }))
+  const garcia = card('Garcia I-130 I-485', 'ready', DOCS)
+  const { requests } = world(on, [garcia], { prefs: SEEN })
+  on('ui.open', async () => ({ value: { isPlaced: true } }))
+  const { ui } = await mount($, clock, true)
+  const before = requests.length
+  await command($, 'demo')
+  await clock.settle()
+  const asked = requests.slice(before)
+  expect(asked.length).toBeGreaterThan(0)
+  expect(asked.every(r => /^\/(Users|home)\/[^/]+\/Library\/Application Support\/Immigration Packet Builder\/Demo$/.test(String(r.matters_root)))).toBe(true)
+  expect(await ui.find({ type: 'Button', key: 'leave-demo' })).toBeDefined()
+  await ui.unmount()
+})
