@@ -192,9 +192,9 @@ test('build: the Your details question first, then Claude at work, then the fini
   await ($ as never as { turn: { complete: (e: unknown) => Promise<unknown> } }).turn.complete({ agentId: 'agent-1', answer: 'I built the draft packet. It isn’t ready to file: 2 items stand in the way.', reason: 'answer', durationMs: 1000, isAborted: false, turnId: 't1' })
   run.finish('completed')
   await clock.settle()
-  expect(notified).toEqual(['Garcia I-130 I-485: draft packet ready. 2 items are needed before filing.'])
+  expect(notified).toEqual(['A draft packet is ready. 2 items are needed before filing.'])
   // No notification channel on the desktop: the same words as a toast.
-  expect(toasts.at(-1)).toBe('Garcia I-130 I-485: draft packet ready. 2 items are needed before filing.')
+  expect(toasts.at(-1)).toBe('A draft packet is ready. 2 items are needed before filing.')
   expect(await ui.find({ type: 'Text', text: /^What Claude did$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^Packet build · finished .*, took / })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /I built the draft packet/ })).toBeDefined()
@@ -257,7 +257,7 @@ test('a stopped run: what happened in plain words, nothing raw, and Try again pi
   await ($ as never as { turn: { complete: (e: unknown) => Promise<unknown> } }).turn.complete({ agentId: 'agent-1', answer: 'API Error: 529 overloaded_error', reason: 'error', durationMs: 1000, isAborted: false, turnId: 't1' })
   await clock.settle()
 
-  expect(notified).toEqual(['Garcia I-130 I-485: the build stopped at Forms review. Open it to try again.'])
+  expect(notified).toEqual(['The build on one of your matters stopped at Forms review. Type /matters to try again.'])
   expect(await ui.find({ type: 'Text', text: /^Stopped$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^The build stopped at step 3 of 10 \(Forms review\): Claude hit a temporary problem, such as a busy service or a dropped connection\. Everything finished before that is saved\.$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /overloaded|529|API Error/ })).toBeUndefined()
@@ -312,27 +312,61 @@ test('setup before a build: a missing tool holds the build until it is installed
   await ui.unmount()
 })
 
-test('the second time: pick up where you left off when there are many matters, grouped by what they need', OPTS(), async ($, on) => {
+test('the second time: the list opens folded with no client named; pick up where you left off says the case, and Show opens a group', OPTS(), async ($, on) => {
   const garcia = card('Garcia I-130 I-485', 'ready', DOCS)
   const lopez = card('Lopez I-130 I-485', 'complete', DOCS)
   const silva = card('Silva I-751', 'needs_you', DOCS)
   silva.needs_you = [{ text: 'q', kind: 'decision', who: 'attorney' }, { text: 'r', kind: 'decision', who: 'attorney' }]
   const haddad = card('Haddad I-612', 'filed', DOCS)
-  const { ui, tap } = await boot($, on, [garcia, lopez, silva, haddad], { profile: {}, open: false })
+  const { ui, tap } = await boot($, on, [garcia, lopez, silva, haddad], { profile: {}, open: false, folded: true })
+  // Everything on screen that has words: the texts and what each press is called.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const said = (el: any, out: string[] = []): string[] => {
+    if (typeof el === 'string') out.push(el)
+    else if (el && typeof el === 'object') {
+      if (el.props?.label) out.push(String(el.props.label))
+      for (const child of el.children ?? []) said(child, out)
+    }
+    return out
+  }
+  const named = async () => said(await ui.drawn()).filter(t => /Garcia|Lopez|Silva|Haddad/.test(t))
 
+  // As it opens: what stands where, how many in each group, and nobody's name.
   expect(await ui.find({ type: 'Text', text: /^1 needs your answer · 1 ready to file$/ })).toBeDefined()
+  expect(await named()).toEqual([])
+  expect(await ui.find({ type: 'Text', text: /^Client names stay hidden until you show a group\.$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /Pick up where you left off/ })).toBeDefined()
-  expect(await ui.find({ type: 'Button', key: `main:open:${garcia.path}` })).toMatchObject({ text: 'Open Garcia I-130 I-485' })
+  expect(await ui.find({ type: 'Text', text: /^I-130 \/ I-485 immediate relative · Ready to build · / })).toBeDefined()
+  expect(await ui.find({ type: 'Button', key: `main:open:${garcia.path}` })).toMatchObject({ text: 'Open it' })
   expect(await ui.find({ type: 'Text', text: /^Needs you$/ })).toBeDefined()
-  expect(await ui.find({ type: 'Text', text: /Answer 2 questions/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^In preparation$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^Ready to file$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Button', key: 'grp:needs_you' })).toMatchObject({ text: 'Show' })
+  expect(await ui.find({ type: 'Button', key: `open:${silva.path}` })).toBeUndefined()
+  // The list's order has nothing to order yet.
+  expect(await ui.find({ type: 'Button', key: 'sort:name' })).toBeUndefined()
+
+  // Show opens that group and no other.
+  await tap('grp:needs_you')
+  expect(await ui.find({ type: 'Button', key: `open:${silva.path}` })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /Answer 2 questions/ })).toBeDefined()
+  expect(await ui.find({ type: 'Button', key: `open:${lopez.path}` })).toBeUndefined()
+  expect(await ui.find({ type: 'Text', text: /^Client names are showing\.$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Button', key: 'grp:needs_you' })).toMatchObject({ text: 'Hide' })
+  expect(await ui.find({ type: 'Button', key: 'sort:name' })).toBeDefined()
+  await tap('show-all')
   expect(await ui.find({ type: 'Button', key: `open:${lopez.path}` })).toBeDefined()
+  expect(await ui.find({ type: 'Button', key: `open:${garcia.path}` })).toBeDefined()
+  expect(await ui.find({ type: 'Button', key: 'show-all' })).toBeUndefined()
   // Filed matters wait, folded, until asked for.
   expect(await ui.find({ type: 'Button', key: 'filed-group' })).toBeDefined()
   expect(await ui.find({ type: 'Button', key: `open:${haddad.path}` })).toBeUndefined()
   await tap('filed-group')
   expect(await ui.find({ type: 'Button', key: `open:${haddad.path}` })).toBeDefined()
+
+  // Hide names folds every group again, Filed with them.
+  await tap('hide-all')
+  expect(await named()).toEqual([])
 
   await tap(`main:${`open:${garcia.path}`}`)
   expect(await inActions(ui, /Build packet/)).toBeDefined()
@@ -513,6 +547,10 @@ test('inline in the conversation: the /matters row draws the app with a tip, and
   await clock.settle()
   expect(await ui.find({ type: 'Text', text: /^Matters$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^Tip: Open as side panel keeps this beside your chat while Claude works\.$/ })).toBeDefined()
+  // Drawn in the conversation, the list is folded too.
+  expect(await ui.find({ type: 'Button', key: `open:${ROOT}/Garcia I-130 I-485` })).toBeUndefined()
+  await ui.press({ plugin: PLUGIN, key: 'grp:preparing' })
+  await clock.settle()
   await ui.press({ plugin: PLUGIN, key: `open:${ROOT}/Garcia I-130 I-485` })
   await clock.settle()
   expect(await inActions(ui, /Build packet/)).toBeDefined()

@@ -321,6 +321,8 @@ export type Payload = {
   /** Matters archived: left out of `matters`; the light `list` op with include_archived sends their rows. */
   archived_count?: number
   matters_root?: string
+  /** Set by the app, not the server: whether this answer was asked of the demo's Matters folder (hooks/server.ts). */
+  from_demo?: boolean
   matters: MatterRow[]
   matter: Card | null
   profile?: Profile
@@ -439,6 +441,9 @@ declare module 'claude-code' {
       access: Access | null
       /** Whether the BIA Edge connector is in this session, as last looked; null before the first look. */
       library: { connected: boolean } | null
+      /** The demo: whether it is on (only the fictional sample is shown), and its own Matters folder as the server
+       *  last named it, kept once known so a matter of the demo's is recognised after the demo is left. */
+      demo: { on: boolean; root: string }
     }
   }
 }

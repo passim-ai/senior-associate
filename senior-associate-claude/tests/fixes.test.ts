@@ -399,7 +399,7 @@ test('archive and the sorted list: Archive moves a matter to Archived at the foo
   await ui.unmount()
 })
 
-test('the notification names the matter, and /matters opens that matter first', OPTS(), async ($, on) => {
+test('the notification names no one, and /matters opens on the folded list with the press that opens that matter', OPTS(), async ($, on) => {
   const garcia = card('Garcia I-130 I-485', 'ready', DOCS)
   const run = agents(on, 'Building the packet: Garcia I-130 I-485')
   const notified: string[] = []
@@ -411,11 +411,20 @@ test('the notification names the matter, and /matters opens that matter first', 
   await complete($, { agentId: 'agent-1', answer: 'Built.', reason: 'answer' })
   run.finish('completed')
   await clock.settle()
-  expect(notified[0]).toBe('Garcia I-130 I-485 is ready to file.')
+  expect(notified[0]).toBe('A packet is ready to file.')
   await ($ as never as { command: { run: (e: unknown) => Promise<unknown> } }).command.run({ command: 'matters', args: '' })
   await clock.settle()
+  // The list, folded: what finished is said without a name, and Open it goes to that matter.
+  expect(await ui.find({ type: 'Text', text: /^Claude finished its work on a matter since you last looked\.$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Button', key: `open:${garcia.path}` })).toBeUndefined()
+  expect(await ui.find({ type: 'Button', key: 'main:open-unseen' })).toMatchObject({ text: 'Open it' })
+  await tap('main:open-unseen')
+  expect(await ui.find({ type: 'Text', text: /^Garcia I-130 I-485$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^Ready to file$/ })).toBeDefined()
   expect(await ui.find({ type: 'Button', key: 'nav-all' })).toBeDefined()
+  // Seen now: back on the list, nothing is left to say.
+  await tap('nav-all')
+  expect(await ui.find({ type: 'Button', key: 'main:open-unseen' })).toBeUndefined()
   await ui.unmount()
 })
 
@@ -723,7 +732,7 @@ test('the finish notification is said from the matter as release_run returns it,
   await complete($, { agentId: 'agent-1', answer: 'Built.', reason: 'answer' })
   run.finish('completed')
   await clock.settle()
-  expect(notified).toEqual(['Garcia I-130 I-485: draft packet ready. 2 items are needed before filing.'])
+  expect(notified).toEqual(['A draft packet is ready. 2 items are needed before filing.'])
   expect(requests.slice(before).filter(r => r.op === 'state' && r.matter_path === garcia.path)).toEqual([])
   await ui.unmount()
 })

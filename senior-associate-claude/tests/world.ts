@@ -286,6 +286,10 @@ export type Options = { checks?: unknown[]; profile?: Record<string, string>; ca
   sample?: boolean
   /** The tools the session has, by name: BIA Edge's are how the app knows the connector is there. */
   tools?: string[]
+  /** The demo's folder as the server names it, when a link leads there: its answers carry this path, not the one asked. */
+  demoCanonical?: string
+  /** Holds the answer to a request until this settles: a server that is slow to answer, or never does. */
+  hold?: (request: Record<string, string>) => Promise<void> | undefined
 }
 
 // The server and the host's side effects, stood in for. `seed` seeds the list.
@@ -318,7 +322,18 @@ export function world(on: On, seed: Matter[] = [], stored: Record<string, unknow
     const request = JSON.parse(argv[argv.length - 1] ?? '{}') as Record<string, string>
     ops.push(request.op ?? '')
     requests.push(request)
-    const withProfile = (p: ReturnType<typeof payload>) => ({ ...p, profile })
+    const wait = o.hold?.(request)
+    if (wait) await wait
+    // The demo's own Matters folder, as the real server keeps it: the sample matter and nothing of the attorney's.
+    const asksDemo = /\/Immigration Packet Builder\/Demo$/.test(request.matters_root ?? '') || (Boolean(o.demoCanonical) && request.matters_root === o.demoCanonical)
+    const demoRoot = asksDemo ? o.demoCanonical ?? request.matters_root! : ''
+    if (demoRoot && (request.op === 'state' || request.op === 'list')) {
+      const sample = Object.assign(sampleCard('ready'), { path: `${demoRoot}/Sample - Barrientos-Eckhardt` })
+      if (request.op === 'list') return answer({ status: 'list', matters: [row(sample, undefined)], archived_count: 0 })
+      return answer({ ...payload(request.matter_path === sample.path ? sample : null, [sample], catalog, {}), profile: {}, matters_root: demoRoot })
+    }
+    // As the real server does, every answer says which Matters folder it is from.
+    const withProfile = (p: ReturnType<typeof payload>) => ({ ...p, profile, matters_root: request.matters_root ?? p.matters_root })
     if (request.matter_path && o.gone?.includes(request.matter_path)) {
       return answer({ error: `${request.matter_path.split('/').pop()} isn't in your Matters folder anymore. It may have been moved or renamed in Finder.` }, 1)
     }
@@ -565,12 +580,18 @@ export async function open(_$: unknown, on: On) {
 
 type Clock = Awaited<ReturnType<typeof open>>['clock']
 
-// The side panel, drawn once its first load is in, and `tap`: a press and everything it sets off.
-export async function mount($: unknown, clock: Clock) {
+// The side panel, drawn once its first load is in, and `tap`: a press and everything it sets off. The matters list
+// opens with its groups folded, no client named; most tests start past that, as after Show all (`folded` leaves it
+// as the attorney first sees it).
+export async function mount($: unknown, clock: Clock, folded = false) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const ui: any = await ($ as { ui: { mount: (a: never) => Promise<unknown> } }).ui.mount({ ...PANE, props: PANE.props } as never)
   await clock.advance(10)
   await clock.settle()
+  if (!folded && (await ui.find({ type: 'Button', key: 'show-all' }))) {
+    await ui.press({ plugin: PLUGIN, key: 'show-all' })
+    await clock.settle()
+  }
   // The Overview folds More you can do, the attorney instructions and the matter's details: a press inside one opens
   // it first, as the attorney would.
   const tap = async (key: string) => {
@@ -594,12 +615,13 @@ export async function unfold(ui: any, tap: (key: string) => Promise<void>, secti
 
 // The app as most tests meet it: the stand-in world with these matters and the attorney's details, the welcome and
 // the setup check already seen, the side panel drawn, and the first matter's page open (unless `open: false`).
+// `folded: true` leaves the matters list as the attorney first sees it, its groups folded.
 // `o` is the world's own options object, so a test can change what the server does partway through.
-export async function boot($: unknown, on: On, seed: Matter[] = [], o: Options & { open?: boolean } = {}, stored: Record<string, unknown> = {}) {
+export async function boot($: unknown, on: On, seed: Matter[] = [], o: Options & { open?: boolean; folded?: boolean } = {}, stored: Record<string, unknown> = {}) {
   const { clock } = await open($, on)
   if (!('profile' in o)) o.profile = ANA
   const w = world(on, seed, { prefs: { ...SEEN, lastMatter: seed[0]?.path ?? '' }, ...stored }, o)
-  const { ui, tap } = await mount($, clock)
+  const { ui, tap } = await mount($, clock, o.folded === true)
   if (seed[0] && o.open !== false) await tap(`open:${seed[0].path}`)
   return { ...w, clock, ui, tap }
 }

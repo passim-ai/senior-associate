@@ -21,7 +21,7 @@ import { timelineScreen } from './screens/timeline'
 import { welcomeScreen } from './screens/welcome'
 import { ensurePoll } from './runs'
 import { load, refresh, researchCheck } from './server'
-import { PANE, readAccess, readAnswers, readBusy, readCaseMissing, readConfirm, readDocked, readDraft, readExpanded, readFilter, readGate, readLibrary, readNote, readPayload, readPrefs, readRedoAt, readRuns, readLaunching, readSetup, readSort, readView, session } from './state'
+import { PANE, readAccess, readAnswers, readBusy, readCaseMissing, readConfirm, readDemo, readDocked, readDraft, readExpanded, readFilter, readGate, readLibrary, readNote, readPayload, readPrefs, readRedoAt, readRuns, readLaunching, readSetup, readSort, readView, session } from './state'
 import { clockNow } from './words'
 import { CARD } from './theme'
 
@@ -30,7 +30,7 @@ export async function draw($: EngineInterface, els: Els, site: 'pane' | 'inline'
   await clockNow($)
   // docked is read so the inline rows redraw when the side panel opens.
   ensurePoll($)
-  const [v, p, n, busy, allRuns, pr, q, d, savedAnswers, st, g, open, missingCase, , redoing, asked, sort, launching, access, library] = await Promise.all([
+  const [v, p, n, busy, allRuns, pr, q, d, savedAnswers, st, g, open, missingCase, , redoing, asked, sort, launching, access, library, demo] = await Promise.all([
     readView($),
     readPayload($),
     readNote($),
@@ -51,11 +51,12 @@ export async function draw($: EngineInterface, els: Els, site: 'pane' | 'inline'
     readLaunching($),
     readAccess($),
     readLibrary($),
+    readDemo($),
   ])
   // The main actions wait while a Mac picker is open or a start is on its way.
   const b = busy || (Boolean(p?.matter) && launching.includes(p!.matter!.path))
 
-  const kit = makeKit($, els, site, v, p, n, b, allRuns, st)
+  const kit = makeKit($, els, site, v, p, n, b, allRuns, st, Boolean(demo?.on))
   const { page, title, actions } = kit
   // ----- opening -----
 
@@ -64,7 +65,10 @@ export async function draw($: EngineInterface, els: Els, site: 'pane' | 'inline'
       session.kickoff = true
       $.clock.after(1, async () => {
         session.kickoff = false
-        const first = await load($, { op: 'state' })
+        // /matters (or Leave the demo) is already loading the list: this would only be told to wait.
+        if (session.inFlight) return
+        // No matter opens by itself, not even the only one: the list comes first, with its groups folded.
+        const first = await load($, { op: 'state', auto_select: false })
         if (first?.archived_count) await refresh($)
       })
     }

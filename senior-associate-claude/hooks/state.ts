@@ -8,6 +8,34 @@ import { MATTERS_ASK, NEW_FOLDER, NO_UV, STILL_WORKING, UV_ASK } from './words'
 
 export const PANE = 'senior-associate'
 
+// The demo's own Matters folder, under the attorney's home folder: it holds the fictional sample matter and nothing
+// of theirs.
+export const DEMO_FOLDER = 'Library/Application Support/Immigration Packet Builder/Demo'
+
+// The demo folder a path sits in ('' when it is none of the demo's): the demo's folder as the server named it (which
+// may be another path to the same place, through a link), else read off the path itself. Either way a matter of the
+// demo's is known as one whether or not the demo is on.
+export function demoRootOf(path: string): string {
+  const known = session.demoRoot
+  if (known && (path === known || path.startsWith(`${known}/`))) return known
+  const mark = `/${DEMO_FOLDER}`
+  const at = path.indexOf(`${mark}/`)
+  return at >= 0 ? path.slice(0, at + mark.length) : path.endsWith(mark) ? path : ''
+}
+export const inDemo = (path: string) => demoRootOf(path) !== ''
+// Whether a matter (or a Matters folder) belongs to what is on screen now: the demo's while the demo is on, the
+// attorney's own otherwise.
+export const onScreen = (path: string) => inDemo(path) === Boolean(session.demo)
+// An answer from the other folder: one asked for before the demo was opened or left, or one that names a matter
+// which isn't this folder's. It is never put on the page, whoever asked for it.
+export function otherFolder(p: Payload | null | undefined): boolean {
+  if (!p) return false
+  // The app notes on each answer which folder it asked (server.ts); one without the note is read by its paths.
+  if (typeof p.from_demo === 'boolean') return p.from_demo !== Boolean(session.demo)
+  if (p.matter && !onScreen(p.matter.path)) return true
+  return Boolean(p.matters_root) && !onScreen(p.matters_root!)
+}
+
 // The matters folder and model letters folder come from the plugin's settings (its userConfig).
 // The rest is this module's own bookkeeping; a hot reload starts it over, and session.start rebuilds what matters.
 export const session = {
@@ -29,6 +57,9 @@ export const session = {
   launching: new Set<string>(), // matters with a start in flight: set at the press, before any await, so a second press can't start a second agent
   matter: '', // the open matter's path, kept in step with the payload so a press knows it without waiting
   sampleAsked: false, // the first load of a new attorney's session has asked the server for the sample matter
+  demo: '', // the demo's own Matters folder while the demo is on, kept in step with the `demo` value below
+  demoRoot: '', // that folder as the server last named it, kept after the demo is left
+  gen: 0, // bumped when the page is cleared or its folder changes: what was asked before then is said to nobody
 }
 
 // What the attorney is typing, until it is saved or sent.
@@ -81,6 +112,8 @@ const sort = atom({ ...S, key: 'sort' } as const, 'updated')
 const access = atom({ ...S, key: 'access' } as const, null as Access | null)
 // Whether the BIA Edge connector is in this session, looked up when a matter opens and at the setup check.
 const library = atom({ ...S, key: 'library' } as const, null as { connected: boolean } | null)
+// The demo: its own Matters folder, holding only the fictional sample, so the attorney's matters are never listed.
+const demo = atom({ ...S, key: 'demo' } as const, { on: false, root: '' } as { on: boolean; root: string })
 
 type Value<A> = A extends Atom<infer T> ? T : never
 
@@ -92,6 +125,8 @@ export function readPayload($: EngineInterface) { return read($, payload) }
 export function updatePayload($: EngineInterface, change: Parameters<typeof update<Value<typeof payload>>>[2]) {
   return update($, payload, value => {
     const next = change(value)
+    // The one gate every writer of the page goes through: nothing of the other folder's is shown.
+    if (otherFolder(next)) return value
     session.matter = next?.matter?.path ?? ''
     return next
   })
@@ -132,6 +167,26 @@ export function updateConfirm($: EngineInterface, change: Parameters<typeof upda
 export function readAccess($: EngineInterface) { return read($, access) }
 export function readLibrary($: EngineInterface) { return read($, library) }
 export function updateLibrary($: EngineInterface, change: Parameters<typeof update<Value<typeof library>>>[2]) { return update($, library, change) }
+export function readDemo($: EngineInterface) { return read($, demo) }
+// `root` is the demo's folder to turn the demo on (or to rename it as the server names it); '' turns it off, and
+// the folder stays known.
+export async function setDemo($: EngineInterface, root: string) {
+  session.demo = root
+  if (root) session.demoRoot = root
+  await update($, demo, () => ({ on: Boolean(root), root: session.demoRoot }))
+}
+
+// The matters list opens with its groups folded: a count for each, and no client's name until a group is opened.
+// `grp:<group>` is an open group; the Filed and Archived groups keep the keys they always had.
+export const GROUP_KEYS = ['grp:needs_you', 'grp:working', 'grp:preparing', 'grp:ready']
+const isGroupKey = (key: string) => key.startsWith('grp:') || key === 'filed-group' || key === 'archived-group'
+export async function foldMatters($: EngineInterface) {
+  await update($, expanded, list => (list ?? []).filter(key => !isGroupKey(key)))
+}
+export async function unfoldMatters($: EngineInterface) {
+  await update($, expanded, list => [...(list ?? []).filter(key => !GROUP_KEYS.includes(key)), ...GROUP_KEYS])
+}
+
 // Kept between sessions too, so the page still says it tomorrow; with its date, because it is what Passim said then.
 export async function setAccess($: EngineInterface, value: Access | null) {
   await update($, access, () => value)
@@ -210,8 +265,10 @@ export async function go($: EngineInterface, v: View) {
 // A hot reload starts this module over, with the session's values kept: rebuild what the module had from them, so a
 // run in progress is still ours, saved answers are still in their boxes, and a passed setup check isn't asked again.
 export async function rebuildSession($: EngineInterface) {
-  const [all, saved, s, p] = await Promise.all([read($, runs), read($, answers), read($, setup), read($, payload)])
+  const [all, saved, s, p, demoRoot] = await Promise.all([read($, runs), read($, answers), read($, setup), read($, payload), read($, demo)])
   session.matter = p?.matter?.path ?? ''
+  session.demoRoot = demoRoot?.root ?? ''
+  session.demo = demoRoot?.on ? session.demoRoot : ''
   // What was in flight died with the old module (its server call, its press): nothing is busy or starting now, so the
   // page and its start buttons aren't left dimmed waiting for an answer that can't come.
   await update($, busy, () => false)

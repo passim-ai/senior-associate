@@ -15,7 +15,7 @@ Follow the steps on the [repository's front page](../README.md#install): you pas
 
 ## Using it
 
-Type `/matters` in the Code tab. Choose **Open as side panel** to keep Immigration Packet Builder beside your chat, or type `/matters pane`.
+Type `/matters` in the Code tab. Immigration Packet Builder opens beside your chat, on your list of matters with each group folded, so no client's name is on screen until you press **Show**. To show it to someone else, type `/matters demo`: only the fictional sample matter appears, until you press **Leave the demo**.
 
 1. **Getting set up.** The first time, a checklist marks each tool ✓ or ✗. For a ✗, press **Ask Claude to do it**: Claude installs it in the chat. Then press **Check again**. You can come back to it any time from **Help › Check my setup**.
 2. **Try the sample matter (optional).** Your list starts with *Sample - Barrientos-Eckhardt*, a fictional I-601A with 14 scanned documents and gaps planted on purpose. Open it from the welcome and press **Review documents first**: in 5–10 minutes Claude lists what's missing, and the matter page then shows what a good review catches, to compare. Archive it when you're done; **Help › Open the sample matter** brings it back.
