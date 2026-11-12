@@ -227,7 +227,8 @@ test('the demo lists the sample alone; a build put off on one of the attorney’
   // Setup › Continue anyway, inside the demo: the build that was put off on the attorney's matter doesn't start, and
   // that matter is not opened.
   const before = requests.length
-  await tap('nav-setup')
+  await tap('help')
+  await tap('help-setup')
   await tap('main:setup-continue')
   expect(run.spawned.length).toBe(0)
   expect(requests.slice(before).filter(r => r.matter_path === garcia.path)).toEqual([])
@@ -416,5 +417,45 @@ test('a demo folder the server names by another path, through a link, still load
   await tap('leave-demo')
   expect(requests.slice(leaving).every(r => r.matters_root === ROOT)).toBe(true)
   expect(await ui.find({ type: 'Button', key: 'grp:preparing' })).toMatchObject({ text: 'Show' })
+  await ui.unmount()
+})
+
+test('the list is rows on a card for each group, not a card for each matter; the timeline is under Matter details', OPTS(), async ($, on) => {
+  const names = ['Garcia', 'Lopez', 'Nguyen', 'Bravo', 'Silva']
+  const seed = names.map(n => card(`${n} I-130 I-485`, 'ready', DOCS))
+  const { ui, tap } = await boot($, on, seed, { open: false }, { prefs: SEEN })
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const cards = (el: any, n = 0): number => (!el || typeof el !== 'object' ? n : (el.children ?? []).reduce((k: number, c: unknown) => cards(c, k), n + (el.type === 'Box' && el.props?.borderStyle === 'round' && el.props?.backgroundColor ? 1 : 0)))
+  // Five matters in one group, all shown: one card holds them.
+  expect(await ui.find({ type: 'Button', key: `open:${seed[4]!.path}` })).toBeDefined()
+  expect(cards(await ui.drawn())).toBe(1)
+
+  // A matter's timeline has no tab; See the timeline, under Matter details, opens it, with the tabs still there.
+  await tap(`open:${seed[0]!.path}`)
+  expect(await ui.find({ type: 'Button', key: 'timeline' })).toBeUndefined()
+  await tap('timeline')
+  expect(await ui.find({ type: 'Button', key: 'nav-matter' })).toBeDefined()
+  expect(await ui.find({ type: 'Button', key: 'main:build' })).toBeUndefined()
+  await tap('nav-matter')
+  expect(await ui.find({ type: 'Button', key: 'main:build' })).toBeDefined()
+  await ui.unmount()
+})
+
+test('a long report from Claude opens with its first part, and the rest is one press away', OPTS(), async ($, on) => {
+  const garcia = card('Garcia I-130 I-485', 'ready', DOCS)
+  const run = agents(on, 'Building the packet: Garcia I-130 I-485')
+  const { clock, ui, tap, matters } = await boot($, on, [garcia])
+  await tap('main:build')
+  matters[0] = card('Garcia I-130 I-485', 'draft', DOCS)
+  const paragraphs = Array.from({ length: 12 }, (_, i) => `Paragraph ${i + 1}: the forms were prepared from the passport and the marriage certificate, and every blank is listed.`)
+  await ($ as never as { turn: { complete: (e: unknown) => Promise<unknown> } }).turn.complete({ agentId: 'agent-1', answer: paragraphs.join('\n\n'), reason: 'answer', durationMs: 1000, isAborted: false, turnId: 't1' })
+  run.finish('completed')
+  await clock.settle()
+  expect(await ui.find({ type: 'Text', text: /^What Claude did$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^Paragraph 1:/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^Paragraph 12:/ })).toBeUndefined()
+  expect(await ui.find({ type: 'Button', key: 'more:report' })).toMatchObject({ props: { label: 'Show all of it ›' } })
+  await tap('more:report')
+  expect(await ui.find({ type: 'Text', text: /^Paragraph 12:/ })).toBeDefined()
   await ui.unmount()
 })

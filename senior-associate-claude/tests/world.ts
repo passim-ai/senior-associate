@@ -595,7 +595,7 @@ export async function mount($: unknown, clock: Clock, folded = false) {
   // The Overview folds More you can do, the attorney instructions and the matter's details: a press inside one opens
   // it first, as the attorney would.
   const tap = async (key: string) => {
-    const section = /^do-/.test(key) ? 'sec-more' : /^(open-folder|open-deliverables|open-earlier)$/.test(key) ? 'sec-details' : ''
+    const section = /^do-/.test(key) ? 'sec-more' : /^(open-folder|open-deliverables|open-earlier|timeline)$/.test(key) ? 'sec-details' : ''
     if (section && !(await ui.find({ type: 'Button', key })) && (await ui.find({ type: 'Button', key: section }))) {
       await ui.press({ plugin: PLUGIN, key: section })
       await clock.settle()

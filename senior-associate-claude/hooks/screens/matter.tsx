@@ -13,11 +13,14 @@ import { markdown } from '../md'
 import { ASK_LABEL, AUTO_BEFORE, AUTO_WAITING, brief, clock, dateOnly, duration, nowMs, plural, when, whenPhrase } from '../words'
 import { matterStatus } from '../status'
 
+// What Clean up working files does, in a line.
+const CLEAN_UP = 'Deletes Claude’s working copies. Your documents and the finished files stay.'
+
 // What Check the law again does, wherever it is offered.
 export const RECHECK_ABOUT = 'About 5 minutes. Checks every case the letter cites for later treatment, and looks for changes in the law since the last check. Nothing in the packet changes; if something the letter relies on has changed, it goes on Questions.'
 
 export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise<JSX.Element> {
-  const { Box, Text, Input, isDesktop, narrow, svg, allRuns, pr, d, savedAnswers, g, open, missingCase, asked, actions, button, lone, link, links, card, barCard, columns, disclosure, eyebrow, rule, field, savedMark, matterPage, noProfile, tip, confirmBox, caseChooser, postureChips, research } = x
+  const { Box, Text, Input, isDesktop, narrow, svg, allRuns, pr, d, savedAnswers, g, open, missingCase, asked, actions, button, lone, link, links, card, barCard, columns, disclosure, rule, field, savedMark, matterPage, noProfile, tip, confirmBox, caseChooser, postureChips, research } = x
   const prg = c.progress
   const ledger = c.open_items ?? null
   const needs = needsOf(c)
@@ -228,7 +231,7 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
     if (c.outputs.packet) extra.push(link('open-packet', 'Open draft packet', () => { void perform($, 'open-packet') }, true))
   } else if (phase === 'new') {
     title = 'Add the client’s documents'
-    lines.push(<Text key="new">Add the client’s documents to get started. The Build button appears once there’s something to build.</Text>)
+    lines.push(<Text key="new">Add the client’s documents to get started.</Text>)
     if (!pr.pickerSeen) foot.push(<Text key="sysev" dimColor size="footnote">macOS may ask whether Claude can control System Events. Choose OK; that’s what lets the file picker open in front.</Text>)
     main = [
       { id: 'add-files', label: 'Add files…', kind: 'primary', detail: 'Choose the client’s documents' },
@@ -236,7 +239,7 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
     ]
   } else if (phase === 'ready') {
     title = 'Ready to build'
-    lines.push(<Text key="ready">Claude reviews the documents, prepares the forms, drafts and researches the cover letter, assembles and checks the packet, and leaves you a memo. If documents are missing, it lists exactly what to get. Nothing is filed or sent.</Text>)
+    lines.push(<Text key="ready">Claude builds the packet and writes you a memo. Missing documents become a list of what to get. Nothing is filed or sent.</Text>)
     main = [
       { id: 'build', label: 'Build packet', kind: 'primary', detail: 'About 1–1½ hours · runs in the background' },
       { id: 'review', label: 'Review documents first', kind: 'secondary', detail: 'About 5–10 minutes · see what’s missing first' },
@@ -265,7 +268,6 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
     if (attorneyNeeds.length) {
       lines.push(<Text key="rev-qs">{`${attorneyNeeds.length === 1 ? 'A question waits' : `${attorneyNeeds.length} questions wait`} for you on Questions (${answered(attorneyNeeds)} answered). Your answers go with ${arrived ? 'the next review or the build' : 'the build'}; anything you leave blank stays on the list.`}</Text>)
     }
-    if (!arrived && !taken.length) foot.push(<Text key="rev-more" dimColor size="footnote">When the client sends more: Add documents…, under More you can do, then Review the documents again.</Text>)
   } else if (phase === 'paused') {
     title = 'Paused'
     const at = step?.label ?? ''
@@ -313,7 +315,7 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
       } else if (fr) {
         // Ready to file, and the last step is the attorney's own: the packet stays marked DRAFT until they approve it.
         const points = fr.risks?.length ?? 0
-        lines.push(<Text key="done">The packet passed its final review, including the officer’s review, and nothing needed before filing is open. Every page is marked DRAFT until you approve it: read it through, then approve it to get clean copies to file.</Text>)
+        lines.push(<Text key="done">The packet passed its final review, and nothing needed before filing is open. Every page is marked DRAFT until you approve it: read it through, then approve it to get clean copies.</Text>)
         main = [
           { id: 'open-packet', label: 'Open packet', kind: 'primary', detail: c.outputs.packet.name },
           { id: 'approve', label: 'Approve for filing', kind: 'secondary', detail: !fr.eligible ? 'See what’s in the way' : points ? `${plural(points, 'point', 'points')} to look at first` : 'Then clean copies, without the DRAFT marking' },
@@ -364,10 +366,20 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
     const at = first ? lines.findIndex(l => /^\s*\d+[.)]\s+/.test(l) && first.startsWith(l.replace(/^\s*\d+[.)]\s+/, '').trim())) : -1
     return (at > 0 ? lines.slice(0, at).join('\n') : report.answer).trim()
   })()
+  // A long report opens with its first part; the rest is one press away, so the next step stays in view.
+  const REPORT_SHOWN = 600
+  const reportOpen = open.includes('more:report')
+  const reportLong = reportText.length > REPORT_SHOWN
+  const reportShown = (() => {
+    if (!reportLong || reportOpen) return reportText.length > 4000 ? `${reportText.slice(0, 4000)}…` : reportText
+    const at = reportText.lastIndexOf('\n\n', REPORT_SHOWN)
+    return `${reportText.slice(0, at > 200 ? at : REPORT_SHOWN).trimEnd()}…`
+  })()
   const reportCard = report
     ? card('What Claude did', [
         <Text key="when" dimColor size="footnote">{`${runKind(report.kind).done} · finished ${clock(report.endedAt)}, took ${duration(Date.parse(report.endedAt) - Date.parse(report.startedAt))}`}</Text>,
-        markdown(x, 'report', reportText.length > 4000 ? `${reportText.slice(0, 4000)}…` : reportText, true),
+        markdown(x, 'report', reportShown, true),
+        reportLong ? lone('more:report', button('more:report', reportOpen ? 'Show less' : 'Show all of it ›', () => { void perform($, 'more:report') }, 'quiet')) : null,
       ], undefined, 'card-report')
     : null
 
@@ -379,40 +391,41 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
   const more: { id: string; label: string; detail: string }[] = []
   const offer = (id: string, label: string, detail: string) => { if (!onCard.has(id)) more.push({ id, label, detail }) }
   // Filed: the one thing left to do is tidy up.
-  if (phase === 'filed' && !busyNow && prg.total > 0 && prg.done === prg.total) offer('closeout', 'Clean up working files', 'Deletes Claude’s working copies of the client’s documents. Your documents and the finished files stay.')
+  if (phase === 'filed' && !busyNow && prg.total > 0 && prg.done === prg.total) offer('closeout', 'Clean up working files', CLEAN_UP)
   if (!c.needs_intake && !gated && !starting && phase !== 'filed') {
     offer('add-files', 'Add documents…', busyNow
-      ? `Claude won’t see them in this run. When it finishes, ${run && REVIEW_KINDS.has(run.kind) ? 'Review the documents again' : 'Update the packet'} works them in.`
-      : reviewOnly(c) ? 'What the client sent, or anything left out. Then Review the documents again shows what’s still missing.'
-      : built ? 'What the client sent, or anything left out. Then Update the packet works them in.'
-      : 'The client’s files, one at a time. The Documents tab also takes a whole folder.')
+      ? `Claude won’t see them in this run; ${run && REVIEW_KINDS.has(run.kind) ? 'Review the documents again' : 'Update the packet'} works them in after.`
+      : reviewOnly(c) ? 'Then Review the documents again shows what’s still missing.'
+      : built ? 'Then Update the packet works them in.'
+      : 'One at a time. The Documents tab takes a whole folder.')
     if (!busyNow && !failed) {
-      if (reviewOnly(c)) offer('review-again', 'Review the documents again', 'About 5–10 minutes. Claude re-reads every document, new ones included, and rewrites what’s missing and the client request. It doesn’t build.')
-      if (built) offer('update', 'Update the packet', 'Works in what changed since the build: documents added or taken out, items marked done or reopened, and your answers. Then it checks the packet again.')
-      if (built) offer('change', 'Tell Claude what to change', 'A correction, or a different approach. Claude redoes only the steps it affects, checks the packet again, and updates the memo.')
-      if (built) offer('steps', 'Redo a step…', 'On the Packet tab, choose a step. Claude redoes it and every step after it; the steps before it stay as they are.')
-      if (c.outputs.packet) offer('stress', 'Re-check as a USCIS officer would', 'About 15 minutes. A fresh, full officer’s review of the packet as it is now, not only of what changed; it updates Questions and the memo.')
-      if (c.research && research?.ok) offer('recheck', 'Check the law again', RECHECK_ABOUT)
+      if (reviewOnly(c)) offer('review-again', 'Review the documents again', 'About 5–10 minutes. It doesn’t build.')
+      if (built) offer('update', 'Update the packet', 'Works in what changed since the build, then checks the packet again.')
+      if (built) offer('change', 'Tell Claude what to change', 'A correction or a different approach. Claude redoes only the steps it affects.')
+      if (built) offer('steps', 'Redo a step…', 'Choose the step on the Packet tab.')
+      if (c.outputs.packet) offer('stress', 'Re-check as a USCIS officer would', 'About 15 minutes. A fresh, full officer’s review.')
+      if (c.research && research?.ok) offer('recheck', 'Check the law again', 'About 5 minutes. Nothing in the packet changes.')
       // A draft can be approved as it is: the attorney decides what to file, and what is still open goes on the record.
       if (fr && phase !== 'complete' && phase !== 'filed') {
-        if (fr.approved) offer('open-approved-packet', 'Show the approved copies', 'The clean copies of the version you approved, without the DRAFT marking.')
-        else if (fr.eligible) offer('approve', 'Approve for filing as it is', 'Clean copies without the DRAFT marking. The Packet tab lists what is still open; your reason for filing with it open is kept with the approval.')
+        if (fr.approved) offer('open-approved-packet', 'Show the approved copies', 'The clean copies of the version you approved.')
+        else if (fr.eligible) offer('approve', 'Approve for filing as it is', 'Clean copies without the DRAFT marking. What is still open is listed first.')
       }
-      if (c.outputs.packet && phase !== 'complete') offer('mark-filed', 'Mark as filed', 'Once you’ve filed it. Moves it to Filed on the matters list; Undo puts it back.')
-      if (prg.total > 0 && prg.done === prg.total) offer('closeout', 'Clean up working files', 'Deletes Claude’s working copies of the client’s documents. Your documents and the finished files stay.')
+      if (c.outputs.packet && phase !== 'complete') offer('mark-filed', 'Mark as filed', 'Once you’ve filed it. Undo puts it back.')
+      if (prg.total > 0 && prg.done === prg.total) offer('closeout', 'Clean up working files', CLEAN_UP)
       offer('intake', 'Change what is being filed', anyDone || ledger
-        ? 'A different case type, filing posture, or how it is filed. The steps start over for a new case; your documents stay, and the earlier work is kept, not deleted.'
-        : 'A different case type, filing posture, or how it is filed, before anything has run.')
+        ? 'The steps start over for a new case. Your documents and the earlier work are kept.'
+        : 'The case type, the posture, or how it is filed.')
     }
   }
   // Archive: off the main list, into Archived at its foot. Not while Claude works on it.
   if (!busyNow && !c.needs_intake) {
     if (c.meta.archived_at) offer('unarchive', 'Unarchive', 'Back on the main list of matters.')
-    else offer('archive', 'Archive', 'Takes it off the main list, into Archived at its foot. Nothing is deleted; Unarchive puts it back.')
+    else offer('archive', 'Archive', 'Off the main list. Nothing is deleted.')
   }
+  // One line each: the press, then in a few words what it does or how long it takes.
   const moreList = more.map(m => (
-    <Box key={`more-${m.id}`} flexDirection="column" gap="xs">
-      {lone(`do-${m.id}`, button(`do-${m.id}`, `${m.label} ›`, () => { void perform($, m.id) }, 'link'))}
+    <Box key={`more-${m.id}`} flexDirection="row" flexWrap="wrap" columnGap="sm" rowGap="xs" alignItems="center">
+      {button(`do-${m.id}`, `${m.label} ›`, () => { void perform($, m.id) }, 'link')}
       <Text dimColor size="footnote">{m.detail}</Text>
     </Box>
   ))
@@ -469,11 +482,17 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
   const stale = rs?.state === 'checked' && rs.age_days !== null && rs.age_days > 7
   // The library answered, but the check of the cases' later treatment wasn't finished.
   const unfinished = rs?.state === 'checked' && rs.treatment_checked === false
+  // A finished check with BIA Edge opens with what the letter rests on and how its cases were treated; the counts
+  // behind them are one press away. Anything short of that (not finished, done without BIA Edge, no record) is said
+  // in full.
+  const rsOpen = open.includes('more:research')
+  const rsFold = rs?.state === 'checked' && !unfinished
+  const rsMore = Boolean(rs && rsFold && (rs.lines.length > 2 || rs.not_researched.length))
   const researchCard = rs
     ? card('Research', [
         <Text key="rs-head" weight="semibold" color={rs.state === 'checked' && !stale && !unfinished ? HEAD : WARN}>{`${rs.headline}${stale ? ` · ${rs.age_days} days ago` : ''}`}</Text>,
-        ...rs.lines.map((line, i) => <Text key={`rs-line-${i}`} size="footnote">{line}</Text>),
-        rs.not_researched.length
+        ...rs.lines.slice(0, rsFold && !rsOpen ? 2 : undefined).map((line, i) => <Text key={`rs-line-${i}`} size="footnote">{line}</Text>),
+        rs.not_researched.length && (rsOpen || !rsFold)
           ? <Box key="rs-missing" flexDirection="column" gap="xs">
               {rs.not_researched.map((text, i) => <Text key={`rs-miss-${i}`} size="footnote">{`• ${text}`}</Text>)}
               {rs.not_researched_count > rs.not_researched.length ? <Text dimColor size="footnote">{`…and ${rs.not_researched_count - rs.not_researched.length} more.`}</Text> : null}
@@ -484,6 +503,7 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
         // Researched without BIA Edge, and it still isn't usable: what it is, or what Passim said, and the way there.
         rs.state === 'without' && research && !research.ok ? <Text key="rs-library" size="footnote">{research.detail}</Text> : null,
         links('rs-acts', [
+          rsMore ? button('more:research', rsOpen ? 'Show less' : 'More on what was checked ›', () => { void perform($, 'more:research') }, 'quiet') : null,
           rs.state === 'without' && research && !research.ok && research.link
             ? button(`research-link:${research.link.id}`, `${research.link.label} ›`, () => { void perform($, `open-link:${research.link!.id}`) }, 'link') : null,
           // BIA Edge is usable now: the research step can be done over with it, and the letter revised and reviewed after.
@@ -501,8 +521,8 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
     <Box key="ask-col" flexDirection="column" gap="md">
       <Text size="heading" weight="semibold" color={HEAD}>Ask Claude about this matter</Text>
       <Text dimColor size="footnote">{busyNow
-        ? 'Ask anything while Claude works. Changes you ask for wait until it finishes, or go into your instructions for the steps it hasn’t reached.'
-        : 'A question, some research, or a change you want made. Claude reads this matter’s documents and work, looks up the law in BIA Edge, and makes the changes you ask for. It answers in the chat.'}</Text>
+        ? 'Ask anything while Claude works. Changes you ask for wait until it finishes.'
+        : 'A question, some research, or a change you want made. Claude answers in the chat.'}</Text>
       {research && !research.ok
         ? <Box key="ask-research" flexDirection="column" gap="xs">
             <Text color={WARN} size="footnote">{research.link?.id !== 'passim_trial'
@@ -523,7 +543,6 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
           onInput={val => { typed.ask[c.path] = val }}
           onSubmit={val => { void sendQuestion($, c, val) }}
         />)}
-        <Text dimColor size="caption">Enter sends it. For a new line, press Shift+Enter.</Text>
       </Box>
       {suggestions.length
         ? <Box key="ask-try" flexDirection="column" gap="xs">
@@ -561,7 +580,7 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
   }
   questions.forEach((q, k) => attention.push({ id: `report-${k}`, title: q, kind: 'Claude’s question', blocks: false }))
   attention.sort((a, b) => Number(b.blocks) - Number(a.blocks))
-  const ATTENTION_SHOWN = 4
+  const ATTENTION_SHOWN = 3
   const attentionColumn = (
     <Box key="attention-col" flexDirection="column" gap="md">
       <Text size="heading" weight="semibold" color={HEAD}>Needs attention</Text>
@@ -573,32 +592,13 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
               <Box flexDirection="column" flexShrink={1} flexGrow={1} minWidth={0} gap="xs">
                 <Text weight="semibold" size="footnote">{a.title}</Text>
                 <Box flexDirection="row" flexWrap="wrap" columnGap="sm" rowGap="xs" alignItems="center">
-                  <Text color={MUTED} size="caption">{`${a.kind} · ${a.blocks ? 'Needed before filing' : 'Not needed before filing'}`}</Text>
+                  <Text color={MUTED} size="caption">{a.blocks ? `${a.kind} · Needed before filing` : a.kind}</Text>
                   {button(`view:${a.id}`, 'View ›', () => { void perform($, `view:${a.id}`) }, 'link')}
                 </Box>
               </Box>
             </Box>
           ))}
       {attention.length > ATTENTION_SHOWN ? lone('view-all', button('view-all', `All ${attention.length} on Questions ›`, () => { void perform($, 'items') }, 'link')) : null}
-    </Box>
-  )
-
-  // ----- the numbers: documents, steps, and what is needed before filing; each opens its tab -----
-  // Wide, three columns with a line between; narrow, three lines, the number before its name.
-  const metric = (key: string, id: string, value: string, label: string) => (
-    <Box key={`metric-${key}`} flexDirection={narrow ? 'row' : 'column'} gap={narrow ? 'md' : 'xs'} alignItems={narrow ? 'center' : 'flex-start'} flexGrow={1} flexShrink={1} minWidth={0} width={narrow ? undefined : '30%'}>
-      <Box flexDirection="row" flexShrink={0} width={narrow ? 9 : undefined}><Text size={narrow ? 'heading' : 'title'} weight="semibold" color={HEAD} tabular>{value}</Text></Box>
-      {button(`metric-${key}`, `${label} ›`, () => { void perform($, id) }, 'quiet')}
-    </Box>
-  )
-  const divider = (key: string) => (narrow ? null : <Box key={key} width={0} padding={0} borderStyle="single" />)
-  const metrics = (
-    <Box key="metrics" flexDirection={narrow ? 'column' : 'row'} alignItems="stretch" gap={narrow ? 'xs' : 'lg'} backgroundColor={CARD} borderStyle="round" paddingX="xl" paddingY="md">
-      {metric('docs', 'docs', String(c.documents.count), c.documents.count === 1 ? 'Document' : 'Documents')}
-      {divider('metric-div-1')}
-      {metric('steps', 'packet', `${prg.done} of ${prg.total}`, 'Steps complete')}
-      {divider('metric-div-2')}
-      {metric('needed', 'items', String(blocking), 'Needed before filing')}
     </Box>
   )
 
@@ -637,6 +637,7 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
     // A protected matter's folder has a neutral name; here is what to look for in Finder.
     c.title && c.title !== c.name ? detail('folder', 'Folder', `${c.name}, in your Matters folder. A protected client’s folder isn’t named for them.`) : null,
     links('links', [
+      link('timeline', 'See the timeline', () => { void perform($, 'timeline') }, true),
       link('open-folder', 'Open the matter folder in Finder', () => { void perform($, 'open-folder') }, true),
       c.outputs.folder ? link('open-deliverables', 'Show files in Finder', () => { void perform($, 'open-deliverables') }, true) : null,
       c.outputs.earlier ? link('open-earlier', 'Show the earlier work in Finder', () => { void perform($, 'open-earlier') }, true) : null,
@@ -646,7 +647,6 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
   return matterPage(c, 'matter',
     tip,
     barCard('card-main', border, [
-      eyebrow('Next step', 'next-eyebrow'),
       <Text key="next-title" size="title" weight="semibold" color={HEAD}>{title}</Text>,
       ...lines,
       asked === 'closeout'
@@ -658,7 +658,6 @@ export async function matterScreen($: EngineInterface, x: Ctx, c: Card): Promise
     ]),
     reportCard,
     sampleCard,
-    metrics,
     columns('overview-cols', [attentionColumn, askColumn]),
     researchCard,
     <Box key="folded" flexDirection="column" gap="md">

@@ -161,8 +161,8 @@ export const LINK_TOAST: Record<string, string> = {
 
 // Claude's permission setting, under the prompt box. In the usual setting a full build stops to ask several hundred
 // times (479 on the sample matter), and a plugin can't answer for the attorney, so the app recommends Auto.
-export const AUTO_BEFORE = 'Before you build, set the permission setting under the prompt box to Auto. In Claude’s usual setting a build stops to ask your permission several hundred times; in Auto, Claude checks each step itself.'
-export const AUTO_WAITING = 'A build asks like this several hundred times in Claude’s usual setting. Under the prompt box, switch the permission setting to Auto and Claude checks each step itself instead.'
+export const AUTO_BEFORE = 'First set the permission setting under the prompt box to Auto. Otherwise a build stops to ask your permission several hundred times.'
+export const AUTO_WAITING = 'A build asks like this several hundred times. Under the prompt box, switch the permission setting to Auto and Claude checks each step itself.'
 
 export const STILL_WORKING = 'Still finishing your last action. Try again in a moment.'
 export const ASK_LABEL = 'Ask Claude to do it'

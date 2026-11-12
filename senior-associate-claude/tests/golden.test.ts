@@ -162,3 +162,50 @@ test('a matter moved in Finder, in the real server’s words: after two failed r
   expect(await ui.find({ type: 'Button', key: 'note-press:all' })).toBeDefined()
   await ui.unmount()
 })
+
+// How much is on a matter's Overview, counted the way an attorney meets it: every word in a text or on a press, and
+// every press. The ceilings sit a little above what each state carries now (1.5.0 carried a quarter more words and
+// seven more presses), so words and buttons that creep back show up here.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function weight(el: any, m = { words: 0, buttons: 0 }) {
+  if (!el || typeof el !== 'object') return m
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const own = (el.children ?? []).map((c: any) => (typeof c === 'string' ? c : '')).join('')
+  const count = (t: string) => t.split(/\s+/).filter(w => /[A-Za-z0-9]/.test(w)).length
+  if (el.type === 'Text') m.words += count(own)
+  if (el.type === 'Button') { m.buttons += 1; m.words += count(String(el.props?.label ?? own)) }
+  for (const child of el.children ?? []) weight(child, m)
+  return m
+}
+const CEILING: Record<string, [words: number, buttons: number]> = {
+  new: [225, 25], ready: [240, 26], reviewed: [245, 19], building: [175, 15], paused: [210, 16],
+  needs_you: [210, 21], waiting_client: [170, 18], draft: [255, 21], complete: [360, 29], filed: [170, 19],
+}
+
+test('a matter’s Overview stays lean: one way back, five tabs, and no more words or presses than its ceiling', OPTS(), async ($, on) => {
+  const { clock } = await open($, on)
+  golden(on, '')
+  const { ui, tap } = await mount($, clock)
+  for (const [name, [words, buttons]] of Object.entries(CEILING)) {
+    const c = GOLDEN[`matter-${name}`].matter
+    await ui.press({ plugin: PLUGIN, key: 'nav-all' }).catch(() => undefined)
+    await clock.settle()
+    if (!(await ui.find({ type: 'Button', key: `open:${c.path}` }))) await tap('filed-group')
+    await tap(`open:${c.path}`)
+    const got = weight(await ui.drawn())
+    expect([name, got.words <= words, got.buttons <= buttons, got]).toEqual([name, true, true, got])
+    // The header holds the way back and Help; the matter's five tabs do the rest. No trail of crumbs, no Setup or
+    // Your details up there, no Timeline tab.
+    expect([name, (await ui.find({ type: 'Button', key: 'nav-all' }))?.props?.label]).toEqual([name, '‹ Matters'])
+    for (const gone of ['profile', 'nav-setup', 'crumb-all', 'metric-docs']) expect([name, gone, await ui.find({ type: 'Button', key: gone })]).toEqual([name, gone, undefined])
+    for (const tab of ['nav-matter', 'docs', 'items', 'packet', 'memo']) expect([name, tab, Boolean(await ui.find({ type: 'Button', key: tab }))]).toEqual([name, tab, true])
+  }
+  // Back on the list, the header is the list's: Matters, Your details, Help. Setup is under Help.
+  await tap('nav-all')
+  expect((await ui.find({ type: 'Button', key: 'nav-all' }))?.props?.label).toBe('Matters')
+  expect(await ui.find({ type: 'Button', key: 'profile' })).toBeDefined()
+  await tap('help')
+  await tap('help-setup')
+  expect(await ui.find({ type: 'Text', text: /^Getting set up$/ })).toBeDefined()
+  await ui.unmount()
+})

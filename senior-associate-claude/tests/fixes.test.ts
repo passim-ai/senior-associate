@@ -539,7 +539,7 @@ test('a packet ready to file with a question not needed before filing: Ready to 
   const run = agents(on, 'Updating the packet: Garcia I-130 I-485')
   const { ui, tap } = await boot($, on, [garcia])
   expect(await ui.find({ type: 'Text', text: /^Ready to file$/ })).toBeDefined()
-  expect(await ui.find({ type: 'Text', text: /^Your decision · Not needed before filing$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^Your decision$/ })).toBeDefined()
   await tap('items')
   expect(await ui.find({ type: 'Text', text: /^Not needed before filing$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^Needed before filing$/ })).toBeUndefined()

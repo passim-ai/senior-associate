@@ -69,7 +69,8 @@ test('the research line: what BIA Edge is and costs when it isn’t connected, P
 
 test('setup without BIA Edge: what it is, what it costs, and a press that opens Passim’s sign-up in the browser', OPTS(), async ($, on) => {
   const { ui, tap, requests, toasts } = await boot($, on, [card('Garcia I-130 I-485', 'ready', DOCS)])
-  await tap('nav-setup')
+  await tap('help')
+  await tap('help-setup')
   expect(await ui.find({ type: 'Text', text: /^Case-law research \(optional\)$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^BIA Edge is Passim’s immigration law library for Claude: .* \$29 a month, with 14 days free for a new account \(a card is required\)\.$/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^Once you have an account, connect BIA Edge in Claude’s Connectors so letters can cite case law\.$/ })).toBeDefined()
@@ -96,6 +97,11 @@ test('research checked with BIA Edge: the matter’s page says what was checked 
   expect(await ui.find({ type: 'Text', text: /^Checked November 9, 2026 with BIA Edge$/ })).toMatchObject({ props: { color: HEAD } })
   expect(await ui.find({ type: 'Text', text: /^Later treatment was checked for all 6 cases: 2 carry a limit/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^Still open: The attorney has not confirmed the controlling circuit\.$/ })).toBeDefined()
+  // What the letter rests on and how its cases were treated are said at once; the counts behind them when asked for.
+  expect(await ui.find({ type: 'Text', text: /^7 points were researched for this client/ })).toBeUndefined()
+  await tap('more:research')
+  expect(await ui.find({ type: 'Text', text: /^7 points were researched for this client/ })).toBeDefined()
+  expect(await ui.find({ type: 'Button', key: 'more:research' })).toMatchObject({ props: { label: 'Show less' } })
   expect(await ui.find({ type: 'Text', text: /^A clean check means no adverse treatment was found in the library that day\./ })).toBeDefined()
   // BIA Edge is there, so nothing sells it.
   expect(await ui.find({ type: 'Button', text: /Start a free trial/ })).toBeUndefined()
@@ -107,7 +113,7 @@ test('research checked with BIA Edge: the matter’s page says what was checked 
   await tap('nav-matter')
   await unfold(ui, tap, 'sec-more')
   expect(await ui.find({ type: 'Button', key: 'do-recheck' })).toMatchObject({ props: { label: 'Check the law again ›' } })
-  expect(await ui.find({ type: 'Text', text: /^About 5 minutes\. Checks every case the letter cites for later treatment/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^About 5 minutes\. Nothing in the packet changes\.$/ })).toBeDefined()
   await tap('research-recheck')
   expect(requests.find(r => r.op === 'start_run')).toMatchObject({ kind: 'recheck', matter_path: done.path })
   expect(String(spawned[0]?.prompt)).toMatch(/^Check the law again\./)
@@ -220,7 +226,8 @@ test('Passim answers that the account has no access: the page and Setup say so i
   expect(await ui.find({ type: 'Button', key: 'ask-link:passim_account' })).toMatchObject({ props: { label: 'Open your Passim account ›' } })
   // The check of the law needs research that answers: pressed anyway, the page says what Passim said, with the way there.
   expect(await ui.find({ type: 'Button', key: 'research-recheck' })).toBeUndefined()
-  await tap('nav-setup')
+  await tap('help')
+  await tap('help-setup')
   expect(await ui.find({ type: 'Text', text: /^BIA Edge is connected, but Passim returned no research on .*: “Your free trial of Passim, listed as BIA Edge in Claude, has ended\./ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /^Until research answers again, letters are written without case-law research\.$/ })).toBeDefined()
   await tap('setup-link:passim_account')
@@ -273,7 +280,8 @@ test('what Passim said is still on the page in the next session, with its date',
   expect(await ui.find({ type: 'Text', text: /^BIA Edge is connected, but Passim returned no research on November 8, 2026: “Your Passim free trial has ended\.”$/ })).toBeDefined()
   expect(await ui.find({ type: 'Button', key: 'research-link:passim_account' })).toBeDefined()
   expect(await ui.find({ type: 'Button', key: 'research-redo' })).toBeUndefined()
-  await tap('nav-setup')
+  await tap('help')
+  await tap('help-setup')
   expect(await ui.find({ type: 'Button', key: 'setup-link:passim_account' })).toBeDefined()
   await ui.unmount()
 })
