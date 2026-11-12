@@ -340,3 +340,81 @@ test('Leave the demo while the demo is still loading: the attorney’s own list 
   expect(await ui.find({ type: 'Button', key: `open:${garcia.path}` })).toBeDefined()
   await ui.unmount()
 })
+
+test('a message left on the list is gone when the panel is opened again', OPTS(), async ($, on) => {
+  const garcia = card('Garcia I-130 I-485', 'ready', DOCS)
+  const pane = panel(on)
+  let held: Promise<void> | undefined
+  let release: () => void = () => {}
+  const { clock, ui, tap } = await boot($, on, [garcia, card('Lopez I-751', 'ready', DOCS)], { hold: r => (r.op === 'state' && !r.matter_path ? held : undefined) })
+  // Archiving a matter says so on the list, by name.
+  await tap('do-archive')
+  expect(await ui.find({ type: 'Text', text: /^✓ Garcia I-130 I-485 is archived\./ })).toBeDefined()
+  // The panel is closed and opened again, the server slow to answer: the message is not there to be read.
+  pane.up = false
+  held = new Promise<void>(done => { release = done })
+  await command($, '')
+  await clock.settle()
+  expect(said(await ui.drawn()).filter(t => /Garcia|Lopez/.test(t))).toEqual([])
+  expect(await ui.find({ type: 'Text', text: /^Matters$/ })).toBeDefined()
+  held = undefined
+  release()
+  await clock.settle()
+  expect(said(await ui.drawn()).filter(t => /Garcia|Lopez/.test(t))).toEqual([])
+  await ui.unmount()
+})
+
+test('an error about one of the attorney’s matters that comes back after the demo opened is said to nobody', OPTS(), async ($, on) => {
+  const { clock } = await open($, on)
+  on('env.get', async (_$, e) => ({ value: e.name === 'HOME' ? '/Users/example' : undefined }))
+  const garcia = card('Garcia I-130 I-485', 'ready', DOCS)
+  let held: Promise<void> | undefined
+  let release: () => void = () => {}
+  const o: Parameters<typeof world>[3] = { profile: ANA, hold: r => (r.op === 'set_instructions' ? held : undefined) }
+  world(on, [garcia], { prefs: { ...SEEN, lastMatter: garcia.path } }, o)
+  panel(on)
+  const { ui, tap } = await mount($, clock)
+  await tap(`open:${garcia.path}`)
+  await tap('sec-instructions')
+  // The instructions are being saved when the matter's folder is moved in Finder: the server will answer with an
+  // error that names it.
+  held = new Promise<void>(done => { release = done })
+  await ui.input({ plugin: PLUGIN, key: 'instructions', text: 'Lead with the joint lease.', kind: 'submit' })
+  await clock.settle()
+  o.gone = [garcia.path]
+  await command($, 'demo')
+  await clock.settle()
+  held = undefined
+  release()
+  await clock.settle()
+  expect(await ui.find({ type: 'Button', key: 'leave-demo' })).toBeDefined()
+  expect(said(await ui.drawn()).filter(t => /Garcia|isn.t in your Matters folder/.test(t))).toEqual([])
+  await ui.unmount()
+})
+
+test('a demo folder the server names by another path, through a link, still loads, and its sample opens there', OPTS(), async ($, on) => {
+  const { clock } = await open($, on)
+  on('env.get', async (_$, e) => ({ value: e.name === 'HOME' ? '/Users/example' : undefined }))
+  const LINKED = '/Volumes/Data/PacketDemo'
+  const garcia = card('Garcia I-130 I-485', 'ready', DOCS)
+  const { requests } = world(on, [garcia], { prefs: SEEN }, { profile: ANA, demoCanonical: LINKED })
+  panel(on)
+  const { ui, tap } = await mount($, clock, true)
+  await command($, 'demo')
+  await clock.settle()
+  expect(requests.some(r => r.op === 'state' && r.matters_root === DEMO)).toBe(true)
+  expect(await ui.find({ type: 'Button', key: 'leave-demo' })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^Matters$/ })).toBeDefined()
+  await tap('show-all')
+  expect(said(await ui.drawn()).filter(t => /Garcia/.test(t))).toEqual([])
+  // The sample is asked for where the server keeps it, and opens.
+  await tap(`open:${LINKED}/Sample - Barrientos-Eckhardt`)
+  expect(requests.at(-1)).toMatchObject({ op: 'state', matters_root: LINKED, matter_path: `${LINKED}/Sample - Barrientos-Eckhardt` })
+  expect(await ui.find({ type: 'Text', text: /^Sample - Barrientos-Eckhardt$/ })).toBeDefined()
+  // Left, the attorney's own list is back, asked of their own folder.
+  const leaving = requests.length
+  await tap('leave-demo')
+  expect(requests.slice(leaving).every(r => r.matters_root === ROOT)).toBe(true)
+  expect(await ui.find({ type: 'Button', key: 'grp:preparing' })).toMatchObject({ text: 'Show' })
+  await ui.unmount()
+})

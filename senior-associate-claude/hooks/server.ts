@@ -38,7 +38,10 @@ export async function findUv($: EngineInterface): Promise<string> {
 export function settings(request: Record<string, unknown> = {}): Record<string, string> {
   const own = Object.fromEntries(Object.entries(session.config).filter(([, value]) => value.trim() !== ''))
   const named = typeof request.matter_path === 'string' ? request.matter_path : ''
-  if (named) return inDemo(named) ? { matters_root: demoRootOf(named) } : own
+  if (named) {
+    const root = demoRootOf(named)
+    return root ? { matters_root: root } : own
+  }
   return session.demo ? { matters_root: session.demo } : own
 }
 
@@ -46,13 +49,20 @@ export async function call($: EngineInterface, request: Record<string, unknown>)
   // cli.py: the standard library only, so the 15-second refresh never resolves a package and works offline.
   const server = `${$.plugin.root}/server/cli.py`
   const uv = await findUv($)
+  // Which Matters folder is asked, noted on the answer, and the page as it is now: an error that comes back after
+  // the page was cleared or its folder changed may name a matter that is no longer on it, and is said to nobody.
+  const sent = settings(request)
+  const toDemo = Boolean(sent.matters_root) && inDemo(sent.matters_root!)
+  const gen = session.gen
+  const stale = () => session.gen !== gen
   let result: Awaited<ReturnType<typeof $.process.run>>
   try {
     result = await $.process.run(
-      [uv, 'run', '--script', server, JSON.stringify({ ...settings(request), ...request })],
+      [uv, 'run', '--script', server, JSON.stringify({ ...sent, ...request })],
       { timeoutMs: 600000 },
     )
   } catch (err) {
+    if (stale()) throw new Error('')
     const text = err instanceof Error ? err.message : String(err)
     session.lastRaw = text
     throw new Error(/ENOENT|not found|no such file/i.test(text) ? NO_UV : friendly(text))
@@ -66,10 +76,11 @@ export async function call($: EngineInterface, request: Record<string, unknown>)
     data = {}
   }
   if (exitCode !== 0 || data.error) {
+    if (stale()) throw new Error('')
     session.lastRaw = data.error || stderr.trim().split('\n').pop() || ''
     throw new Error(friendly(session.lastRaw))
   }
-  return data as Payload
+  return { ...data, from_demo: toDemo } as Payload
 }
 
 // Where a fresh load lands: the matter it carries, else the welcome the first time, else the list.
@@ -173,8 +184,9 @@ export async function load($: EngineInterface, request: Record<string, unknown>,
     if (session.flight !== token) return null
     // The demo was opened or left while this was on its way: its answer is from the other folder, and is dropped.
     if (session.demo !== demoAtCall || otherFolder(p)) return null
-    // The server answers with the folder's real path; the demo keeps that one, so its matters are known as its own.
-    if (session.demo && !request.matter_path && p.matters_root && p.matters_root !== session.demo && inDemo(p.matters_root)) await setDemo($, p.matters_root)
+    // The server answers with the folder's real path, which is another one when a link leads there; the demo keeps
+    // that one, so its matters are known as its own and asked for where the server looks.
+    if (session.demo && !request.matter_path && p.matters_root && p.matters_root !== session.demo) await setDemo($, p.matters_root)
     let next = await landing($, p, request)
     // The very first time, the setup check comes before the welcome.
     if (next === 'welcome' && !(await readPrefs($)).setupSeen && (await doctor($))) next = 'setup'
@@ -253,6 +265,8 @@ export async function refresh($: EngineInterface) {
     session.refreshFails = 0
     if (next.matter) await follow($, next.matter)
   } catch (err) {
+    // One that set out before the page was cleared or its folder changed is nobody's failure now.
+    if (session.seq !== seq) return
     session.refreshFails += 1
     if (session.refreshFails === 2) {
       const text = err instanceof Error ? err.message : String(err)

@@ -12,9 +12,12 @@ export const PANE = 'senior-associate'
 // of theirs.
 export const DEMO_FOLDER = 'Library/Application Support/Immigration Packet Builder/Demo'
 
-// The demo folder a path sits in ('' when it is none of the demo's), read off the path itself, so a matter of the
-// demo's is known as one whether or not the demo is on, and after a reload.
+// The demo folder a path sits in ('' when it is none of the demo's): the demo's folder as the server named it (which
+// may be another path to the same place, through a link), else read off the path itself. Either way a matter of the
+// demo's is known as one whether or not the demo is on.
 export function demoRootOf(path: string): string {
+  const known = session.demoRoot
+  if (known && (path === known || path.startsWith(`${known}/`))) return known
   const mark = `/${DEMO_FOLDER}`
   const at = path.indexOf(`${mark}/`)
   return at >= 0 ? path.slice(0, at + mark.length) : path.endsWith(mark) ? path : ''
@@ -27,6 +30,8 @@ export const onScreen = (path: string) => inDemo(path) === Boolean(session.demo)
 // which isn't this folder's. It is never put on the page, whoever asked for it.
 export function otherFolder(p: Payload | null | undefined): boolean {
   if (!p) return false
+  // The app notes on each answer which folder it asked (server.ts); one without the note is read by its paths.
+  if (typeof p.from_demo === 'boolean') return p.from_demo !== Boolean(session.demo)
   if (p.matter && !onScreen(p.matter.path)) return true
   return Boolean(p.matters_root) && !onScreen(p.matters_root!)
 }
@@ -53,6 +58,8 @@ export const session = {
   matter: '', // the open matter's path, kept in step with the payload so a press knows it without waiting
   sampleAsked: false, // the first load of a new attorney's session has asked the server for the sample matter
   demo: '', // the demo's own Matters folder while the demo is on, kept in step with the `demo` value below
+  demoRoot: '', // that folder as the server last named it, kept after the demo is left
+  gen: 0, // bumped when the page is cleared or its folder changes: what was asked before then is said to nobody
 }
 
 // What the attorney is typing, until it is saved or sent.
@@ -106,7 +113,7 @@ const access = atom({ ...S, key: 'access' } as const, null as Access | null)
 // Whether the BIA Edge connector is in this session, looked up when a matter opens and at the setup check.
 const library = atom({ ...S, key: 'library' } as const, null as { connected: boolean } | null)
 // The demo: its own Matters folder, holding only the fictional sample, so the attorney's matters are never listed.
-const demo = atom({ ...S, key: 'demo' } as const, '')
+const demo = atom({ ...S, key: 'demo' } as const, { on: false, root: '' } as { on: boolean; root: string })
 
 type Value<A> = A extends Atom<infer T> ? T : never
 
@@ -161,9 +168,12 @@ export function readAccess($: EngineInterface) { return read($, access) }
 export function readLibrary($: EngineInterface) { return read($, library) }
 export function updateLibrary($: EngineInterface, change: Parameters<typeof update<Value<typeof library>>>[2]) { return update($, library, change) }
 export function readDemo($: EngineInterface) { return read($, demo) }
+// `root` is the demo's folder to turn the demo on (or to rename it as the server names it); '' turns it off, and
+// the folder stays known.
 export async function setDemo($: EngineInterface, root: string) {
   session.demo = root
-  await update($, demo, () => root)
+  if (root) session.demoRoot = root
+  await update($, demo, () => ({ on: Boolean(root), root: session.demoRoot }))
 }
 
 // The matters list opens with its groups folded: a count for each, and no client's name until a group is opened.
@@ -257,7 +267,8 @@ export async function go($: EngineInterface, v: View) {
 export async function rebuildSession($: EngineInterface) {
   const [all, saved, s, p, demoRoot] = await Promise.all([read($, runs), read($, answers), read($, setup), read($, payload), read($, demo)])
   session.matter = p?.matter?.path ?? ''
-  session.demo = demoRoot ?? ''
+  session.demoRoot = demoRoot?.root ?? ''
+  session.demo = demoRoot?.on ? session.demoRoot : ''
   // What was in flight died with the old module (its server call, its press): nothing is busy or starting now, so the
   // page and its start buttons aren't left dimmed waiting for an answer that can't come.
   await update($, busy, () => false)

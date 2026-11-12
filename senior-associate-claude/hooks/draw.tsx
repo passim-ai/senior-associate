@@ -56,7 +56,7 @@ export async function draw($: EngineInterface, els: Els, site: 'pane' | 'inline'
   // The main actions wait while a Mac picker is open or a start is on its way.
   const b = busy || (Boolean(p?.matter) && launching.includes(p!.matter!.path))
 
-  const kit = makeKit($, els, site, v, p, n, b, allRuns, st, Boolean(demo))
+  const kit = makeKit($, els, site, v, p, n, b, allRuns, st, Boolean(demo?.on))
   const { page, title, actions } = kit
   // ----- opening -----
 

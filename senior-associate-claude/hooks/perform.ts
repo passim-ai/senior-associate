@@ -247,6 +247,7 @@ export async function paneUp($: EngineInterface): Promise<boolean> {
 // turn it is), and the page is free at once for what is asked next, as Close the picker does.
 async function dropFlight($: EngineInterface) {
   session.seq += 1
+  session.gen += 1
   session.flight += 1
   session.inFlight = false
   session.waitingOn = ''
@@ -265,6 +266,10 @@ export async function clearToList($: EngineInterface) {
   await updateCaseMissing($, () => false)
   await foldMatters($)
   await updatePayload($, p => (p ? { ...p, matter: null } : p))
+  // A message left on the page (a matter just archived, say) may name a client: it goes with the page it was on.
+  session.savedField = ''
+  await updateConfirm($, () => '')
+  await setNote($, '')
   if (MATTER_VIEWS.includes(await readView($))) await go($, 'home')
 }
 

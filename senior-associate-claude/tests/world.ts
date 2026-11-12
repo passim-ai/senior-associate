@@ -286,6 +286,8 @@ export type Options = { checks?: unknown[]; profile?: Record<string, string>; ca
   sample?: boolean
   /** The tools the session has, by name: BIA Edge's are how the app knows the connector is there. */
   tools?: string[]
+  /** The demo's folder as the server names it, when a link leads there: its answers carry this path, not the one asked. */
+  demoCanonical?: string
   /** Holds the answer to a request until this settles: a server that is slow to answer, or never does. */
   hold?: (request: Record<string, string>) => Promise<void> | undefined
 }
@@ -323,7 +325,8 @@ export function world(on: On, seed: Matter[] = [], stored: Record<string, unknow
     const wait = o.hold?.(request)
     if (wait) await wait
     // The demo's own Matters folder, as the real server keeps it: the sample matter and nothing of the attorney's.
-    const demoRoot = /\/Immigration Packet Builder\/Demo$/.test(request.matters_root ?? '') ? request.matters_root! : ''
+    const asksDemo = /\/Immigration Packet Builder\/Demo$/.test(request.matters_root ?? '') || (Boolean(o.demoCanonical) && request.matters_root === o.demoCanonical)
+    const demoRoot = asksDemo ? o.demoCanonical ?? request.matters_root! : ''
     if (demoRoot && (request.op === 'state' || request.op === 'list')) {
       const sample = Object.assign(sampleCard('ready'), { path: `${demoRoot}/Sample - Barrientos-Eckhardt` })
       if (request.op === 'list') return answer({ status: 'list', matters: [row(sample, undefined)], archived_count: 0 })
